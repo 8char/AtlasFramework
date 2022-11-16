@@ -13,16 +13,16 @@ function PANEL:Init()
     local level = self.summary.level
     level:SetSize(200, 200)
     level.Paint = function(pnl, w, h)
-        XeninUI:MaskInverse(function()
-            XeninUI:DrawArc(w / 2, h / 2, 0, 360, h / 2 - 30, Color(255, 255, 255), 45)
+        AtlasUI:MaskInverse(function()
+            AtlasUI:DrawArc(w / 2, h / 2, 0, 360, h / 2 - 30, Color(255, 255, 255), 45)
         end, function()
-            XeninUI:DrawArc(w / 2, h / 2, 0, 360, h / 2 - 20, Color(24, 24, 24), 45)
+            AtlasUI:DrawArc(w / 2, h / 2, 0, 360, h / 2 - 20, Color(24, 24, 24), 45)
         end)
         local frac = ( CurTime() - level.openTime ) / 10
-        XeninUI:MaskInverse(function()
-            XeninUI:DrawArc(w / 2, h / 2, 0, Lerp(math.ease.InCubic(frac), 0, 360), h / 2 - 30, Color(255, 255, 255), 45)
+        AtlasUI:MaskInverse(function()
+            AtlasUI:DrawArc(w / 2, h / 2, 0, Lerp(math.ease.InCubic(frac), 0, 360), h / 2 - 30, Color(255, 255, 255), 45)
         end, function()
-            XeninUI:DrawArc(w / 2, h / 2, 0, Lerp(math.ease.InCubic(frac), 0, 360), h / 2 - 20, Color(255, 255, 255), 45)
+            AtlasUI:DrawArc(w / 2, h / 2, 0, Lerp(math.ease.InCubic(frac), 0, 360), h / 2 - 20, Color(255, 255, 255), 45)
         end)
 
     end
