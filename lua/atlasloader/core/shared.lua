@@ -19,7 +19,7 @@ AtlasLoader.LOG_LEVELS = {
     WARNING = 3,    -- Warning level
     ERROR = 99,     -- Error level - No Log prints
 }
-local MODULE_PREFIX = "amod_"
+local MODULE_PREFIX = "amodule_"
 local MODULE_FOLDER = "AModules/"
 
 
