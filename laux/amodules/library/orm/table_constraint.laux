@@ -1,0 +1,108 @@
+public class ForeignKey
+  constructor(parent, ...)
+    self.parent = parent
+    self.tableColumns = { ... }
+  end
+
+  references(name)
+    self._references = name
+
+    return self
+  end
+
+  columns(...)
+    self.targetColumns = { ... }
+
+    return self
+  end
+
+  cascade()
+    self._cascade = true
+
+    return self
+  end
+
+  setNull()
+    self._setNull = true
+
+    return self
+  end
+
+  buildSQL()
+    local tableKeys = table.concat(self.tableColumns, ", ")
+    local targetKeys = table.concat(self.targetColumns, ", ")
+    local target = self._references
+
+    local str = `FOREIGN KEY (${tableKeys}) REFERENCES ${target}(${targetKeys})`
+    if (self._cascade) then
+      str ..= "\n          ON DELETE CASCADE"
+    elseif (self._setNull) then
+      str ..= "\n          ON DELETE SET NULL"
+    end
+
+    return str
+  end
+
+  build()
+    self.parent:build()
+  end
+end
+
+public class Unique
+  constructor(parent, ...)
+    self.parent = parent
+    self.columns = { ... }
+  end
+
+  buildSQL()
+    local keys = table.concat(self.columns, ", ")
+
+    return `UNIQUE (${keys})`
+  end
+
+  build()
+    self.parent:build()
+  end
+end
+
+public class AtlasLibrary.ORM.Constraint
+  constructor(name, isMySQL = false)
+    self.isMySQL = isMySQL
+    self.name = name
+  end
+
+  primary(...)
+    self._primary = { ... }
+  end
+
+  foreign(...)
+    self._foreign = ForeignKey(self, ...)
+
+    return self._foreign
+  end
+
+  unique(...)
+    self._unique = Unique(self, ...)
+
+    return self._unique
+  end
+
+  buildSQL()
+    local str = ""
+
+    if (self._primary) then
+      local keys = table.concat(self._primary, ", ")
+      str = `PRIMARY KEY (${keys})`
+    elseif (self._foreign) then
+      str = self._foreign:buildSQL()
+    elseif (self._unique) then
+      str = self._unique:buildSQL()
+    end
+
+    return str
+  end
+
+  build()
+    return self:buildSQL()
+  end
+end

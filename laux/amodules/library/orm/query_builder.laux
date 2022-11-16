@@ -1,0 +1,916 @@
+-- This is purely for static functions for query builder.
+
+public class AtlasLibrary.ORM.Helpers
+  static ASC = "ASC"
+  static DESC = "DESC"
+  static UPSERT = true
+  static NULL = {
+    raw = "NULL"
+  }
+  
+  static raw(str)
+    return {
+      raw = str
+    }
+  end
+
+  static fixArgument(arg)
+    if (!istable(arg)) then
+      return AtlasLibrary.ORM.Helpers.construct(arg)
+    end
+
+    return arg
+  end
+
+  static construct(arg)
+    return {
+      mysql = arg,
+      sqlite = arg,
+    }
+  end
+
+  static duplicate(arg)
+    return {
+      left = arg,
+      right = arg
+    }
+  end
+
+  static days(amt)
+    local days = (60 * 60 * 24) * amt
+    
+    return {
+      mysql = {
+        left = days,
+        right = `INTERVAL ${amt} DAYS`
+      },
+      sqlite = AtlasLibrary.ORM.Helpers.duplicate(days)
+    }
+  end
+
+  static timeSubtract(current, subtract)
+    current = AtlasLibrary.ORM.Helpers.fixArgument(current)
+    subtract = AtlasLibrary.ORM.Helpers.fixArgument(subtract)
+    
+    return {
+      mysql = `${current.mysql.left} - ${subtract.mysql.right}`,
+      sqlite = `${current.sqlite.left} - ${subtract.sqlite.right}`
+    }
+  end
+
+  static nowDateTime() 
+    return {
+      raw = "now()"
+    }
+  end
+
+  static now()
+    return {
+      mysql = AtlasLibrary.ORM.Helpers.duplicate("UNIX_TIMESTAMP(now())"),
+      sqlite = AtlasLibrary.ORM.Helpers.duplicate("strftime('%s', 'now')")
+    }
+  end
+
+  static timestamp(row)
+    return {
+      mysql = "UNIX_TIMESTAMP(" .. row .. ")",
+      sqlite = "strftime('%s', " .. row .. ")"
+    }
+  end
+
+  static unixEpochToTimestamp(epoch)
+    return {
+      mysql = `FROM_UNIXTIME(${epoch})`,
+      sqlite = `DATETIME(${epoch}, 'unixepoch')`
+    }
+  end
+
+  static cast(field, alias, length, typeMySQL, typeSQLite = typeMySQL)
+    local lengthStr = ""
+    if (length) then
+      lengthStr = `(${length})`
+    end
+
+    local str = `CAST(${field} AS ${typeMySQL}${lengthStr}) AS ${alias}`
+
+    return AtlasLibrary.ORM.Helpers.construct(str)
+  end
+
+  static castChar(field, alias, length)
+    return AtlasLibrary.ORM.Helpers.cast(field, alias, length, "CHAR", "CHAR")
+  end
+
+  static alias(field, alias)
+    local mysql = istable(field) and field.mysql or field
+    local sqlite = istable(field) and field.sqlite or field
+
+    return {
+      mysql = `${mysql} AS ${alias}`,
+      sqlite = `${sqlite} AS ${alias}`
+    }
+  end
+
+  static count(fields, alias)
+    local str = `COUNT(${fields})`
+    if (alias) then
+      str ..= `AS ${alias}`
+    else
+      return AtlasLibrary.ORM.Helpers.raw(str)
+    end
+
+    return AtlasLibrary.ORM.Helpers.construct(str)
+  end
+
+  static max(fields, alias)
+    local str = `MAX(${fields})`
+    if (alias) then
+      str ..= `AS ${alias}`
+    else
+      return AtlasLibrary.ORM.Helpers.raw(str)
+    end
+
+    return AtlasLibrary.ORM.Helpers.construct(str)
+  end
+
+  static between(low, high)
+    return AtlasLibrary.ORM.Helpers.construct(`BETWEEN ${low} AND ${high}`)
+  end
+
+  static isNull()
+    return AtlasLibrary.ORM.Helpers.construct("IS NULL")
+  end
+
+  static sid64(ply)
+    if (!IsValid(ply)) then return end -- rip
+
+    return AtlasLibrary.ORM.Helpers.raw(ply:SteamID64())
+  end
+
+  static inArray(array, forceString)
+    local str = ""
+    local length = #array
+    for i, v in ipairs(array) do
+      local isNumber = tonumber(v)
+      if (isNumber and !forceString) then
+        str ..= v
+      else
+        local escape = v:Replace("\"", "\\")
+        str ..= `"${escape}"`
+      end
+
+      if (i != length) then
+        str ..= ", "
+      end
+    end
+  
+    return AtlasLibrary.ORM.Helpers.raw(`IN (${str})`)
+  end
+
+  static upsertDifference(tbl)
+    return {
+      raw = true,
+      upsertDifference = true,
+      data = tbl
+    }
+  end
+
+  __type() return "AtlasLibrary.ORM.Helpers" end
+end
+
+--[[ SQL query builder
+Example:
+
+AtlasLibrary.ORM.Builder("xenin_framework AS f")
+  :debugName("Testing")
+  :select("id", "name", Builder.raw("COUNT(f.name) AS names"), "f.name", "f.sid64", "f.age")
+  :where("f.id", "!=", 1)
+  :where("f.age", ">=", 18)
+  :join("users AS u", "f.age", "=", "u.age")
+  :fullJoin("admins AS a", "f.age", "=", "a.age")
+  :orderBy("id", Builder.ASC)
+  :orderBy("age", Builder.DESC)
+  :groupBy("name")
+  :limit(5)
+  :run():next((result) =>
+    PrintTable(result)
+  end, (err) =>
+    Error("SQL error: " .. err)
+  end)
+
+-- Notice that debugName is not *required*, but it helps debugging if you have AtlasLibrary.Debug set to true.
+-- :run() returns a Promise, so if you want you can use :next() after the run instead of the callback provided in run().
+-- You should use :next() if you're doing multiple queries at the same time for sure
+--]]
+
+public class AtlasLibrary.ORM.Builder extends AtlasLibrary.ORM.Helpers
+  operations = {
+      SELECT = 1,
+      INSERT = 2,
+      UPDATE = 3,
+      DELETE = 4
+  }
+  keywords = {
+    AS = 1
+  }
+
+  constructor(tblName, conn = XeninDB, returnId, transaction)
+    super()
+
+    self.tblName = tblName
+    self.returnId = returnId
+    self.transaction = transaction
+    local split = string.Explode(" ", tblName)
+    self.aliasTblName = split
+    self.conn = conn
+  end
+
+  construct(tbl)
+    if (!istable(tbl)) then return tbl end
+    if (tbl.raw) then return tbl end
+
+    if (self:isMySQL()) then
+      return AtlasLibrary.ORM.Builder.raw(tbl.mysql)
+    else
+      return AtlasLibrary.ORM.Builder.raw(tbl.sqlite)
+    end
+  end
+  
+  getTableName()
+    if (istable(self.aliasTblName)) then
+      return self.aliasTblName[1]
+    elseif (isstring(self.aliasTblName)) then
+      return self.aliasTblName
+    end
+
+    return self.tblName
+  end
+
+  unpackString(str)
+    if (istable(str)) then return str end
+
+    local split = string.Explode(" ", str)
+    if (#split <= 1) then return str end
+
+    return split
+  end
+
+  getEnclosedTableName()
+    return self:encloseValue(self:unpackString(self.aliasTblName or self.tblName))
+  end
+
+  encloseValue(str)
+    if (type(str) == "string") then
+      return `\`${str}\``
+    elseif (type(str) == "table") then
+      local output = ""
+      for i, v in ipairs(str) do
+        local upperStr = v:upper()
+        local isKeyword = self.keywords[upperStr]
+ 
+        if (isKeyword) then
+          output ..= ` ${v} `
+        else
+          output ..= `\`${v}\``
+        end
+      end
+
+      return output
+    elseif (type(str) == "boolean") then
+      return str and 1 or 0
+    end
+
+    return str
+  end
+
+  escape(str)
+    if (isbool(str)) then
+      str = str and 1 or 0
+    end
+
+    return self.conn.SQLStr(str)
+  end
+
+  select(...)
+    self.type = self.operations.SELECT
+    self.columns = {}
+
+    for i, v in ipairs({ ... }) do
+      if (istable(v)) then
+        if (v.raw) then
+          table.insert(self.columns, v.raw)
+        elseif (v.mysql) then
+          local str = self:isMySQL() and "mysql" or "sqlite"
+
+          table.insert(self.columns, v[str])
+        end
+      else
+        local split = string.Explode(".", v)
+        local enclosed = AtlasLibrary:Map(split, (x) =>
+          return self:encloseValue(self:unpackString(x)) 
+        end)
+
+        table.insert(self.columns, string.Implode(".", enclosed))
+      end
+    end
+
+    return self
+  end
+
+  indent(num = 1)
+    local output = ""
+    for i = 1, num do
+      output ..= "  "
+    end 
+
+    return output
+  end
+
+  getColumns(indentAmt = 1)
+    if (!self.columns or #self.columns == 0) then return "*" end
+
+    local output = "\n" .. self:indent(indentAmt)
+    output ..= string.Implode(",\n" .. self:indent(indentAmt), self.columns)
+
+    return output
+  end
+
+  getJoins()
+    if (!self.joins) then return "" end
+
+    local output = "\n"
+    local size = #self.joins
+    for i, v in ipairs(self.joins) do
+        local leftSplit = string.Explode(".", v.leftCol)
+        local leftEnclosed = AtlasLibrary:Map(leftSplit, (x) =>
+          return self:encloseValue(self:unpackString(x)) 
+        end)
+        local rightSplit = string.Explode(".", v.rightCol)
+        local rightEnclosed = AtlasLibrary:Map(rightSplit, (x) =>
+          return self:encloseValue(self:unpackString(x)) 
+        end)
+
+      output ..= `${v.joinType} ` .. self:encloseValue(self:unpackString(v.tbl))
+        .. " ON " .. string.Implode(".", leftEnclosed) .. ` ${v.operator} ` .. string.Implode(".", rightEnclosed)
+        .. (i == size and "" or "\n")
+    end
+
+    return output
+  end
+
+  orderBy(str, order)
+    self.orders = self.orders or {}
+
+    table.insert(self.orders, {
+      str = str,
+      order = order
+    })
+
+    return self
+  end
+
+  getOrders()
+    if (!self.orders) then return "" end
+
+    local output = "ORDER BY"
+    local size = #self.orders
+    for i, v in ipairs(self.orders) do
+      local str = v.str
+      if (!istable(str)) then
+        local split = string.Explode(".", str)
+        local enclosed = AtlasLibrary:Map(split, (x) =>
+          return self:encloseValue(self:unpackString(x)) 
+        end)
+
+        str = string.Implode(".", enclosed)
+      end
+
+      local value = istable(str) and str.raw or str
+      output ..= "\n"
+        .. self:indent(1)
+        .. value
+        .. (v.order and ` ${v.order}` or "")
+        .. (i == size and "" or ",")
+    end
+    
+    return output
+  end
+
+  join(tbl, leftCol, operator, rightCol, joinType = "INNER JOIN")
+    self.joins = self.joins or {}
+
+    table.insert(self.joins, {
+      joinType = joinType,
+      tbl = tbl,
+      leftCol = leftCol,
+      operator = operator,
+      rightCol = rightCol
+    })
+
+    return self
+  end
+
+  leftJoin(tbl, leftCol, operator, rightCol)
+    return self:join(tbl, leftCol, operator, rightCol, "LEFT JOIN")
+  end
+
+  rightJoin(tbl, leftCol, operator, rightCol)
+    return self:join(tbl, leftCol, operator, rightCol, "RIGHT JOIN")
+  end
+
+  fullJoin(tbl, leftCol, operator, rightCol)
+    return self:join(tbl, leftCol, operator, rightCol, "JOIN")
+  end
+
+  getWheres()
+    if (!self.wheres) then return "" end
+
+    local output = "\nWHERE\n"
+    local size = #self.wheres
+    for i, v in ipairs(self.wheres) do
+      local rightCol = v.rightCol
+      if (istable(rightCol)) then
+        if (!rightCol.raw) then
+          rightCol = self:construct(rightCol)
+        end
+
+        rightCol = rightCol.raw
+      else
+        rightCol = self:escape(rightCol)
+      end
+
+      local leftCol = v.leftCol
+      if (istable(leftCol)) then
+        if (leftCol.raw) then
+          leftCol = leftCol.value
+        else
+          leftCol = self:escape(leftCol.value)
+        end
+      else
+        local split = string.Explode(".", leftCol)
+        local columns = AtlasLibrary:Map(split, (x) =>
+          return self:encloseValue(self:unpackString(x)) 
+        end)
+        leftCol = string.Implode(".", columns)
+      end
+
+      output ..= self:indent(1)
+        .. leftCol
+        .. ` ${v.operator} ` .. rightCol
+        .. (i == size and "" or " AND") .. "\n"
+    end
+
+    return output
+  end
+
+  where(leftCol, operator, rightCol)
+    self.wheres = self.wheres or {}
+
+    table.insert(self.wheres, {
+      leftCol = leftCol,
+      operator = operator,
+      rightCol = rightCol
+    })
+
+    return self
+  end
+
+  union(obj)
+    self.unions = self.unions or {}
+
+    table.insert(self.unions, obj)
+
+    return self
+  end
+
+  getUnions()
+    -- TODO: implement
+  end
+
+  groupBy(name)
+    self._groupBy = name
+
+    return self
+  end
+
+  getGroupBy()
+    if (!self._groupBy) then return "" end
+
+    return "GROUP BY " .. self:encloseValue(self._groupBy) .. "\n"
+  end
+
+  rawSQL(sql)
+    self._rawSQL = sql
+
+    return self
+  end
+  
+  limit(num)
+    self.limitSet = num
+  
+    return self
+  end
+
+  getLimit()
+    if (!self.limitSet) then return "" end
+
+    return "\nLIMIT " .. self.limitSet
+  end
+
+  offset(num)
+    self.offsetSet = num
+  
+    return self
+  end
+
+  getOffset()
+    if (!self.offsetSet) then return "" end
+
+    return "\nOFFSET " .. self.offsetSet
+  end
+
+  debugName(name)
+    self.debugName = name
+
+    return self
+  end
+
+  run(debug = self.debugName or "No Debug Name")
+    local query = self:toRaw()
+    if (AtlasLibrary.Debug == "extended") then
+      print(query)
+    end
+    
+    return AtlasLibrary:InvokeSQL(self.conn, query, isstring(debug) and debug or self.tblName .. ".operation:" .. (self.type or "RAW"), nil, nil, self.returnId, self.transaction)
+  end
+
+  printSQL()
+    local sql = self:toRaw()
+    local lines = sql:Split("\n")
+    local length = #lines
+    for i, v in ipairs(lines) do
+      continueif v == ""
+
+      print(v)
+    end
+
+    return self
+  end
+
+  getOne()
+    self:limit(1)
+    local p = AtlasLibrary.Promises.new()
+
+    self:run()
+      :next((results) =>
+        if (!istable(results)) then return p:resolve() end
+        if (!results[1]) then return p:resolve() end
+
+        p:resolve(results[1])
+      end, (err) =>
+        p:reject(err)
+      end)
+
+    return p
+  end
+
+  ignore()
+    self._ignore = true
+
+    return self
+  end
+
+  insert(input, upsert, keys = {})
+    self.type = self.operations.INSERT
+    self.isUpsert = upsert
+    self.insertColumns = {}
+    self.keysMap = {}
+    for i, v in ipairs(keys) do
+      self.keysMap[v] = true
+    end
+ 
+    -- Fix for backwards compatibility
+    local seq = table.IsSequential(input)
+    if (!seq) then
+      input = { input }
+    end
+
+    for insertId, insert in ipairs(input) do
+      local temp = {}
+
+      for i, v of insert do
+        if (istable(v)) then
+          if (v.upsertDifference and upsert) then
+            local tbl = v.data
+            for i, v in pairs(tbl) do
+              if (v.raw) then
+                tbl[i] = v.raw
+              else
+                tbl[i] = self:escape(v)
+              end
+            end
+
+            temp[i] = tbl
+          elseif (v.raw) then
+            temp[i] = v.raw
+          elseif (v.mysql or v.sqlite) then
+            local conn = self:isMySQL() and "mysql" or "sqlite"
+            temp[i] = v[conn]
+          elseif (v.left or v.right) then
+            temp[i] = v.right
+          else
+            Error(`Unable to insert ${i} - ${v}`)
+          end
+        else
+          temp[i] = self:escape(v)
+        end
+      end
+      
+      table.insert(self.insertColumns, temp)
+    end
+
+
+    return self
+  end
+
+  upsert(input, keys)
+    if (self:isMySQL()) then
+      return self:insert(input, AtlasLibrary.ORM.Builder.UPSERT, keys)
+    else
+      self:insert(input, true)
+      self.replaceColumns = {}
+      self.replaceKeys = {}
+
+      local map = {}
+      if (!keys) then
+        ErrorNoHaltWithStack("[Atlas Library - ORM] Trying to use QueryBuilder::upsert without specifying keys. This technically might work, but this WILL cause issues with SQLite")
+      end
+
+      for i, v in ipairs(keys or {}) do
+        map[v] = true
+
+        local split = string.Explode(".", v)
+        local enclosed = AtlasLibrary:Map(split, (x) =>
+          return self:encloseValue(self:unpackString(x))
+        end)
+
+        table.insert(self.replaceKeys, table.concat(enclosed, "."))
+      end
+
+      for i, v of input do
+        continueif map[i]
+
+        if (istable(v) and v.raw) then
+          if (v.upsertDifference) then
+            local tbl = v.data
+            for i, v in pairs(tbl) do
+              if (!istable(v)) then
+                tbl[i] = v
+              elseif (v.update) then
+                tbl[i] = v.update
+              elseif (v.raw) then
+                tbl[i] = v.raw
+              else
+                tbl[i] = self:escape(v)
+              end
+            end
+
+            self.replaceColumns[i] = tbl
+          else
+            self.replaceColumns[i] = v.raw
+          end
+        else
+          self.replaceColumns[i] = self:escape(v)
+        end
+      end
+
+      return self
+    end
+  end
+
+  getOnConflict()
+    if (!self.replaceColumns) then return "" end
+
+    local output = ""
+    
+    local size = table.Count(self.replaceColumns) - 1
+     -- If keys are 0, then we don't have anything to update.. yeh
+    if (size + 1 == 0) then
+      return ""
+    end
+    local noLoops = 0
+    for i, v of self.replaceColumns do
+      local isLast = noLoops == size
+      local str = v
+      if (istable(v)) then
+        if (v.update) then
+          str = v.update
+        elseif (v.raw) then
+          str = v.raw
+        else
+          local conn = self:isMySQL() and "mysql" or "sqlite"
+          str = v[conn]
+        end
+      end
+      output ..= "\n" .. self:indent(2) 
+        .. i .. " = " .. tostring(str)
+        .. (isLast and "" or ", ")
+
+      noLoops++
+    end
+
+    local keys = table.concat(self.replaceKeys, ", ")
+
+    return "\nON CONFLICT(" .. keys .. ") DO\n" .. self:indent(1) .. "UPDATE SET"
+      .. output
+  end
+
+  update(input) 
+    self.type = self.operations.UPDATE
+    self.updateColumns = {}
+    
+    for i, v of input do
+      if (istable(v)) then
+        self.updateColumns[i] = v.raw or v
+      else
+        self.updateColumns[i] = self:escape(v)
+      end
+    end
+
+    return self
+  end
+
+  delete()
+    self.type = self.operations.DELETE
+
+    return self
+  end
+
+  toRaw()
+    if (self._rawSQL) then
+      return self._rawSQL
+    end
+
+    local ops = self.operations
+
+    if (self.type == ops.SELECT) then
+      return "SELECT "
+        .. self:getColumns()
+        .. "\nFROM " .. self:getEnclosedTableName()
+        .. self:getJoins()
+        .. self:getWheres()
+        .. self:getGroupBy()
+        .. self:getOrders()
+        .. self:getLimit()
+        .. self:getOffset()
+    elseif (self.type == ops.INSERT) then
+      return self:getInsert() .. self:getEnclosedTableName() 
+        .. " (" .. self:getInsertColumns() .. ")\n"
+        .. "VALUES " .. self:getValues()
+        .. self:getUpsert()
+        .. self:getOnConflict()
+    elseif (self.type == ops.UPDATE) then
+      return "UPDATE " .. self:getEnclosedTableName()
+        .. "\n" .. self:indent(1) .. "SET " .. self:getUpdateStatements()
+        .. self:getWheres()
+        .. self:getOffset()
+        .. self:getLimit()
+    elseif (self.type == ops.DELETE) then
+      return "DELETE FROM " .. self:getEnclosedTableName()
+        .. self:getWheres()
+        .. self:getLimit()
+    end
+  end
+
+  getValues()
+    if (!self.insertColumns or table.IsEmpty(self.insertColumns)) then return "" end
+    if (!self.insertColumns[1]) then return "" end
+
+    local output = ""
+
+    local inserts = #self.insertColumns
+    local size = table.Count(self.insertColumns[1]) - 1
+    for insertId, insert in ipairs(self.insertColumns) do
+      local noLoops = 0
+      local insertStr = ""
+      for i, v of insert do
+        local isLast = noLoops == size
+        local isTable = istable(v)
+        local str = v
+        if (istable(v)) then
+          if (v.insert) then
+            str = v.insert
+          elseif (v.raw) then
+            str = v.raw
+          else
+            local conn = self:isMySQL() and "mysql" or "sqlite"
+            str = v[conn]
+          end
+        end
+        insertStr ..= str .. (isLast and "" or ", ")
+
+        noLoops++
+      end
+      insertStr = `(${insertStr})`
+      if (insertId != inserts) then
+        insertStr ..= ", "
+      end
+
+      output ..= insertStr
+    end
+
+    return output
+  end
+
+  getInsert()
+    local str = "INSERT"
+
+    if (self:isMySQL()) then
+      str ..= " IGNORE INTO "
+    else
+      str ..= " OR IGNORE INTO "
+    end
+
+    return str
+  end
+  
+  getInsertColumns()
+    if (!self.insertColumns or table.IsEmpty(self.insertColumns)) then return "" end
+
+    local tbl = self.insertColumns[1]
+    stopif !tbl
+
+    local output = ""
+    local size = table.Count(tbl) - 1
+    local noLoops = 0
+    for i, v of tbl do
+      local isLast = noLoops == size
+      output ..= i .. (isLast and "" or ", ")
+
+      noLoops++
+    end
+
+    return output
+  end
+
+  getUpdateStatements()
+    if (!self.updateColumns or table.IsEmpty(self.updateColumns)) then return "" end
+
+    local size = table.Count(self.updateColumns) - 1
+    local output = {}
+    for i, v of self.updateColumns do
+      local str = v
+      if (istable(v)) then
+        if (v.update) then
+          str = v.update
+        elseif (v.raw) then
+          str = v.raw
+        else
+          local conn = self:isMySQL() and "mysql" or "sqlite"
+          str = v[conn]
+        end
+      end
+      table.insert(output, "\n" .. self:indent(2)
+        .. i .. " = " .. tostring(str))
+    end
+
+    return table.concat(output, ", ")
+  end
+
+  isMySQL()
+    return self.conn.isMySQL()
+  end
+
+  getUpsert()
+    if (!self.isUpsert) then return "" end
+    if (!self:isMySQL()) then return "" end
+
+    local maps = self.keysMap
+    -- Makes upsert work for 
+    if (table.Count(maps) == table.Count(self.insertColumns[1])) then
+      maps = {}
+    end
+    local output = {}
+    for i, v of self.insertColumns[1] do
+      continueif maps[i]
+
+      local str = v
+      if (istable(v)) then
+        if (v.update) then
+          str = v.update
+        elseif (v.raw) then
+          str = v.raw
+        else
+          local conn = self:isMySQL() and "mysql" or "sqlite"
+          str = v[conn]
+        end
+      end
+      table.insert(output, "\n" .. self:indent(2)
+        .. i .. " = " .. tostring(str))
+    end
+
+    return "\nON DUPLICATE KEY\n" .. self:indent(1) .. "UPDATE"
+      .. table.concat(output, ", ")
+  end
+
+  __type() return "AtlasLibrary.ORM.Builder" end
+end

@@ -1,0 +1,21 @@
+-- The default drivers class is a MySQL driver without the queryOrder
+
+class Driver
+  static NAME = "name"
+  static UNSIGNED = "unsigned"
+  static TYPE = "type"
+  static LENGTH = "length"
+  static PRIMARY = "primary"
+  static FOREIGN = "foreign"
+  static INCREMENTS = "increments"
+  static NULLABLE = "nullable"
+  static ONUPDATE = "onUpdate"
+
+  static autoIncrement()
+    return " AUTO_INCREMENT"
+  end
+
+  __type() return "AtlasLibrary.ORM.Driver" end
+end
+
+AtlasLibrary.ORM.Driver = Driver

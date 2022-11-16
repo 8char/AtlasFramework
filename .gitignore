@@ -42,4 +42,3 @@ luac.out
 /lua
 *.lua
 addon.json
-transpile.bat
