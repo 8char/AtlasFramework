@@ -1,0 +1,5 @@
+return {
+    name = "Atlas Library Core",
+    logLevel = "TRACE",
+    deps = {},
+}
