@@ -30,5 +30,28 @@
         <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
         <!-- docsify-themeable (latest v0.x.x) -->
         <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
+        <script>
+            Prism.languages.lua = {
+              'comment': /^#!.+|--(?:\[(=*)\[[\s\S]*?\]\1\]|.*)/m,
+              // \z may be used to skip the following space
+              'string': {
+                pattern: /(["'])(?:(?!\1)[^\\\r\n]|\\z(?:\r\n|\s)|\\(?:\r\n|[\s\S]))*\1|\[(=*)\[[\s\S]*?\]\2\]/,
+                greedy: true
+              },
+              'number': /\b0x[a-f\d]+\.?[a-f\d]*(?:p[+-]?\d+)?\b|\b\d+(?:\.\B|\.?\d*(?:e[+-]?\d+)?\b)|\B\.\d+(?:e[+-]?\d+)?\b/i,
+              'keyword': /\b(?:and|break|do|else|elseif|end|false|for|function|goto|if|in|local|nil|not|or|repeat|return|then|true|until|while|class|extends|stopif|continueif|breakif|static)\b/,
+              'function': /(?!\d)\w+(?=\s*(?:[({]))/,
+              'operator': [
+                /[-+*%^&|#]|\/\/?|<[<=]?|>[>=]?|[!=]=|[=~]=?/,
+                {
+                  // Match ".." but don't break "..."
+                  pattern: /(^|[^.])\.\.(?!\.)/,
+                  lookbehind: true
+                }
+              ],
+              'punctuation': /[\[\](){},;]|\.+|:+/
+            };
+          </script>
+        
     </body>
 </html>

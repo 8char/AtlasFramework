@@ -51,6 +51,17 @@ server {
   background-color: #03a9f4 !important;
 }
 
+internal {
+    display: inline-block;
+    text-transform: uppercase;
+    border-radius: var(--border-radius-m);
+    padding: 0 0.4rem 0 0.4rem;
+    color: #6b6b6b;
+    font-size: var(--font-size-s);
+    transform: translateY(-5px);
+    background-color: #ececec !important;
+  }
+
 shared {
   display: inline-block;
   text-transform: uppercase;
@@ -397,15 +408,15 @@ deprecated {
   /* Tables */
   --table-body-border-color           : ;
   --table-body-border-width           : ;
-  --table-cell-border-color           : ;
+  --table-cell-border-color           : #CCC;
   --table-cell-border-width           : ;
   --table-cell-padding                : 0.75em 0.5em;
-  --table-head-background             : ;
+  --table-head-background             : #CCC;
   --table-head-border-color           : var(--table-cell-border-color);
   --table-head-border-width           : ;
   --table-head-font-weight            : var(--strong-font-weight);
   --table-row-even-background         : ;
-  --table-row-odd-background          : var(--mono-tint3);
+  --table-row-odd-background          : ;
 }
 
 .markdown-section h1 {
