@@ -208,7 +208,7 @@ end
 
 if !AtlasUI.__AddedPanelFunctions then
 	local PNL = FindMetaTable("Panel")
-	local Old_Remove = Old_Remove or PNL.Remove
+	local Old_Remove = PNL.Remove
 
 	function PNL:Remove()
 		for k, v in pairs( self.hooks or {} ) do
@@ -258,7 +258,7 @@ if !AtlasUI.__AddedPanelFunctions then
 	end
 
 	function PNL:LerpAlpha(alpha, time, callback)
-		callback = callback or function() end
+		local callback = callback or function(_) end
 
 		self.Alpha = self.Alpha or 0
 
@@ -278,12 +278,12 @@ if !AtlasUI.__AddedPanelFunctions then
 	AtlasUI.__AddedPanelFunctions = true
 end
 
-local matLoading = Material("atlas/loading.png", "smooth")
-function AtlasUI:DrawLoadingCircle(x, y, size, col)
-  surface.SetMaterial(matLoading)
-  surface.SetDrawColor(col or ColorAlpha(AtlasUI.Theme.Accent, 100))
-  AtlasUI:DrawRotatedTexture(x, y, size, size, ((ct or CurTime()) % 360) * -100)
-end
+-- local matLoading = Material("atlas/loading.png", "smooth")
+-- function AtlasUI:DrawLoadingCircle(x, y, size, col)
+--   surface.SetMaterial(matLoading)
+--   surface.SetDrawColor(col or ColorAlpha(AtlasUI.Theme.Accent, 100))
+--   AtlasUI:DrawRotatedTexture(x, y, size, size, ((ct or CurTime()) % 360) * -100)
+-- end
 -- MULTILINE SHIT
 local function toLines(text, font, mWidth)
 	surface.SetFont(font)
@@ -704,7 +704,7 @@ function AtlasUI:DrawIconRotated(x, y, w, h, rotation, pnl, col, loadCol)
 		surface.SetMaterial(pnl.Icon)
 		surface.SetDrawColor(col)
 		AtlasUI:DrawRotatedTexture(x, y, w, h, rotation)
-	elseif (pnl.Icon != nil) then
+	elseif (pnl.Icon ~= nil) then
 		AtlasUI:DrawLoadingCircle(h, h, h, loadCol)
   end
 end

@@ -36,7 +36,7 @@ function AtlasLoader:FindFilesRecursive(dir, filter, path, prefix)
         local dirFiles = self:FindFilesRecursive(dir .. "/" .. sub_dir, filter, path, sub_dir .. "/" )
         table.Add(files, dirFiles)
     end
-    if prefix != "" then
+    if prefix ~= "" then
         for i, v in ipairs(files) do
             files[i] = prefix .. v
         end
@@ -69,7 +69,7 @@ function AtlasLoader:LoadModule(info,force_env)
     -- sh_init.lua - loads first
     local shFile, _ = file.Find(info.dir .. "sh_init.lua", "LUA")
 
-    if #shFile != 0 then
+    if #shFile ~= 0 then
         filesToLoad[#filesToLoad + 1] = info.dir .. shFile[1]
     end
 
@@ -81,7 +81,7 @@ function AtlasLoader:LoadModule(info,force_env)
     if CLIENT then
         local clFile, _ = file.Find(info.dir .. "cl_init.lua", "LUA")
 
-        if #clFile != 0 then
+        if #clFile ~= 0 then
             filesToLoad[#filesToLoad + 1] = info.dir .. clFile[1]
         end
 
@@ -92,7 +92,7 @@ function AtlasLoader:LoadModule(info,force_env)
     else
         local svFile, _ = file.Find(info.dir .. "sv_init.lua", "LUA")
 
-        if #svFile != 0 then
+        if #svFile ~= 0 then
             filesToLoad[#filesToLoad + 1] = info.dir .. svFile[1]
         end
 
@@ -147,7 +147,6 @@ function AtlasLoader:LoadModule(info,force_env)
     return not didError
 end
 
-
 --- Loads all Modules
 -- Loading order is based on their info.lua depencies.
 function AtlasLoader:LoadModules()
@@ -188,12 +187,12 @@ function AtlasLoader:LoadModules()
         local info = include(infoPath) or {}
 
         -- Verify info
-        if info.name == nil or type(info.name) != "string" or info.name == "" then
+        if info.name == nil or type(info.name) ~= "string" or info.name == "" then
             warn("Module:" .. mod.name .. " does not have a name, defaulting to folder name")
             info.name = mod.name
         end
 
-        if info.logLevel == nil or type(info.logLevel) != "string" then
+        if info.logLevel == nil or type(info.logLevel) ~= "string" then
             warn("No Loglevel was given or was of wrong type, defaulting to info")
             info.logLevel = self.LOG_LEVELS.INFO
         else
@@ -207,7 +206,7 @@ function AtlasLoader:LoadModules()
             end
         end
 
-        if info.deps == nil or type(info.deps) != "table" then
+        if info.deps == nil or type(info.deps) ~= "table" then
             print("No Depencies were given, defaulting to none")
             info.deps = {}
         end
