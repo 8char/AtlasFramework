@@ -192,11 +192,11 @@ function AtlasLoader:LoadModules()
             info.name = mod.name
         end
 
-        if info.logLevel == nil or type(info.logLevel) ~= "string" then
+        if info.logLevel == nil or type(info.logLevel) ~= "number" then
             warn("No Loglevel was given or was of wrong type, defaulting to info")
             info.logLevel = self.LOG_LEVELS.INFO
         else
-            local level = self.LOG_LEVELS[string.Trim(string.upper(info.logLevel))]
+            local level = info.logLevel
 
             if level == nil then
                 warn("Unknown Loglevel " .. info.logLevel .. " defaulting to info")

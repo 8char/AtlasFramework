@@ -1,5 +1,7 @@
+local LOG_LEVELS = AtlasLoader.LOG_LEVELS
+
 return {
     name = "AtlasLibrary",
-    logLevel = "TRACE",
+    logLevel = LOG_LEVELS.TRACE,
     deps = {},
 }
