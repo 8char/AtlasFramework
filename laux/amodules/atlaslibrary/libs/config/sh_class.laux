@@ -38,6 +38,7 @@ class Config
   end
 
   loadConfig()
+    -- TODO: FIX THIS SO IT LOADS PROPERLY WITH NEW LIB
     AtlasUI.ORM.DB = AtlasUI.ORM.ORM("atlasui/server/migrations/")
     -- Give it 3 seconds, hack but works
 

@@ -1,5 +1,23 @@
  
 local blur = Material("pp/blurscreen")
+
+function AtlasUI:CreateFont(name, size, weight, mergeTbl)
+	local tbl = {
+		font = "Montserrat Medium",
+		-- Changing font... to match the old look we had to increase size by two
+		size = size + 2,
+		weight = weight or 500,
+		extended = true
+	}
+
+	if (mergeTbl) then
+		table.Merge(tbl, mergeTbl)
+	end
+
+	surface.CreateFont(name, tbl)
+end
+
+
 function AtlasUI:DrawBlur(panel, amount)
 	local x, y = panel:LocalToScreen(0, 0)
 	local scrW, scrH = ScrW(), ScrH()
