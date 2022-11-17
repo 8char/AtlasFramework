@@ -1,7 +1,9 @@
 if SERVER then
     include ("AtlasLoader/core/shared.lua")
     AddCSLuaFile("AtlasLoader/core/shared.lua")
-else -- Client
+end
+
+if CLIENT then
     include("AtlasLoader/core/shared.lua")
 end
 
