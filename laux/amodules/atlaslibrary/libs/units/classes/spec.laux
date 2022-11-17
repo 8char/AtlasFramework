@@ -1,0 +1,9 @@
+public class AtlasUI.Units.Spec
+  constructor(name, func)
+    self.name = name
+    self.func = func
+  end
+
+  getName() return self.name end
+  getFunc() return self.func end
+end

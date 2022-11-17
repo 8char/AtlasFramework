@@ -1,0 +1,49 @@
+class NetworkClient extends AtlasUI.Network
+  constructor(...)
+    super(...)
+
+    self:setPrefix("Atlas.Players.")
+
+    self:receiver("notification", self.receiveNotification)
+    self:receiver("notifications", self.receiveNotifications)
+    self:receiver("readNotifications", self.receiveReadNotifications)
+  end
+
+  receiveNotification(ply)
+    local noti = AtlasUI.Players.NetworkHelper.receiveNotification()
+    
+    local str = noti.content:Split("\n")[1]
+    local len = math.max(4, #str * 0.065)
+    AtlasUI:Notify(str, NOTIFY_HINT, len)
+  end
+
+  receiveNotifications(ply)
+    local amt = net.ReadUInt(8)
+    local tbl = {}
+    for i = 1, amt do
+      table.insert(tbl, AtlasUI.Players.NetworkHelper.receiveNotification())
+    end
+
+    hook.Run("AtlasUI.Players.GotNotifications", tbl)
+  end
+
+  sendReceiveNotifications()
+    self:send("notifications", () -> end)
+  end
+
+  sendReadNotifications(ids)
+    self:send("readNotifications", () ->
+      net.WriteUInt(#ids, 8)
+      for i = 1, #ids do
+        net.WriteUInt(ids[i], 32)
+      end
+    end)
+  end
+
+  receiveReadNotifications(ply)
+    -- Doesn't do anything for now
+    -- error("receiveReadNotifications() not implemented")
+  end
+end
+
+AtlasUI.Players.Network = NetworkClient()

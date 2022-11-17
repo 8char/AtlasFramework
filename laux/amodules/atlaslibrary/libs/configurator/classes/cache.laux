@@ -1,0 +1,11 @@
+public class AtlasUI.Configurator.Cache
+  cache = {}
+
+  get(id)
+    return self.cache[id]
+  end
+
+  set(id, val)
+    self.cache[id] = val
+  end
+end

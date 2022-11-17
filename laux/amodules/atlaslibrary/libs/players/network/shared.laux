@@ -1,0 +1,53 @@
+public class AtlasUI.Players.NetworkHelper
+  static sendNotification(notification)
+    local {
+      scriptId, 
+      type, 
+      content,
+      createdAt,
+      readAt,
+      data,
+      id
+    } = notification
+
+    net.WriteString(scriptId)
+    net.WriteString(type)
+    net.WriteString(content)
+    net.WriteString(createdAt)
+    net.WriteBool(istable(data))
+    if (istable(data)) then
+      net.WriteTable(data)
+    end
+    net.WriteBool(readAt != nil)
+    if (readAt) then
+      net.WriteString(readAt)
+    end
+    net.WriteBool(id != nil)
+    if (id) then
+      net.WriteUInt(id, 32)
+    end    
+  end
+
+  static receiveNotification()
+    local notification = {
+      scriptId = net.ReadString(),
+      type = net.ReadString(),
+      content = net.ReadString(),
+      createdAt = net.ReadString()
+    }
+    local hasData = net.ReadBool()
+    if (hasData) then
+      notification.data = net.ReadTable()
+    end
+    local hasRead = net.ReadBool()
+    if (hasRead) then
+      notification.readAt = net.ReadString()
+    end
+    local hasId = net.ReadBool()
+    if (hasId) then
+      notification.id = net.ReadUInt(32)
+    end    
+
+    return notification
+  end
+end

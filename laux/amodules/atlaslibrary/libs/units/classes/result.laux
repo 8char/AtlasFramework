@@ -1,0 +1,30 @@
+public class AtlasUI.Units.Result
+  constructor(name, success, returnVal)
+    self.isResult = true
+
+    self.name = name
+    self.success = success
+    self.returnVal = returnVal
+  end
+
+  setError(err) self.returnVal = err end
+  setSuccess(bool) self.success = bool end
+  getReturn() return self.returnVal end
+  isSuccess() return self.success end
+  getMessagePrint()
+    local prefix = self.success and "+" or "-"
+    local color = self.success and AtlasUI.Theme.Green or AtlasUI.Theme.Red
+    local str = `${prefix} ${self.name}`
+    if (!self.success) then
+      str ..= ` ** FAILED **`
+      if (isstring(self.returnVal)) then
+        -- Oof the stack traceback
+        local errMsg = self.returnVal:Split("stack traceback")
+        errMsg = errMsg[1]:sub(1, #errMsg[1] - 1)
+        str ..= `\nError was: ${errMsg}`
+      end
+    end
+
+    return { color, str }
+  end
+end

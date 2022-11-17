@@ -1,0 +1,205 @@
+public class AtlasUI.Configurator.Entity
+  columns = {}
+  _get _set databaseEntity
+
+  getColumns()
+    return self.columns
+  end
+
+  getColumn(id)
+    for i, v in ipairs(self.columns) do
+      continueif v.id != id
+
+      return v, i
+    end
+  end
+  
+  addColumn(id, data)
+    table.insert(self.columns, {
+      id = id,
+      ...data
+    })
+
+    local name = id:sub(1, 1):upper() .. id:sub(2)
+    self[`set${name}`] = (val, deserialize) ->
+      if (deserialize) then
+        if (data.csv and isstring(val)) then
+          val = string.Explode(",", val)
+        elseif (isstring(val) and (data.type == "list" or data.json)) then
+          val = util.JSONToTable(val)
+        end
+      end 
+
+      self[id] = val
+
+      return self
+    end
+    self[`set${id}`] = (...) -> self[`set${name}`](self, ...) end
+    self[`get${name}`] = (serialize) -> 
+      if (serialize) then
+        if (data.csv and istable(self[id])) then
+          return table.concat(self[id], ",")
+        elseif (istable(self[id])) then
+          return util.TableToJSON(self[id])
+        end
+      end
+
+      return self[id]
+    end
+    self[`get${id}`] = (...) -> return self[`get${name}`](self, ...) end
+  end
+
+  static register(name, entity: AtlasUI.Configurator.Entity)
+    AtlasUI.Configurator.Entities:register(name, entity)
+  end
+
+  getSQLTableName()
+    local str = self:getDatabaseEntity():lower()
+    str = str:Replace(".", "_")
+
+    return "atlas_configurator_entity_" .. str
+  end
+
+  createSQLTable()
+    local tableName = self:getSQLTableName()
+    AtlasUI.ORM.Table(AtlasDB, tableName, (tbl) =>
+      for i, v in ipairs(self:getColumns()) do
+        local { type, length, primary, null, default } = v
+        local dataType = type == "list" and "text" or type
+        local col = tbl[dataType](tbl, v.id)
+        if (primary) then col:primary() end
+        if (length) then col:length(length) end
+        if (null) then col:nullable() end
+        if (default) then
+          local notExpressions = {
+            integer = true,
+            string = true
+          }
+
+          local isExpression = !notExpressions[type]
+          col:default(default, isExpression) 
+        end
+      end
+    end, () =>
+      self:seed()
+    end)
+  end
+
+  -- Overridden by the entity
+  seedData() end
+
+  seed()
+    local data = self:seedData()
+    stopif !data
+    local name = self:getSQLTableName()
+
+    for i, v in ipairs(data) do
+      AtlasUI.Configurator.ORM:seed(name, v.version, v.code())
+    end
+  end
+
+  onNetworkSend()
+    -- TODO: Optimise sending a bit more
+    local cols = self:getColumns()
+    local size = #cols
+    local tbl = {}
+    for i, v in ipairs(cols) do
+      local { id } = v
+      local val = self[`get${id}`](self, true)
+      continueif !val
+      continueif isstring(val) and val == ""
+
+      tbl[id] = val
+    end
+
+    local size = table.Count(tbl)
+    net.WriteUInt(size, 12)
+    for i, v in pairs(tbl) do
+      net.WriteString(i)
+      AtlasUI.Configurator.Network:write(v)
+    end
+  end
+
+  onNetworkReceive()
+    local cols = self:getColumns()
+    local size = net.ReadUInt(12)
+    for i = 1, size do
+      local id = net.ReadString()
+      local val = AtlasUI.Configurator.Network:read()
+
+      self[`set${id}`](self, val, true)
+    end
+  end
+
+  onSave() end
+  onDelete() end
+  onLoad() end
+
+  validateColumn(id, input)
+    local col = self:getColumn(id)
+    stopif !col
+
+    if (!col.validate) then return true, "No validation" end
+
+    return col.validate(input)
+  end
+
+  shouldAllowNetwork(ply) return true end
+
+  save(admin)
+    self:onSave()
+
+    stopif !admin
+
+    if (CLIENT) then
+      AtlasUI.Configurator.Network:sendSaveEntity(self)
+
+      return
+    end
+
+    AtlasUI.Configurator.ORM:saveEntity(self)
+
+    self:network()
+  end
+
+  network(target)
+    if (!target) then
+      target = {}
+      for i, v in ipairs(player.GetAll()) do
+        continueif !self:shouldAllowNetwork(v)
+
+        table.insert(target, v)
+      end 
+
+      stopif table.IsEmpty(target)
+    end
+
+    AtlasUI.Configurator.Network:sendEntity(target, self)
+  end
+
+  createNewEntity()
+    if (CLIENT) then
+      AtlasUI.Configurator.Network:sendCreateEntity(self)
+
+      return
+    end
+
+    AtlasUI.Configurator.ORM:createEntity(self)
+  end
+
+  delete(admin)
+    self:onDelete()
+
+    stopif !admin
+
+    if (CLIENT) then
+      AtlasUI.Configurator.Network:sendDeleteEntity(self)
+
+      return
+    end
+
+    AtlasUI.Configurator.ORM:deleteEntity(self)
+  end
+
+  isDatabaseEntity() return true end
+end

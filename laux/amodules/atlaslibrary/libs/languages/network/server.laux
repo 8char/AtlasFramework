@@ -1,0 +1,40 @@
+class LanguagesNetwork extends AtlasUI.Network
+  constructor()
+    super()
+
+    self:prepare("AtlasUI.Language")
+  
+    self:receiver("AtlasUI.Language", self.receiveRequestLanguage)
+  end
+
+  receiveRequestLanguage(ply)
+    local addonId = net.ReadString()
+    stopif !isstring(addonId)
+    local inst = AtlasUI.LanguageAddons[addonId]
+    stopif !istable(inst)
+    local lang = net.ReadString()
+    stopif !isstring(lang)
+
+    local function resolve(data)
+      self:sendLanguage(ply, addonId, lang, data)
+    end
+
+    inst:Download(lang):next(resolve,
+      -- If this fails we're fucked.
+      -- It even tries to read a local version locally, so oof.
+      (err) => resolve({ phrases = {} }) 
+    end)
+  end
+
+  sendLanguage(ply, addonId, lang, tbl)
+    self:send("AtlasUI.Language", ply, () ->
+      net.WriteString(addonId)
+      net.WriteString(lang)
+      self:compress(tbl)
+    end)
+  end
+
+  __type() return "AtlasUI.LanguagesNetwork" end
+end
+
+AtlasUI.LanguagesNetwork = LanguagesNetwork()

@@ -1,0 +1,163 @@
+class ORM extends AtlasUI.ORM.ORM
+  constructor()
+    super("atlasui/libs/configurator/migrations/")
+  end
+
+  getScriptSettings(script)
+    return self:orm("atlas_configurator_settings")
+      :select("id", "value", "json")
+      :where("script_id", "=", script)
+      :run()
+  end
+
+  saveSetting(script, id, val)
+    local isJSON
+    local entity
+    if (istable(val)) then
+      isJSON = true
+      val = util.TableToJSON(val)
+    end
+ 
+    return self:orm("atlas_configurator_settings")
+      :upsert({
+        id = id,
+        script_id = script,
+        value = val,
+        json = isJSON or self.b.NULL
+      }, { "id", "script_id" })
+      :run()
+  end
+
+  getSetting(script, id)
+    return self:orm("atlas_configurator_settings")
+      :select()
+      :where("script_id", "=", script)
+      :where("id", "=", id)
+      :run()
+  end
+
+  saveEntity(entity)
+    local tableName = entity:getSQLTableName()
+    local columns = entity:getColumns()
+    local upsertTbl = {}
+    for i, v in ipairs(columns) do          
+      local name = string.Trim(v.id:sub(1, 1):upper() .. v.id:sub(2))
+      local val = entity[`get${name}`](entity, true)
+      if (val == nil) then
+        val = self.b.NULL
+      end
+      if (v.onSave) then
+        val = v:onSave(val)
+      end
+
+      upsertTbl[v.id] = val
+    end
+ 
+    return self:orm(tableName)
+      :upsert(upsertTbl, { "id" })
+      :run()
+  end
+
+  createEntity(entity)
+    local tableName = entity:getSQLTableName()
+    local columns = entity:getColumns()
+    local tbl = {}
+    for i, v in ipairs(columns) do
+      continueif v.type == "increments"
+
+      local val = entity[`get${v.id}`](entity, true)
+      if (val == nil or val == "NULL") then
+        val = isfunction(v.defaultValue) and v:defaultValue() or v.defaultValue
+      end
+      if (val == nil or val == "NULL") then
+        val = self.b.NULL
+      end
+
+      tbl[v.id] = val
+    end
+
+    return self:orm(tableName, true)
+      :insert(tbl)
+      :run()
+  end
+
+  deleteEntity(entity)
+    local tableName = entity:getSQLTableName()
+    local columns = entity:getColumns()
+    local whereTbl = {}
+    for i, v in ipairs(columns) do
+      continueif !v.primary
+
+      local name = string.Trim(v.id:sub(1, 1):upper() .. v.id:sub(2))
+      whereTbl[v.id] = entity[`get${name}`](entity, true)
+    end
+
+    local b = self:orm(tableName)
+      :delete()
+    for i, v in pairs(whereTbl) do
+      b:where(i, "=", v)
+    end
+    
+    return b:run()
+  end
+
+  findEntities(entity, params = {})
+    local tableName = entity:getSQLTableName()
+    local b = self:orm(tableName)
+      :select()
+      
+    for i, v in pairs(params) do
+      b:where(i, "LIKE ", `%${v}%`)
+    end
+
+    return b:run()
+  end
+
+  seed(name, version, code)
+    local sqlStr = istable(code) and code.sql or code
+
+    return self:orm("atlas_library_seeds")
+      :select("version")
+      :where("id", "=", name)
+      :getOne()
+      :next((result) =>
+        if (result) then
+          return AtlasUI.Promises.new():resolve()
+        end
+
+        return AtlasUI:InvokeSQL(AtlasDB, sqlStr, "AtlasUI.Seeding." .. name)
+          :next(() =>
+            if (istable(code)) then
+              code.postSeed()
+            end
+            
+            return self:orm("atlas_library_seeds")
+              :insert({
+                id = name,
+                version = version,
+              })
+              :run()
+          end, (err) =>
+            Error("Failed to create " .. name .. " seed")
+          end)
+      end, (err) =>
+        Error("Failed to create " .. name .. " seed")
+      end)
+  end
+
+  __type() return "AtlasUI.Configurator.ORM" end
+end
+
+hook.Add("Atlas.ConfigLoaded", "AtlasUI.Configurator", function()
+  AtlasUI.Configurator:PrintMessage("Initialising database instance")
+  AtlasUI.Configurator.ORM = ORM()
+
+  timer.Simple(3, () =>
+    AtlasUI.Configurator.ORM.LoadedInsideHook = true
+    AtlasUI.Configurator:PrintMessage("Initialised database instance successfully")
+
+    hook.Run("Atlas.Configurator.InitialisedDatabase")
+  end)
+end)
+
+AtlasUI.Configurator.ORM = ORM()

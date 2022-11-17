@@ -1,0 +1,67 @@
+class NetworkServer extends AtlasUI.Network
+  constructor(...)
+    super(...)
+
+    self:setPrefix("Atlas.Players.")
+
+    self:prepare({
+      "notification",
+      "notifications",
+      "readNotifications"
+    })
+
+    self:receiver("notifications", self.receiveNotifications)
+    self:receiver("readNotifications", self.receiveReadNotifications)
+  end
+
+  receiveNotifications(ply)
+    AtlasUI.Players.Controller:getNotifications(ply)
+      :next((notifications) =>
+        self:send("notifications", ply, () ->
+          local amt = #notifications
+          net.WriteUInt(amt, 8)
+          for i = 1, amt do
+            AtlasUI.Players.NetworkHelper.sendNotification(notifications[i])
+          end
+        end)
+      end)
+  end
+
+  receiveReadNotifications(ply)
+    local sid64 = ply:SteamID64()
+    local amt = net.ReadUInt(8)
+    local ids = {}
+    for i = 1, amt do
+      ids[#ids + 1] = net.ReadUInt(32)
+    end
+
+    AtlasUI.Players.Controller:markNotificationsRead(sid64, ids)
+      :next(() =>
+        self:send("readNotifications", ply, () ->
+          net.WriteBool(true)
+        end)
+      end, (err) =>
+        self:send("readNotifications", ply, () ->
+          net.WriteBool(false)
+        end)
+      end)
+  end
+
+  sendNotification(ply, notification)
+    self:send("notification", ply, () ->
+      AtlasUI.Players.NetworkHelper.sendNotification(notification)
+    end)
+  end
+
+  sendNotifications(ply, notifications)
+    self:send("notifications", ply, () ->
+      local amt = #notifications
+      net.WriteUInt(amt, 8)
+      for i = 1, amt do
+        AtlasUI.Players.NetworkHelper.sendNotification(notifications[i])
+      end
+    end)
+  end
+end
+
+AtlasUI.Players.Network = NetworkServer()

@@ -1,0 +1,70 @@
+public class AtlasUI.Units.Assert
+  constructor(val, args)
+    self.val = val
+    self.args = args
+  end
+
+  isType(name, errMsg)
+    local valType = type(self.val)
+    assert(valType == name, errMsg or `Expected "${self.val}"" type to be "${name}", but it is type "${valType}"`)
+
+    return self
+  end
+
+  isTrue(errMsg)
+    self:isType("boolean")
+    assert(self.val == true, errMsg or "Boolean is not true")
+
+    return self
+  end
+
+  isFalse(errMsg)
+    self:isType("boolean")
+    assert(!self.val, errMsg or "Boolean is not false")
+
+    return self
+  end
+
+  isNil(errMsg)
+    assert(self.val == nil, errMsg or `Excepted nil, got "${self.val}" of type "${type(self.val)}"`)
+
+    return self
+  end
+
+  isNotNil(errMsg)
+    assert(self.val != nil, errMsg or `Expected not nil, but got nil`)
+
+    return self
+  end
+
+  isNull(errMsg)
+    assert(self.val == NULL, errMsg or `Expected NULL, but got "${type(self.val)}"`)
+
+    return self
+  end
+
+  isNotNull(errMsg)
+    assert(self.val != NULL, errMsg or `Expected not NULL, but got NULL"`)
+
+    return self
+  end
+
+  isPlayer()
+    assert(IsValid(self.val), "Player entity is not valid")
+    assert(self.val:IsPlayer(), "This entity is not a player")
+
+    return self
+  end
+
+  shouldEqual(compare, errMsg)
+    assert(self.val == compare, errMsg or `Expected "${self.val}" of type "${type(self.val)}" to equal "${compare}" of type "${type(compare)}", it does not`)
+
+    return self
+  end
+
+  shouldNotEqual(compare, errMsg)
+    assert(self.val != compare, errMsg or `Expected "${self.val}" of type "${type(self.val)}" to not equal "${compare}" of type "${type(compare)}", it does`)
+
+    return self
+  end
+end

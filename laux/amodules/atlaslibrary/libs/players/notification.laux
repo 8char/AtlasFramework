@@ -1,0 +1,97 @@
+class Types
+  cache = {}
+
+  _getId(scriptId, typeId)
+    return scriptId .. "_" .. typeId
+  end
+
+  set(scriptId, typeId, data)
+    self.cache[self:_getId(scriptId, typeId)] = data
+  end
+
+  get(scriptId, typeId)
+    return self.cache[self:_getId(scriptId, typeId)]
+  end
+
+  getAll()
+    return self.cache
+  end
+end
+
+class Builder
+  constructor(parent)
+    self.parent = parent
+  end
+
+  setSteamID64(sid64)
+    self.sid64 = sid64
+
+    return self
+  end
+
+  setPlayer(ply)
+    self:setSteamID64(ply:SteamID64())
+
+    return self
+  end
+
+  setScript(scriptId)
+    self.scriptId = scriptId
+
+    return self
+  end
+
+  setType(typeId)
+    self.type = typeId
+
+    return self
+  end
+
+  setContent(content)
+    self.content = content
+
+    return self
+  end
+
+  setData(data)
+    self.data = data
+
+    return self
+  end
+
+  send()
+    self.parent:addNotification({ ...self })
+
+    return self
+  end
+end
+
+public class AtlasUI.Notification()
+  types = Types()
+
+  builder()
+    return Builder(self)
+  end
+
+  addType(scriptId, id, data = {})
+    self.types:set(scriptId, id, data)
+  end
+
+  getType(scriptId, id)
+    return self.types:get(scriptId, id)
+  end
+  
+  addNotification(notification)
+    if (SERVER) then
+      local db = AtlasUI.Players.Database
+      db:insertNotification(notification.sid64, 
+        notification.scriptId, notification.type, 
+        notification.content, notification.data)
+
+      local ply = player.GetBySteamID64(notification.sid64)
+      AtlasUI.Players.Network:sendNotification(ply, notification)
+    else
+      error("missing impl")
+    end
+  end
+end

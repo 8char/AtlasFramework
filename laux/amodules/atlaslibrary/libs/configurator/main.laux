@@ -1,0 +1,5 @@
+AtlasUI.Configurator ||= {}
+
+function AtlasUI.Configurator:PrintMessage(msg)
+  MsgC(AtlasUI.Theme.Yellow, "[Atlas Configurator] ", color_white, msg .. "\n")
+end

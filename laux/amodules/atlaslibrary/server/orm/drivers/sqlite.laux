@@ -1,0 +1,31 @@
+local Driver = AtlasUI.ORM.Driver
+
+class SQLite extends Driver
+  static queryOrder = {
+    Driver.NAME, 
+    Driver.UNSIGNED, 
+    Driver.TYPE,
+    Driver.LENGTH,
+    Driver.PRIMARY,
+    Driver.FOREIGN,
+    Driver.INCREMENTS,
+    Driver.NULLABLE,
+    Driver.ONUPDATE
+  }
+
+  static type(type)
+    if (type == "int") then
+      return "integer"
+    end
+
+    return type
+  end
+
+  static autoIncrement()
+    return " AUTOINCREMENT"
+  end
+
+  __type() return "AtlasUI.ORM.SQLite" end
+end
+
+AtlasUI.ORM.SQLite = SQLite

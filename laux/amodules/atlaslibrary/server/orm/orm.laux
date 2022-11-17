@@ -1,0 +1,140 @@
+public class AtlasUI.ORM.ORM
+  tableWrapper()
+    return (...) =>
+      AtlasUI.ORM.Table(self.connection, ...)
+    end
+  end
+
+  constructor(tablePath, connection = AtlasDB)
+    self.b = AtlasUI.ORM.Builder
+    self.connection = connection
+    self:createMigrationTable(() =>
+      local files = file.Find(`${tablePath}*.lua`, "LUA")
+      for i, file in ipairs(files) do
+        self:handleMigration(file, tablePath)
+      end
+    end, (err) =>
+      Error(err)
+    end)
+
+    return self
+  end
+
+  createMigrationTable(callback = () => end)
+    local run = 0
+    local function done()
+      run++
+
+      if (run == 2) then
+        callback()
+      end
+    end
+
+    AtlasUI.ORM.Table(self.connection, "atlas_library_migrations", (tbl) =>
+      tbl:string("id"):length(191):primary()
+      tbl:date("last_updated"):nullable()
+      tbl:integer("times_updated"):default(0)
+    end, done)
+    AtlasUI.ORM.Table(self.connection, "atlas_library_seeds", (tbl) =>
+      tbl:string("id"):length(191):primary()
+      tbl:integer("version")
+    end, done)
+  end
+
+  getConnection()
+    return self.connection
+  end
+
+  isMySQL()
+    return self:getConnection().isMySQL()
+  end
+
+  getConnectionTypeAsString()
+    return self:isMySQL() and "[MySQL]" or "[SQLite]"
+  end
+
+  begin()
+    local connStr = self:getConnectionTypeAsString()
+    if (AtlasUI.Debug) then
+      MsgC(Color(201, 176, 15), connStr, AtlasUI.Theme.Green, " Starting transaction\n")
+    end
+    self.connection.begin()
+    self.transaction = true
+  end
+
+  rawQuery(sql)
+    return self:orm("RAW_QUERY")
+      :rawSQL(sql)
+      :run()
+  end
+
+  commit()
+    local p = AtlasUI.Promises.new()
+
+    self.connection.commit(() =>
+      p:resolve()
+    end)
+
+    self.transaction = false
+    local connStr = self:getConnectionTypeAsString()
+    if (AtlasUI.Debug) then
+      MsgC(Color(201, 176, 15), connStr, AtlasUI.Theme.Green, " Commiting transaction\n")
+    end
+    
+    return p
+  end
+
+  strToDate(date)
+    -- Works fine for SQLite by default
+    if (!self:isMySQL()) then return date end
+
+    local year = date:sub(1, 2)
+    local month = date:sub(3, 4)
+    local day = date:sub(5, 6)
+    local str = `STR_TO_DATE('${year}-${month}-${day}', '%Y-%m-%d')`
+
+    return self.b.raw(str)
+  end
+
+  handleMigration(file, tablePath)
+    local conn = self.connection
+    local split = string.Explode("_", file)
+    local date = split[1]
+    table.remove(split, 1)
+    local tableName = table.concat(split, "_")
+    tableName = tableName:sub(1, #tableName - 4)
+
+    self:orm("atlas_library_migrations")
+      :select()
+      :where("last_updated", ">=", self:strToDate(date))
+      :where("id", "=", tableName)
+      :getOne()
+      :next((result) =>
+        if (!result) then
+          include(tablePath .. file)(self:tableWrapper())
+ 
+          self:orm("atlas_library_migrations")
+            :upsert({
+              last_updated = date,
+              id = tableName,
+              times_updated = self.b.upsertDifference({
+                insert = self.b.raw(0),
+                update = self.b.raw("times_updated + 1")
+              })
+            }, { "id" })
+            :run()
+           
+          end
+        end, (err) =>
+          Error(err)
+        end)
+  end
+
+  -- Used to create an instance
+  orm(tableName, returnId)
+    return self.b(tableName, self.connection, returnId, self.transaction)
+  end
+
+  __type() return "AtlasUI.ORM.ORM" end
+end
+

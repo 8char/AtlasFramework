@@ -1,0 +1,60 @@
+local PANEL = {}
+
+function PANEL:Init()
+  self.Rounding = 0
+
+  self.Slider = self:Add("AtlasUI.Slider")
+  self.Slider:Dock(FILL)
+  self.Slider:DockMargin(0, 0, 8, 0)
+  self.Slider.OnValueChanged = function(pnl, frac)
+    local value = math.Round(pnl:GetMin() + ((pnl:GetMax() - pnl:GetMin()) * frac), self.Rounding)
+    self.Textentry:SetText(value)
+    self:OnValueChanged(value)
+  end
+
+  self.Textentry = self:Add("AtlasUI.TextEntry")
+  self.Textentry:Dock(RIGHT)
+  self.Textentry:SetNumeric(true)
+  self.Textentry:SetUpdateOnType(true)
+  self.Textentry.OnValueChange = function(pnl, text)
+    local num = tonumber(text)
+    if (!isnumber(num)) then return end
+    num = math.Clamp(num, self:GetMin(), self:GetMax())
+    num = math.Round(num, self.Rounding)
+
+    self:SetValue(num, true)
+    self:OnValueChanged(num)
+  end
+
+  self:SetValue(5)
+end
+
+function PANEL:SetValue(value, dontSetText)
+  local frac = (value - self:GetMin()) / (self:GetMax() - self:GetMin())
+  self:SetFraction(math.Clamp(frac, 0, 1))
+
+  if (!dontSetText) then
+    self.Textentry:SetText(value)
+  end
+  self.Slider:InvalidateLayout(true)
+end
+
+function PANEL:GetValue()
+  return math.Clamp(self.Textentry:GetText(), self:GetMin(), self:GetMax())
+end
+
+-- Override
+function PANEL:OnValueChanged(value) end
+
+function PANEL:SetMin(min) self.Slider:SetMin(min) end
+function PANEL:GetMin() return self.Slider:GetMin() end
+function PANEL:SetMax(max) self.Slider:SetMax(max) end
+function PANEL:GetMax() return self.Slider:GetMax() end
+function PANEL:SetColor(color) self.Slider:SetColor(color) end
+function PANEL:GetColor() return self.Slider:GetColor() end
+function PANEL:SetFraction(fraction) self.Slider.fraction = fraction end
+function PANEL:GetFraction() return self.Slider.fraction end
+function PANEL:SetRounding(rounding) self.Rounding = rounding end
+function PANEL:GetRounding() return self.Rounding end
+
+vgui.Register("AtlasUI.SliderPad", PANEL, "Panel")

@@ -1,0 +1,111 @@
+class Network extends AtlasUI.Network
+  constructor()
+    super()
+
+    self:setPrefix("AtlasUI.Configuator.")
+
+    self:receiver("Settings", self.receiveSettings)
+    self:receiver("Entity", self.receiveEntity)
+    self:receiver("GetEntities", self.receiveGetEntities)
+    self:receiver("CreateEntity", self.receiveCreateEntity)
+  end
+
+  receiveSettings(ply)
+    local script = net.ReadString()
+    local size = net.ReadUInt(12)
+    AtlasUI.Configurator:PrintMessage(`Received settings for the addon '${script}', size: ${size}`)
+    local controller = AtlasUI.Configurator:FindControllerByScriptName(script)
+    for i = 1, size do
+      local id = net.ReadString()
+      local val = self:read()
+
+      controller:set(id, val)
+    end
+  end
+
+  sendSaveSettings(script: string, tbl: table)
+    self:send("SaveSettings", () ->
+      local size = table.Count(tbl)
+      net.WriteString(script)
+      net.WriteUInt(size, 12)
+      for i, v in pairs(tbl) do
+        net.WriteString(i)
+        self:write(v)
+      end
+    end)
+  end
+
+  sendSaveSetting(script: string, id: string, val)
+    self:send("SaveSetting", () ->
+      net.WriteString(script)
+      net.WriteString(id)
+      self:write(val)
+    end)
+  end
+
+  sendGetEntities(entity: AtlasUI.Configurator.Entity, limit = 10, offset = 0, search = "")
+    local ent = entity:getDatabaseEntity()
+
+    self:send("GetEntities", () ->
+      net.WriteString(ent)
+      net.WriteUInt(limit, 16)
+      net.WriteUInt(offset, 16)
+      net.WriteString(search)
+    end)
+  end
+  
+  sendSaveEntity(entity)
+    self:send("SaveEntity", () ->
+      net.WriteString(entity:getDatabaseEntity())
+      entity:onNetworkSend()
+    end)
+  end
+
+  sendCreateEntity(entity)
+    self:send("CreateEntity", () ->
+      net.WriteString(entity:getDatabaseEntity())
+      entity:onNetworkSend()
+    end)
+  end
+
+  sendDeleteEntity(entity)
+    self:send("DeleteEntity", () ->
+      net.WriteString(entity:getDatabaseEntity())
+      entity:onNetworkSend()
+    end)
+  end
+
+  receiveCreateEntity(entity)
+    local entity = net.ReadString()
+    local ent = AtlasUI.Configurator.Entities:create(entity)
+    ent:onNetworkReceive()
+    ent:save()
+    
+    hook.Run("AtlasUI.Configurator.CreatedEntity", ent)
+  end
+
+  receiveEntity(ply)
+    local entity = net.ReadString()
+    local ent = AtlasUI.Configurator.Entities:create(entity)
+    ent:onNetworkReceive()
+    ent:save()
+  end
+
+  receiveGetEntities(ply)
+    local size = net.ReadUInt(16)
+    local tbl = {}
+    for i = 1, size do
+      local entity = net.ReadString()
+      local ent = AtlasUI.Configurator.Entities:create(entity)
+      ent:onNetworkReceive()
+
+      table.insert(tbl, ent)
+    end
+
+    hook.Run("AtlasUI.Configurator.GetEntities", tbl)
+  end
+
+  __type() return "AtlasUI.Configurator.Network" end
+end
+
+AtlasUI.Configurator.Network = Network()

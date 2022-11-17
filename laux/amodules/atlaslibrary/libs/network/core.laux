@@ -1,0 +1,125 @@
+public class AtlasUI.Network
+  DYNAMIC_DATA_SIZE = 3
+  
+  FLOAT = 0
+  INTEGER = 1
+  BOOL = 2
+  STRING = 3
+  TABLE = 4
+  _get _set prefix
+
+  constructor()
+    self:setPrefix("")
+  
+    self.writeTypes = {
+      [self.FLOAT] = (i) => net.WriteFloat(i) end,
+      [self.INTEGER] = (i) => net.WriteInt(i, 16) end,
+      [self.BOOL] = (i) => net.WriteBool(i) end,
+      [self.STRING] = (i) => net.WriteString(i) end,
+      -- FIXME: This is disgusting, optimise this process
+      [self.TABLE] = (i) => net.WriteTable(i) end
+    }
+    self.readTypes = {
+      [self.FLOAT] = () => return math.Round(net.ReadFloat(), 5) end,
+      [self.INTEGER] = () => return net.ReadInt(16) end,
+      [self.BOOL] = () => return net.ReadBool() end,
+      [self.STRING] = () => return net.ReadString() end,
+      [self.TABLE] = () => return net.ReadTable() end
+    }
+  end
+
+  prepare(str)
+    if (istable(str)) then
+      for i, v in ipairs(str) do
+        util.AddNetworkString(self:getPrefix() .. v)
+      end
+    else
+      util.AddNetworkString(self:getPrefix() .. str)
+    end
+  end
+
+  receiver(name, func = () => end)
+    net.Receive(self:getPrefix() .. name, (len, ply) =>
+      func(self, ply or LocalPlayer(), len)
+    end)
+  end
+
+  send(name, target, func)
+    net.Start(self:getPrefix() .. name)
+
+    if (CLIENT) then
+      target(self)
+      
+      net.SendToServer()
+    else
+      func(self)
+
+      net.Send(target)
+    end
+  end
+
+  compress(data)
+    local tbl = false
+    if (istable(data)) then
+      data = util.TableToJSON(data)
+      tbl = true
+    end
+
+    data = util.Compress(data)
+    local len = data:len()
+
+    net.WriteUInt(len, 32)
+    net.WriteBool(tbl)
+    net.WriteData(data, len)
+  end
+
+  decompress()
+    local len = net.ReadUInt(32)
+    local tbl = net.ReadBool()
+    local data = net.ReadData(len)
+    data = util.Decompress(data)
+
+    if (tbl) then
+      data = util.JSONToTable(data)
+    end
+
+    return data
+  end
+
+  getNetworkType(input)
+    if (isnumber(input)) then
+      local int, frac = math.modf(input)
+      if (frac != 0) then
+        return self.FLOAT
+      end
+
+      return self.INTEGER
+    elseif (isbool(input) or input == nil) then
+      return self.BOOL
+    elseif (isstring(input)) then
+      return self.STRING
+    elseif (istable(input)) then
+      return self.TABLE
+    end
+  end
+  writeType(input) 
+    local type = self:getNetworkType(input) 
+    net.WriteUInt(type, self.DYNAMIC_DATA_SIZE) 
+    
+    return type
+  end
+  readType(input) return net.ReadUInt(self.DYNAMIC_DATA_SIZE) end
+  write(input, ...)
+    local type = self:writeType(input)
+    self:writeFromType(type, input, ...)
+
+    return type
+  end
+  read(...)
+    local type = self:readType()
+    return self:readFromType(type, ...)
+  end
+  writeFromType(type, input, ...) self.writeTypes[type](input, ...) end
+  readFromType(type, ...) return self.readTypes[type](...) end
+end
+

@@ -1,0 +1,109 @@
+local PANEL = {}
+
+function PANEL:AddSettings(entity)
+  self.Entity = entity
+  self.Parent = self:GetParent()
+  local columns = entity:getColumns()
+
+  for i, v in ipairs(columns) do
+    local split = string.Explode("_", v.id)
+    local name = ""
+    for i, v in ipairs(split) do
+      local temp = v:sub(1, 1):upper() .. v:sub(2)
+      name ..= temp .. (i == #split and "" or " ")
+    end
+
+    local funcName = v.id:sub(1, 1):upper() .. v.id:sub(2)
+    local value = entity[`get${funcName}`](entity)
+
+    local label = v.label or ""
+    if (v.min or v.max) then
+      if (v.min and v.max) then
+        label = `Min: ${v.min}. Max: ${v.max}`
+      elseif (v.min) then
+        label = `Min: ${v.min}`
+      elseif (v.max) then
+        label = `Max: ${v.max}`
+      end
+    end
+
+    local type = "Textentry"
+    if (v.type == "list") then
+      type = "TextentryList"
+    end
+    if ((v.validate or label) and type == "Textentry") then
+      type = "TextentryWithLabel"
+    end
+
+    local detour = v.onChange
+    v.onChange = (row, text) =>
+      self:OnValueChanged()
+    end
+
+    if (v.isName) then
+      local detour = v.onChange
+      if (detour) then
+        v.onChange = (row, text) =>
+          local tbl = entity.transformName and entity:transformName(text) or { text }
+          local name = tbl[1]
+          local msg = tbl[2]
+          local color = tbl[3]
+
+          self.Parent.Name = name
+
+          if (type == "TextentryWithLabel") then
+            row.label:SetText(msg or "")
+            row.label:SetTextColor(color or Color(127, 127, 127))
+            row.label:SizeToContents()
+          end
+
+          detour(row, text)
+        end
+      else
+        v.onChange = (row, text) =>
+          local tbl = entity.transformName and entity:transformName(text) or { text }
+          local name = tbl[1]
+          local msg = tbl[2]
+          local color = tbl[3]
+
+          self.Parent.Name = name
+
+          if (type == "TextentryWithLabel") then
+            row.label:SetText(msg or "")
+            row.label:SetTextColor(color or Color(127, 127, 127))
+            row.label:SizeToContents()
+          end
+        end 
+      end
+    end
+
+    if (!value and v.min and v.max) then
+      value = v.min
+    end
+
+    local labelColor
+    value = value or (isfunction(v.defaultValue) and v.defaultValue() or v.defaultValue)
+    if (entity.transformName and v.isName) then
+      local transform = entity:transformName(value)
+      label = transform[2]
+      labelColor = transform[3]
+    end
+
+    self:AddSetting(v.id, name, type, { 
+      value = value,
+      readOnly = v.readOnly,
+      onChange = v.onChange,
+      number = v.type == "integer" or v.type == "float",
+      min = v.min,
+      max = v.max,
+      hide = v.hide,
+      label = label,
+      labelColor = labelColor,
+      placeholder = v.placeholder
+    })
+  end
+end
+
+function PANEL:OnValueChanged() end
+
+vgui.Register("Atlas.Configurator.Admin.Entity.Row.Settings", PANEL, "Atlas.Configurator.Admin.SettingsBase")

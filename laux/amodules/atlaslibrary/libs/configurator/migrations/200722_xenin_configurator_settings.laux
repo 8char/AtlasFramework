@@ -1,0 +1,13 @@
+return (Table, callback) =>
+  AtlasUI.Promises.all({
+    AtlasUI:InvokeSQL(AtlasDB, [[
+      CREATE TABLE IF NOT EXISTS atlas_configurator_settings (
+        id VARCHAR(127),
+        script_id VARCHAR(127),
+        value TEXT NOT NULL,
+        json BOOLEAN,
+        PRIMARY KEY (script_id, id)
+      )
+    ]], "Atlas.Configurator.Settings")
+  }):next(callback)
+end

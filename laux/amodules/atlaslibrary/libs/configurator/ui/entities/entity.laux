@@ -1,0 +1,151 @@
+local PANEL = {}
+
+function PANEL:Init()
+end
+
+function PANEL:GetEntities()
+  return { i }
+end
+
+function PANEL:SetScript(script)
+  self.script = script
+  self.ctr = AtlasUI.Configurator:FindControllerByScriptName(script)
+end
+
+function PANEL:OnSearch(text)
+  AtlasUI.Configurator.Network:sendGetEntities(self.BaseEnt, nil, nil, text)
+end
+
+function PANEL:SetData(tbl)
+  local { __entity, name, script } = tbl
+
+  self:SetScript(script)
+  self.Entity = __entity
+  self:SetTitle(name)
+  self.Navbar:SetVisible(false)
+  self.BaseEnt = AtlasUI.Configurator.Entities:create(self.Entity)
+  AtlasUI.Configurator.Network:sendGetEntities(self.BaseEnt)
+
+  self.TopBar = self:Add("Panel")
+  self.TopBar:Dock(TOP)
+  self.TopBar:DockMargin(0, 16, 0, 0)
+
+  self.Subtitle = self.TopBar:Add("DLabel")
+  self.Subtitle:SetFont("Atlas.Configurator.Admin.Panel.Navbar")
+  self.Subtitle:SetText("Loading")
+  
+  self.Create = self.TopBar:Add("AtlasUI.ButtonV2")
+  self.Create:Dock(RIGHT)
+  self.Create:SetText("Create New")
+  self.Create:SetFont("Atlas.Configurator.Admin.Panel.Navbar")
+  self.Create:SetRoundness(6)
+  self.Create:SetSolidColor(AtlasUI.Theme.Primary)
+  self.Create:SetHoverColor(AtlasUI.Theme.Navbar)
+  self.Create:SetTextColor(Color(182, 182, 182))
+  self.Create.DoClick = (pnl) =>
+    local ent = AtlasUI.Configurator.Entities:create(self.Entity)
+    AtlasUI.Configurator.Network:sendCreateEntity(ent)
+  end
+  self.Save.DoClick = (pnl) =>
+    for _, row in ipairs(self.Rows) do
+      local ent = AtlasUI.Configurator.Entities:create(self.Entity)
+      local settings = IsValid(row.Settings) and row.Settings:GetSettings()
+      continueif !settings
+
+      for i, v in pairs(settings) do
+        ent[`set${i}`](ent, v)
+      end
+
+      ent:save(true)
+    end
+  end
+
+  hook.Add("AtlasUI.Configurator.CreatedEntity", self, (ent) ->
+    local entity = ent:getDatabaseEntity()
+    stopif entity != self.Entity
+
+    local id = ent.getId and ent:getId() or #self.Rows + 1
+    self:CreateEntity(ent, id)
+    self:UpdateTitle(#self.Rows)
+  end)
+  self.Scroll:DockMargin(0, 16, 0, 0)
+
+  self.Rows = {}
+
+  self.RowController = self.Body:Add("Panel")
+  self.RowController:Dock(TOP)
+  self.RowController.Think = (pnl, w, h) =>
+    w = pnl:GetWide()
+    h = pnl:GetTall()
+    
+    local y = 0
+    for i, v in ipairs(self.Rows) do
+      continueif !IsValid(v)
+
+      v:SizeToChildren(false, true)
+      local height = v:GetTall() >= 48 and v:GetTall() or 48
+      v:SetSize(w, height)
+      v:SetPos(0, y)
+
+      y += v:GetTall()
+    end
+
+    pnl:SizeToChildren(false, true)
+  end
+
+  hook.Add("AtlasUI.Configurator.GetEntities", self, (entities = {}) ->
+    self:UpdateTitle(#entities)
+
+    self.Rows = {}
+    for i, v in ipairs(entities) do
+      self:CreateEntity(v, i)
+    end
+  end)
+end
+
+function PANEL:UpdateTitle(size)
+  size = size or #self.Rows
+  stopif !IsValid(self.Title)
+  
+  local name = self.Title:GetText()
+  name = name:sub(1, 1):lower() .. name:sub(2, #name - 1)
+  if (size != 1) then
+    name ..= "s"
+  end
+
+  self.Subtitle:SetText(`${size} ${name}`)
+end
+
+function PANEL:CreateEntity(entity, id)
+  local columns = entity:getColumns()
+  local name = entity.__name
+
+  local panel = self.RowController:Add("Atlas.Configurator.Admin.Entity.Row")
+  panel:SetEntity(entity)
+  panel.OnRemove = (pnl) =>
+    table.remove(self.Rows, id)
+
+    self:UpdateTitle(#self.Rows - 1)
+  end
+
+  local id = table.insert(self.Rows, panel)
+  self.Rows[id].RowId = id
+end
+
+function PANEL:Paint(w, h)
+  self.BaseClass.Paint(self, w, h)
+
+  stopif self.Subtitle:GetText() != "Loading"
+
+  AtlasUI:DrawLoadingCircle(w / 2, h / 2, h / 4)
+end
+
+function PANEL:PerformLayout(w, h)
+  self.BaseClass.PerformLayout(self, w, h)
+
+  self.TopBar:SetTall(32)
+  self.Subtitle:SizeToContents()
+  self.Create:SizeToContentsX(24)
+end
+
+vgui.Register("Atlas.Configurator.Admin.Entity", PANEL, "Atlas.Configurator.Admin.Panel")

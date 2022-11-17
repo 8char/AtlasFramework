@@ -1,0 +1,26 @@
+class LanguagesNetwork extends AtlasUI.Network
+  constructor()
+    super()
+
+    self:receiver("AtlasUI.Language", self.receiveLanguage)
+  end
+
+  receiveLanguage(ply)
+    local addonId = net.ReadString()
+    local lang = net.ReadString()
+    local data = self:decompress()
+
+    AtlasUI.LanguageAddons[addonId]:SetLocalLanguage(lang, data)
+  end
+
+  sendRequestLanguage(addonId, lang)
+    self:send("AtlasUI.Language", () ->
+      net.WriteString(addonId)
+      net.WriteString(lang)
+    end)
+  end
+
+  __type() return "AtlasUI.LanguagesNetwork" end
+end
+
+AtlasUI.LanguagesNetwork = LanguagesNetwork()

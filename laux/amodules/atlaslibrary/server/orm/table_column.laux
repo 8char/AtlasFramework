@@ -1,0 +1,116 @@
+public class AtlasUI.ORM.Column
+  constructor(name, type, isMySQL = false)
+    self.isMySQL = isMySQL
+    self._name = name
+    self._type = self:type(type)
+  end
+
+  type(type)
+    local isMySQL = self.isMySQL
+
+    if (type == "int" and !isMySQL) then
+        return "integer"
+    end
+
+    return type
+  end
+
+  default(num, surround)
+    self._default = {
+      surround = surround,
+      value = isbool(num) and tonumber(num) or num
+    }
+
+    return self
+  end
+
+  decimals(num)
+    self._decimals = num
+
+    return self
+  end
+
+  length(num)
+    self._length = num
+
+    return self
+  end
+
+  primary()
+    self._primary = true
+
+    return self
+  end
+
+  nullable()
+    self._nullable = true
+
+    return self
+  end
+
+  increments()
+    self._increments = true
+
+    return self
+  end
+
+  unsigned()
+    self._unsigned = true
+
+    return self
+  end
+
+  onUpdate(str)
+    self._onUpdate = str
+
+    return self
+  end
+
+  incrementOnUpdate(amt = 1)
+    self:onUpdate(self._name .. " + " .. amt)
+  end
+
+  buildString()
+    local isMySQL = self.isMySQL
+    local type = self._type:upper()
+    local unsigned = self._unsigned and "UNSIGNED"
+    local str = `\`${self._name}\` `
+    if (unsigned and !isMySQL) then
+      str ..= `${unsigned} `
+    end
+    str ..= type
+
+    if (self._length) then
+      local decimals = self._decimals and `, ${self._decimals}` or ""
+      str ..= `(${self._length}${decimals})`
+    end
+    if (unsigned and isMySQL) then
+      str ..= ` ${unsigned}`
+    end
+    if (self._primary) then
+      str ..= " PRIMARY KEY"
+    end
+    if (self._increments) then
+      str ..= self.isMySQL and " AUTO_INCREMENT" or " AUTOINCREMENT"
+    end
+    if (!self._nullable) then
+      str ..= " NOT NULL"
+    end
+    if (self._default) then
+      local { value, surround } = self._default
+      if (value == "NULL" and (type == "TIMESTAMP" or type == "DATETIME")) then
+        str ..= " " .. (surround and "(" or "") .. value .. (surround and "(" or "")
+      else
+        str ..= " DEFAULT " .. (surround and "(" or "") .. value .. (surround and ")" or "")
+      end
+    end
+    if (self._onUpdate) then
+      str ..= "\n  ON UPDATE " .. self._onUpdate
+    end
+
+    return str
+  end
+
+  __type() return "AtlasUI.ORM.Column" end
+end
+

@@ -1,0 +1,146 @@
+AtlasUI.CachedIcons = AtlasUI.CachedIcons or {}
+
+if (!file.IsDir("atlas/icons", "DATA")) then
+  file.CreateDir("atlas/icons")
+end
+
+
+--[[
+	Example of how it works
+
+	local test = {
+		-- It checks the first image, if that fails to load then the second, then third, etc..
+		-- First one is cusotm, using a cusotm URL n not using png.
+		{ id = "dLyjNp", url = "https://i.hizliresim.com", type = "jpg" },
+		-- If there's no url specificed it'll use imgur, and if there's no type, it'll use png
+		{ id = "4aa0Ka4" }
+	}
+
+	-- Example frame
+	if (IsValid(AtlasUI.frame)) then AtlasUI.frame:Remove() end
+	AtlasUI.frame = vgui.Create("AtlasUI.Frame")
+	AtlasUI.frame:SetSize(800, 600)
+	AtlasUI.frame:Center()
+	AtlasUI.frame:MakePopup()
+
+	AtlasUI.panel = AtlasUI.frame:Add("DPanel")
+	AtlasUI.panel:Dock(FILL)
+	AtlasUI:DownloadIcon(AtlasUI.panel, test)
+	AtlasUI.panel.Paint = function(pnl, w, h)
+		AtlasUI:DrawIcon(8, 8, w - 16, h - 16, pnl)
+	end
+--]]
+
+
+local function DownloadImage(tbl)
+	local p = AtlasUI.Promises.new()
+
+	if (!isstring(tbl.id)) then
+		return p:reject("ID invalid")
+	end
+
+	local id = tbl.id
+	local idLower = id:lower()
+	local url = tbl.url or "https://proxy.duckduckgo.com/iu/?u=https://i.imgur.com"
+	local type = tbl.type or "png"
+
+	if (AtlasUI.CachedIcons[id] and AtlasUI.CachedIcons[id] != "Loading") then
+		return p:resolve(AtlasUI.CachedIcons[id])
+	end
+
+	local read = file.Read("atlas/icons/" .. idLower .. "." .. type)
+	if (read) then
+		AtlasUI.CachedIcons[id] = Material("../data/atlas/icons/" .. idLower .. "." .. type, "smooth")
+
+		return p:resolve(AtlasUI.CachedIcons[id])
+	end
+
+	local fullURL = tbl.fullURL or url .. "/" .. id .. "." .. type
+	http.Fetch(fullURL, function(body)
+		local str = "atlas/icons/" .. idLower .. "." .. type
+		file.Write(str, body)
+
+		AtlasUI.CachedIcons[id] = Material("../data/" .. str, "smooth")
+
+		p:resolve(AtlasUI.CachedIcons[id])
+	end, function(err)
+		p:reject("Unable to download image. ID: " .. id .. " URL: " .. url .. "/" .. id .. "." .. type)
+	end)
+
+	return p
+end
+
+function AtlasUI:DownloadIcon(pnl, tbl, pnlVar)
+	if (!tbl) then return end
+	
+	local p = AtlasUI.Promises.new()
+
+	if (isstring(tbl)) then
+		tbl = { { id = tbl } }
+	end
+
+	local i = 1
+	local function AsyncDownload()
+		if (!tbl[i]) then p:reject() end
+	
+		pnl[pnlVar or "Icon"] = "Loading"
+		DownloadImage(tbl[i]):next(function(result)
+			p:resolve(result):next(function()
+				pnl[pnlVar or "Icon"] = result
+			end, function(err)
+				print(err)
+			end)
+		end, function(err)
+			print(err)
+
+			i = i + 1
+
+			AsyncDownload()
+		end)
+	end
+
+	AsyncDownload()
+
+	return p
+end
+
+function AtlasUI:DrawIcon(x, y, w, h, pnl, col, loadCol, var)
+	col = col or color_white
+	loadCol = loadCol or AtlasUI.Theme.Accent
+	var = var or "Icon"
+
+	if (pnl[var] and type(pnl[var]) == "IMaterial") then
+		surface.SetMaterial(pnl[var])
+		surface.SetDrawColor(col)
+		surface.DrawTexturedRect(x, y, w, h)
+	elseif (pnl[var] != nil) then
+		AtlasUI:DrawLoadingCircle(h, h, h, loadCol)
+  end
+end
+
+-- Can be used, but I recommend using :DownloadIcon one as it's more customisable
+-- This is preserved for old use
+function AtlasUI:GetIcon(id)
+	local _type = type(id)
+	if (_type == "IMaterial") then
+		return id
+	end
+	
+	if (self.CachedIcons[id]) then
+		return self.CachedIcons[id]
+	end
+
+	local read = file.Read("atlas/icons/" .. id:lower() .. ".png")
+	if (read) then
+		self.CachedIcons[id] = Material("../data/atlas/icons/" .. id:lower() .. ".png", "smooth")
+	else
+		self.CachedIcons[id] = "Loading"
+	end
+
+	http.Fetch("https://i.imgur.com/" .. id .. ".png", function(body, len)
+		local str = "atlas/icons/" .. id:lower() .. ".png"
+		file.Write(str, body)
+
+		self.CachedIcons[id] = Material("../data/" .. str, "smooth")
+	end)
+end

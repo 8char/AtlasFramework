@@ -1,0 +1,307 @@
+--[[
+AtlasUI.Options(pnl) where pnl is the panel it should parent to.
+
+Example usage:
+AtlasUI.Options(pnl)
+  :addButton({ 
+    text = "Inspect Job", 
+    icon = "ocbHYHV",
+    onClick = (pnl) =>
+      -- Inspect
+    end
+  })
+  :addDivider()
+  :addButton({ 
+    text = "Accept", 
+    icon = "43Rllim", 
+    hold = { 
+      time = 0.5, 
+      color = AtlasUI.Theme.Green 
+    }, 
+    iconHoverColor = AtlasUI.Theme.Green,
+    onClick = (pnl) =>
+      -- Accept
+    end
+  })
+  :addButton({ 
+    text = "Decline", 
+    icon = "crN70I2", 
+    hold = { 
+      time = 0.5, 
+      color = AtlasUI.Theme.Red
+    }, 
+    iconHoverColor = AtlasUI.Theme.Red,
+    onClick = (pnl) =>
+      -- Decline & refund
+    end
+  })
+:create()
+]]
+local PANEL = {}
+
+AccessorFunc(PANEL, "m_font", "Font")
+
+AtlasUI:CreateFont("AtlasUI.Options.Button", 22)
+
+function PANEL:Init()
+  self:SetDrawOnTop(true)
+  self:SetZPos(125)
+  self:DockPadding(8, 8, 8, 8)
+  self.Alpha = 0
+  self:LerpAlpha(255, 0.3)
+  self:SetFont("AtlasUI.Options.Button")
+end
+
+function PANEL:OnFocusChanged(gained)
+  stopif gained
+  
+  self:Close()
+end
+
+function PANEL:Close()
+  stopif self.Removing
+
+  self.Removing = true
+  self:LerpAlpha(255, 0.1)
+  self:LerpHeight(0, 0.1, () =>
+    stopif !IsValid(self)
+
+    self:Remove()
+  end)
+end
+
+function PANEL:GetNewSize()
+  local width = 16
+  local height = 16
+
+  local children = self:GetChildren()
+  local size = #children
+  for i, v in ipairs(children) do
+    if (v.RowType == self.Options.BUTTON) then
+      surface.SetFont(v.Font)
+      local tW = surface.GetTextSize(v.Text)
+      -- 16px margin left + right
+      tW += 32
+
+      if (v.IconBackground) then
+        tW += 53
+      end
+      
+      width = math.max(width, tW)
+    end
+
+    height += v:GetTall()
+    if (i != size) then
+      height += 8
+    end
+  end
+
+  return math.max(150, width), height
+end
+
+function PANEL:UpdatePos()
+  local parent = self.Parent
+  if (!IsValid(parent)) then self:Remove() end
+
+  local aX, aY = parent:LocalToScreen()
+  local x = self:GetWide() - parent:GetWide()
+  local y = parent:GetTall()
+  self:SetPos(aX - x, aY + y)
+end
+
+function PANEL:CreateButton(data)
+  local btn = self:Add("DButton")
+  btn:SetTall(53)
+  btn:SetText("")
+  local hoverColor = data.hoverColor or AtlasUI.Theme.Primary
+  btn.Background = ColorAlpha(hoverColor, 0)
+  btn.Text = data.text
+  btn.TextColor = data.textColor or color_white
+  btn.Font = data.font or self:GetFont()
+  if (data.icon) then
+    AtlasUI:DownloadIcon(btn, data.icon)
+    btn.IconBackground = Color(58, 58, 58)
+    btn.IconColor = data.iconColor or btn.TextColor
+    btn.IconHoverColor = data.iconHoverColor or btn.IconColor
+  end
+  btn.Paint = (pnl, w, h) =>
+    AtlasUI:DrawRoundedBox(6, 0, 0, w, h, pnl.Background)
+
+    local x = 8
+    if (pnl.Icon) then
+      local size = h - 16
+      AtlasUI:DrawCircle(x + size / 2, size / 2 + x, size / 2, 30, pnl.IconBackground)
+      size -= 16
+      AtlasUI:DrawIcon(x + 8, 16, size, size, pnl, pnl.IconColor)
+
+      x += h
+    end
+
+    draw.SimpleText(pnl.Text, pnl.Font, x, h / 2, pnl.TextColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+  end
+  btn.PaintOver = (pnl, w, h) =>
+    stopif !pnl.Pressing
+    local frac = math.TimeFraction(pnl.Pressing, pnl.End, CurTime())
+    local col = AtlasUI:LerpColor(frac, AtlasUI.Theme.Red, AtlasUI.Theme.Green)
+
+    local aX, aY = pnl:LocalToScreen()
+    render.SetScissorRect(aX, aY, aX + (w * frac), aX + h, true)
+      AtlasUI:DrawRoundedBox(6, 0, 0, w, h, ColorAlpha(data.hold.color, 100))
+    render.SetScissorRect(0, 0, ScrW(), ScrH(), false)
+  end
+  btn.OnCursorEntered = (pnl) =>
+    pnl:LerpColor("Background", ColorAlpha(hoverColor, 100))
+    if (data.icon) then
+      pnl:LerpColor("IconColor", pnl.IconHoverColor)
+    end
+  end
+  btn.OnCursorExited = (pnl) =>
+    pnl:LerpColor("Background", ColorAlpha(hoverColor, 0))
+    if (data.icon) then
+      pnl:LerpColor("IconColor", data.iconColor or btn.TextColor)
+    end
+  end
+  if (data.hold) then
+    btn.Think = (pnl) =>
+      stopif !pnl.Pressing
+      local frac = math.Clamp(math.TimeFraction(pnl.Pressing, pnl.End, CurTime()), 0, 1)
+      stopif frac < 1
+      stopif pnl.Clicked
+      pnl.Clicked = true
+
+      if (data.onClick) then
+        data:onClick(pnl)
+      end
+
+      self:Close()
+    end
+    btn.OnMousePressed = (pnl) =>
+      local wait = data.hold.time
+      local time = CurTime()
+
+      pnl.Clicked = nil
+      pnl.Pressing = time
+      pnl.End = CurTime() + wait
+    end
+    btn.OnMouseReleased = (pnl) =>
+      pnl.Clicked = nil
+      pnl.Pressing = nil
+      pnl.End = nil
+    end
+  else
+    btn.DoClick = (pnl) =>
+      if (data.onClick) then
+        local stop = data:onClick(pnl) != nil
+
+        stopif stop
+      end
+
+      self:Close()
+    end
+  end
+
+  return btn
+end
+
+function PANEL:CreateDivider(data)
+  local divider = self:Add("DPanel")
+  divider:SetTall(data.thickness or 1)
+  divider.Color = data.color or Color(64, 64, 64)
+  divider.Paint = (pnl, w, h) =>
+    surface.SetDrawColor(pnl.Color)
+    surface.DrawRect(0, 0, w, h)
+  end
+
+  return divider
+end
+
+function PANEL:SetOptions(options)
+  self.Options = options
+  local { rows, BUTTON, DIVIDER } = options
+
+  for i, v in ipairs(rows) do 
+    local row
+    if (v.rowType == BUTTON) then
+      row = self:CreateButton(v)
+    elseif (v.rowType == DIVIDER) then
+      row = self:CreateDivider(v)
+    end
+
+    row:Dock(TOP)
+    row:DockMargin(0, 0, 0, 8)
+    row.RowType = v.rowType
+  end
+
+  local width, height = self:GetNewSize()
+  self:SetWide(width)
+  self:SetTall(0)
+  self:LerpHeight(height, 0.3)
+  self:MakePopup()
+  self:UpdatePos()
+end
+
+function PANEL:Think()
+  stopif !self.Parent
+
+  if (!IsValid(self.Parent)) then
+    return self:Close()
+  end
+
+  if (!self.Parent:IsVisible()) then
+    return self:Close()
+  end
+end
+
+function PANEL:Paint(w, h)
+  local aX, aY = self:LocalToScreen()
+
+  BSHADOWS.BeginShadow()
+    AtlasUI:DrawRoundedBox(6, aX, aY, w, h, AtlasUI.Theme.Background)
+  BSHADOWS.EndShadow(1, 1, 1, 150 * (255 / self:GetAlpha()))
+
+  AtlasUI:MaskInverse(() =>
+    AtlasUI:DrawRoundedBox(6, 1, 1, w - 2, h - 2, AtlasUI.Theme.Background)
+  end, () =>
+    AtlasUI:DrawRoundedBox(6, 0, 0, w, h, ColorAlpha(AtlasUI.Theme.Primary, self:GetAlpha()))
+  end)
+end
+
+vgui.Register("AtlasUI.Options", PANEL, "EditablePanel")
+
+public class AtlasUI.Options
+  BUTTON = 0
+  DIVIDER = 1
+  rows = {}
+
+  constructor(parent)
+    self.parent = parent
+  end
+
+  addButton(data)
+    table.insert(self.rows, {
+      rowType = self.BUTTON,
+      ...data
+    })
+
+    return self
+  end
+
+  addDivider(data = {})
+    table.insert(self.rows, {
+      rowType = self.DIVIDER,
+      ...data
+    })
+
+    return self
+  end
+
+  create()
+    self.panel = vgui.Create("AtlasUI.Options")
+    self.panel.Parent = self.parent
+    self.panel:SetOptions(self)
+
+    return self.panel
+  end
+
+  __type() return "AtlasUI.Options" end
+end

@@ -1,7 +1,0 @@
-local LOG_LEVELS = AtlasLoader.LOG_LEVELS
-
-return {
-    name = "AtlasUI",
-    logLevel = LOG_LEVELS.TRACE,
-    deps = {},
-}

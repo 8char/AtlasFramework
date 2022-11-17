@@ -1,0 +1,1263 @@
+AtlasUI:CreateFont("Atlas.Configurator.Inputs.Label", 14)
+AtlasUI:CreateFont("Atlas.Configurator.KeyValue", 18)
+
+AtlasUI.Configurator.InputPanels = {
+  ["Blank"] = {
+    panel = (tbl) ->
+      return vgui.Create("Panel")
+    end
+  },
+  ["Textentry"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("AtlasUI.TextEntry")
+      panel:DockMargin(0, 6, -4, 6)
+      panel:SetBackgroundColor(AtlasUI.Theme.Background)
+      panel.SetInput = (pnl, input) =>
+        pnl:SetText(input)
+        pnl.textentry:OnValueChange(input)
+      end
+      panel:SetPlaceholder(tbl.placeholder or "")
+      panel.GetSettingValue = (pnl) =>
+        return pnl:GetText()
+      end
+      panel.textentry:SetNumeric(tbl.number or tbl?.data?.number)
+      panel.textentry.min = tbl.min
+      panel.textentry.max = tbl.max
+      panel.textentry:SetUpdateOnType(true)
+      panel.textentry.OnValueChange = (pnl, text) =>
+        local currentCaret
+        if (pnl:GetNumeric() and (pnl.min or pnl.max)) then
+          local num = tonumber(text)
+          if (num) then
+            if (pnl.min and pnl.min > num) then
+              currentCaret = pnl:GetCaretPos()
+              pnl:SetText(pnl.min)
+            elseif (pnl.max and pnl.max < num) then
+              currentCaret = pnl:GetCaretPos()
+              pnl:SetText(pnl.max)
+            end
+          end
+        end
+
+       if (text == "") then
+          text = panel:GetPlaceholder()
+        end
+        surface.SetFont(pnl:GetFont())
+        local tw = surface.GetTextSize(text)
+        tw += 24
+        local width = math.Clamp(tw, 28, 600)
+        panel:SetWide(width)
+
+        if (currentCaret) then
+          pnl:SetCaretPos(currentCaret)
+        end
+        if (panel.onChange) then
+          panel:onChange(pnl:GetText())
+        end
+      end
+    
+      return panel
+    end
+  },
+  ["TextentryWithLabel"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("Panel")
+      panel:DockMargin(0, 6, -8, 6)
+      panel.GetSettingValue = (pnl) =>
+        return pnl.textentry:GetText()
+      end
+      
+      local label = panel:Add("DLabel")
+      label:Dock(LEFT)
+      label:DockMargin(12, 2, 0, 0)
+      label:SetTextColor(tbl.labelColor or Color(127, 127, 127))
+      label:SetFont("Atlas.Configurator.Inputs.Label")
+      label:SetText(tbl?.data?.label or tbl.label or "Label")
+
+      local textentry = AtlasUI.Configurator:CreateInputPanel("Textentry", self, tbl)
+      textentry:SetParent(panel)
+      textentry:Dock(FILL)
+      textentry:DockMargin(0, 0, 0, 0)
+      textentry:SetPlaceholder(tbl.placeholder or "")
+      textentry.DoSizing = (pnl, text) =>
+        if (text == "") then
+          text = pnl:GetPlaceholder()
+        end
+        surface.SetFont(pnl.textentry:GetFont())
+        local tw = surface.GetTextSize(text)
+        tw += 24
+        local width = math.Clamp(tw, 28, 600)
+
+        label:SizeToContents()
+        panel:SetWide(width + label:GetWide() + 16)
+      end
+      textentry.onChange = (pnl, text) =>
+        if (panel.onChange) then
+          panel:onChange(text)
+        end
+      
+        pnl:DoSizing(text)
+      end
+
+      panel.label = label
+      panel.textentry = textentry
+
+      if (tbl.value) then
+        textentry:SetText(tbl.value)
+      end
+      textentry:DoSizing(textentry:GetText())
+
+      return panel
+    end
+  },
+  ["Selectbox"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("DButton")
+      panel:SetText("")
+      panel:DockMargin(0, 6, 6, 6)
+      panel.Choices = {}
+      panel.AddChoice = (pnl, name, data = true) =>
+        pnl.Choices[#pnl.Choices + 1] = {
+          name = name,
+          data = data
+        }
+      end
+      panel.GetSettingValue = (pnl) => 
+        return pnl.Text 
+      end
+      panel.TextColor = Color(182, 182, 182)
+      AtlasUI:DownloadIcon(panel, "2QGKAd6")
+      panel.SetInput = (pnl, text) => 
+        pnl:SetChoice(text)
+      end
+      panel.SetChoice = (pnl, text) =>
+        local startText = pnl.Text
+        pnl.Text = text
+        local data = istable(pnl.Choices[text])
+        if (data and pnl.Choices[text]?.__color) then
+          pnl.TextColor = pnl.Choices[text].__color
+        end
+        pnl:SizeToContents()
+
+        if (startText and startText != "" and pnl.onChange) then
+          pnl:onChange(text)
+        end
+      end
+      panel.SetChoices = (pnl, tbl) =>
+        for i, v of tbl do
+          pnl:AddChoice(v.name, v.data)
+        end
+      end
+      panel.SetData = (pnl, data) =>
+        if (data.fetch) then
+          pnl:SetChoices(data:fetch())
+        end
+        if (data.fetchAsync) then
+          data:fetchAsync():next((result) =>
+            pnl:SetChoices(result)
+          end, ErrorNoHalt)
+        end
+      end
+      panel.Font = "Atlas.Configurator.Admin.Panel.Selectbox"
+      panel.Outline = tbl?.outline?.standard or AtlasUI.Theme.Navbar
+      panel.Rotation = 0
+      panel.Paint = (pnl, w, h) =>
+        AtlasUI:MaskInverse(() => 
+          AtlasUI:DrawRoundedBox(6, 1, 1, w - 2, h - 2, color_white)
+        end, () =>
+          AtlasUI:DrawRoundedBox(6, 0, 0, w, h, pnl.Outline)
+        end)
+
+        local size = h / 3
+        AtlasUI:DrawIconRotated(w - size / 2 - 8, h / 2, size, size, pnl.Rotation, pnl, Color(182, 182, 182))
+
+        draw.SimpleText(pnl.Text, pnl.Font, 8, h / 2, pnl.TextColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+      end
+      panel.SizeToContents = (pnl) =>
+        local width = 36
+        surface.SetFont(pnl.Font)
+        local tw = surface.GetTextSize(pnl.Text)
+        width += tw
+
+        pnl:SetWide(width)
+      end
+      panel.OnCursorEntered = (pnl) =>
+        pnl:LerpColor("Outline", tbl?.outline?.hover or AtlasUI.Theme.Primary)
+        pnl:Lerp("Rotation", 180)
+      end
+      panel.OnCursorExited = (pnl) =>
+        stopif IsValid(pnl.Popup)
+
+        pnl:LerpColor("Outline", tbl?.outline?.standard or AtlasUI.Theme.Navbar)
+        pnl:Lerp("Rotation", 0)
+      end
+      panel.RemovePopup = (pnl) =>
+        stopif !IsValid(pnl.Popup)
+
+        pnl.Popup:Remove()
+      end
+      panel.OnRemove = panel.RemovePopup
+      panel.DoClick = (pnl) =>
+        pnl:RemovePopup()
+
+        local aX, aY = pnl:LocalToScreen()
+
+        local popup = vgui.Create("EditablePanel")
+        pnl.Popup = popup
+        popup:SetDrawOnTop(true)
+        popup:SetZPos(125)
+        popup:DockPadding(8, 8, 8, 8)
+        local width = 16
+        local height = 12
+        surface.SetFont(pnl.Font)
+        for i, v in ipairs(pnl.Choices) do
+          local tw = surface.GetTextSize(v.name)
+          tw += 32
+          if (tw > width) then
+            width = tw
+          end
+
+          local btn = popup:Add("DButton")
+          btn:Dock(TOP)
+          btn:DockMargin(0, 0, 0, 4)
+          btn:SetText(v.name)
+          btn:SetFont("Atlas.Configurator.Admin.Panel.Selectbox")
+          btn:SizeToContentsY(8)
+          btn.BackgroundColor = Color(22, 22, 22, 0)
+          local col = istable(v) and v.__color
+          btn.TextColor = col and ColorAlpha(col, 150) or Color(182, 182, 182)
+          btn.Paint = (pnl, w, h) =>
+            pnl:SetTextColor(pnl.TextColor)
+
+            AtlasUI:DrawRoundedBox(6, 0, 0, w, h, pnl.BackgroundColor)
+          end
+          btn.OnCursorEntered = (pnl) =>
+            pnl:LerpColor("BackgroundColor", col or Color(22, 22, 22))
+            pnl:LerpColor("TextColor", color_white)
+          end
+          btn.OnCursorExited = (pnl) =>
+            pnl:LerpColor("BackgroundColor", Color(22, 22, 22, 0))
+            pnl:LerpColor("TextColor", col and ColorAlpha(col, 150) or Color(182, 182, 182))
+          end
+          btn.DoClick = (pnl) =>
+            panel:SetChoice(pnl:GetText())
+            popup:Remove()
+            panel:Lerp("Rotation", 0)
+          end
+
+          height += btn:GetTall() + 4
+        end
+        popup:SetWide(width)
+        popup:SetTall(0)
+        popup:LerpHeight(height, 0.3)
+        popup.Alpha = 0
+        popup:LerpAlpha(255, 0.3)
+        popup.OnFocusChanged = (pnl, gained) =>
+          stopif gained
+
+          pnl:Remove()
+          panel:OnCursorExited()
+        end
+        popup.Paint = (pnl, w, h) =>
+          local aX, aY = pnl:LocalToScreen()
+
+          BSHADOWS.BeginShadow()
+            AtlasUI:DrawRoundedBox(6, aX, aY, w, h, AtlasUI.Theme.Background)
+          BSHADOWS.EndShadow(1, 1, 1, 150 * (255 / pnl:GetAlpha()))
+        end
+        popup:SetPos(aX + pnl:GetWide() - popup:GetWide(), aY + pnl:GetTall())
+        popup:MakePopup()
+      end
+
+      return panel
+    end
+  },
+  ["Toggle"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("AtlasUI.Checkbox")
+      panel:DockMargin(0, 6, 6, 6)
+      local off = "OFF"
+      local on = "ON"
+      if (tbl.data) then
+        if (tbl.data.toggle) then
+          off = tbl.data.toggle[1]
+          on = tbl.data.toggle[2]
+        end
+      end
+      local width = 0
+      surface.SetFont(panel.font)
+      local twOff = surface.GetTextSize(off)
+      local twOn = surface.GetTextSize(on)
+      local increaseBy = math.max(twOn, twOff)
+      width += 24 + increaseBy * 2
+      panel.offText = off
+      panel.onText = on
+      panel:SetWide(width)
+      panel.SetInput = (pnl, input) => 
+        pnl:SetState(input, true)
+      end
+      panel.GetSettingValue = (pnl) =>
+        return tobool(pnl:GetState())
+      end
+
+      return panel
+    end
+  },
+  ["Checkbox"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("AtlasUI.CheckboxV2")
+      panel:DockMargin(0, 12, 0, 12)
+      panel.Background = AtlasUI.Theme.Background
+      panel:SetWide(32)
+      panel.SetInput = (pnl, value) =>
+        pnl:SetState(tobool(value), true)
+      end
+      panel.GetSettingValue = (pnl) =>
+        return tobool(pnl.State)
+      end
+
+      return panel
+    end
+  },
+  ["Color"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("DButton")
+      panel:SetText("")
+      panel.RemovePopup = (pnl) =>
+        stopif !IsValid(pnl.Popup)
+
+        pnl.Popup:Remove()
+      end
+      panel.OnRemove = panel.RemovePopup
+      panel.DoClick = (pnl) =>
+        if (IsValid(pnl.Popup)) then return end
+
+        local popup = vgui.Create("EditablePanel")
+        pnl.Popup = popup
+        pnl.Popup.OnFocusChanged = (popup, gained) =>
+          stopif gained
+
+          -- Wait one 1 frame for focus to change :pepega:
+          timer.Simple(0, () =>
+            stopif !IsValid(popup)
+            stopif popup:HasHierarchicalFocus()
+
+            popup:Remove()
+          end)
+        end
+        pnl.Popup.Think = (pnl) =>
+          stopif pnl:HasHierarchicalFocus()
+          if (!pnl.SingleFramedPassed) then
+            pnl.SingleFramedPassed = true
+
+            return
+          end
+
+          pnl:Remove()
+        end
+        local aX, aY = pnl:LocalToScreen()
+        pnl.Popup:SetSize(180, 216)
+        pnl.Popup:SetPos(aX - pnl.Popup:GetWide() + 48, aY + 48)
+        pnl.Popup:SetDrawOnTop(true)
+        pnl.Popup:MakePopup()
+        pnl.Popup.Paint = (pnl, w, h) =>
+          AtlasUI:DrawRoundedBoxEx(6, 0, 0, w, h, AtlasUI.Theme.Primary, false, false, true, true)
+        end
+        pnl.Popup:DockPadding(8, 8, 8, 8)
+
+        local top = pnl.Popup:Add("Panel")
+        pnl.Popup.Top = top
+        top:Dock(TOP)
+        top:SetTall(36)
+        top.PerformLayout = (pnl, w, h) =>
+          local width = w / 3 - 2
+
+          for i, v in ipairs(pnl:GetChildren()) do
+            v:SetWide(width)
+          end
+        end
+        top.SetColor = (pnl, color) =>
+          local children = pnl:GetChildren()
+          local { r, g, b } = color
+
+          children[1]:SetValue(r)
+          children[2]:SetValue(g)
+          children[3]:SetValue(b)
+
+          panel.Color = Color(r, g, b)
+        end
+        top.GetColor = (pnl) =>
+          local children = pnl:GetChildren()
+
+          return Color(
+            children[1]:GetValue(),
+            children[2]:GetValue(),
+            children[3]:GetValue()
+          )
+        end
+
+        local function color(i, val)
+          local _panel = top:Add("DPanel")
+          _panel:Dock(LEFT)
+          _panel:DockMargin(0, 0, 4, 0)
+          _panel.Paint = (pnl, w, h) =>
+            local col
+            if (i == 1) then
+              col = AtlasUI.Theme.Red
+            elseif (i == 2) then
+              col = AtlasUI.Theme.Green
+            elseif (i == 3) then
+              col = AtlasUI.Theme.Blue
+            end
+
+            AtlasUI:DrawRoundedBox(6, 0, 0, w, h, col)
+          end
+
+          _panel.Textentry = _panel:Add("AtlasUI.TextEntry")
+          local textentry = _panel.Textentry
+          textentry:Dock(FILL)
+          textentry:DockMargin(1, 1, 1, 1)
+          textentry.textentry:SetNumeric(true)
+          textentry.textentry:SetUpdateOnType(true)
+          textentry.textentry.OnValueChange = (s, text) =>
+            pnl.Popup.Picker:SetColor(top:GetColor())
+
+            if (s:HasFocus()) then
+              s:SetCaretPos(#s:GetText())
+            end
+          end
+          _panel.SetValue = (pnl, value) =>
+            textentry:SetText(value)
+          end
+          _panel.GetValue = (pnl) =>
+            return tonumber(textentry:GetText()) or 0
+          end
+        end
+
+        for i = 1, 3 do color(i) end
+
+        pnl.Popup.Picker = pnl.Popup:Add("DColorMixer")
+        local picker = pnl.Popup.Picker
+        picker:SetPalette(false)
+        picker:SetAlphaBar(false)
+        picker:SetWangs(false)
+        picker:Dock(FILL)
+        picker:DockMargin(0, 8, 0, 0)
+        picker.OnChange = (pnl, color) =>
+          local r = math.Round(color.r)
+          local g = math.Round(color.g)
+          local b = math.Round(color.b)
+
+          top:SetColor(color)
+
+          if (panel.onChange) then
+            panel:onChange(color)
+          end
+        end
+        picker.ValueChanged = picker.OnChange
+        picker:SetColor(panel.Color)
+      end
+      panel:SetWide(48)
+      panel.Color = Color(180, 180, 180)
+      panel.Paint = (pnl, w, h) =>
+        local size = h / 4
+
+        AtlasUI:DrawCircle(h / 2, h / 2, size, 30, pnl.Color)
+      end
+      panel.SetInput = (pnl, input) =>
+        if (isstring(input)) then
+          pnl.Color = AtlasUI:HexToRGB("#" .. input)
+        else
+          pnl.Color = input
+        end
+      end
+      panel.GetSettingValue = (pnl) =>
+        return pnl.Color
+      end
+
+      return panel
+    end
+  },
+  ["Popup"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("DButton")
+      panel:SetText("")
+      panel:DockMargin(0, 8, 6, 8)
+      panel:SetWide(32)
+      AtlasUI:DownloadIcon(panel, "CEIrmnK")
+      panel.Data = {}
+      panel.GetSettingValue = (pnl) => return pnl.Data end
+      panel.SetInput = (pnl, value) =>
+       -- pnl:SetState(value, true)
+      end
+      panel.Color = Color(180, 180, 180)
+      panel.Paint = (pnl, w, h) =>
+        AtlasUI:DrawIcon(4, 4, w - 8, h - 8, pnl, pnl.Color)
+      end
+      panel.OnCursorEntered = (pnl, w, h) =>
+        pnl:LerpColor("Color", color_white)
+      end
+      panel.OnCursorExited = (pnl, w, h) =>
+        pnl:LerpColor("Color", Color(180, 180, 180))
+      end
+      panel.RemovePopup = (pnl) =>
+        stopif !IsValid(pnl.Popup)
+
+        pnl.Popup:Remove()
+      end
+      panel.OnRemove = panel.RemovePopup
+      panel.DoClick = (pnl) =>
+        pnl:RemovePopup()
+      end
+
+      return panel
+    end
+  },
+  ["Range"] = {
+    panel = () ->
+      local panel = vgui.Create("Panel")
+      panel:DockMargin(0, 6, 6, 6)
+      panel.SizeToContents = (pnl) =>
+        local h = pnl:GetTall()
+        pnl.Min:SetTall(h)
+        pnl.Separator:SetTall(h)
+        pnl.Max:SetTall(h)
+
+        -- Min
+        local tw = 0
+        surface.SetFont(pnl.Min.textentry:GetFont())
+        tw = surface.GetTextSize(pnl.Min:GetText())
+        tw += 24
+        tw = math.Clamp(tw, 28, 250)
+        pnl.Min:SetWide(tw)
+
+        -- Max
+        tw = 0
+        surface.SetFont(pnl.Max.textentry:GetFont())
+
+        tw = surface.GetTextSize(pnl.Max:GetText())
+        tw += 24
+        tw = math.Clamp(tw, 28, 250)
+        pnl.Max:SetWide(tw)
+
+        pnl.Separator:SizeToContents()
+
+        local width = 0
+        width += pnl.Min:GetWide()
+        width += 8 + pnl.Separator:GetWide() + 8
+        width += pnl.Max:GetWide()
+
+        pnl:SetWide(width)
+
+        pnl.Min:SetPos(0, 0)
+        pnl.Separator:SetPos(pnl.Min:GetWide() + 8, 9)
+        pnl.Max:SetPos(pnl.Separator.x + pnl.Separator:GetWide() + 8, 0)
+      end
+      panel.PerformLayout = panel.SizeToContents
+
+      panel.Min = panel:Add("AtlasUI.TextEntry")
+      panel.Min.textentry:SetUpdateOnType(true)
+      panel.Min.textentry.OnValueChange = (pnl) => panel:SizeToContents() end
+
+      panel.Separator = panel:Add("DLabel")
+      panel.Separator:SetText("to")
+      panel.Separator:SetFont("Atlas.Configurator.Inputs.Label")
+      panel.Separator:SetContentAlignment(2)
+      
+      panel.Max = panel:Add("AtlasUI.TextEntry")
+      panel.Max.textentry:SetUpdateOnType(true)
+      panel.Max.textentry.OnValueChange = (pnl) => panel:SizeToContents() end
+      
+      panel:SizeToContents()
+
+      return panel
+    end
+  },
+  ["TextentryList"] = {
+    panel = (tbl, extra) ->
+      local split = {}
+      if (istable(tbl.value)) then
+        split = tbl.value
+      else
+        -- First try JSON it
+        local value = string.Trim(tbl.value or "")
+        split = util.JSONToTable(value)
+        -- If that doesn't work we do this instead
+        if (!split) then
+          split = string.Explode(",", value)
+        end
+        if (value == "" or !split) then
+          split = {}
+        end
+      end
+
+      local panel = vgui.Create("DLabel")
+      panel:DockMargin(0, 0, 8, 0)
+      panel:SetFont("Atlas.Configurator.Inputs.Label")
+      panel.SetTableData = (pnl, data) =>
+        local amt = #data
+        tbl.dataRows = data
+        
+        pnl:SetAmount(amt)
+      end
+      panel.GetSettingValue = (pnl) =>
+        return tbl.dataRows
+      end
+      panel.SetAmount = (pnl, amt) =>
+        local suffix = "result" .. (amt != 1 and "s" or "")
+        pnl:SetText(`${amt} ${suffix}`)
+        pnl:SizeToContents()
+      end
+      panel.OnCursorEntered = (pnl) =>
+        pnl:SetCursor("hand")
+      end
+      panel.OnCursorExited = (pnl) =>
+        pnl:SetCursor("blank")
+      end
+      panel.RemovePopup = (pnl) =>
+        stopif !IsValid(pnl.Popup)
+
+        pnl.Popup:Remove()
+      end
+      panel.OnRemove = panel.RemovePopup
+      panel.DoClick = (pnl) =>
+        local popup = vgui.Create("AtlasUI.Configurator.DataPopup")
+        pnl.Popup = popup
+        popup:SetData(tbl, extra)
+      end
+      panel:SetTableData(split)
+
+      return panel
+    end
+  },
+  ["Key"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("Panel")
+      panel:DockMargin(0, 8, 6, 8)
+      panel.Key = tbl.defaultValue
+      panel.Font = "Atlas.Configurator.Inputs.Label"
+      panel:SetCursor("hand")
+      panel.Paint = (pnl, w, h) =>
+        local code = input.GetKeyName(pnl.Key) or "NONE"
+        draw.SimpleText(code:upper(), pnl.Font, w / 2, h / 2, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+        AtlasUI:MaskInverse(() =>
+          AtlasUI:DrawRoundedBox(6, 1, 1, w - 2, h - 2, color_white)
+        end, () =>
+          AtlasUI:DrawRoundedBox(6, 0, 0, w, h, pnl.Active and AtlasUI.Theme.Accent or AtlasUI.Theme.Primary)
+        end)
+      end
+      panel.OnMousePressed = (pnl) =>
+        pnl.Active = true
+        pnl:RequestFocus()
+      end
+      panel.OnFocusChanged = (pnl, gained) =>
+        pnl.Active = gained
+      end
+      panel.OnKeyCodeReleased = (pnl, keyCode) =>
+        stopif !pnl.Active
+
+        pnl.Key = keyCode == KEY_ESCAPE and KEY_NONE or keyCode
+        pnl:SizeToContentsX()
+        pnl:KillFocus()
+        pnl.Active = nil
+      end
+      panel.GetSettingValue = (pnl) =>
+        return pnl.Key
+      end
+      panel.SizeToContentsX = (pnl) =>
+        local code = input.GetKeyName(pnl.Key) or "NONE"
+        local font = pnl.Font
+        local tw = surface.GetTextSize(code:upper())
+
+        pnl:SetWide(tw + 16)
+      end
+      panel:SizeToContentsX()
+
+      return panel
+    end
+  },
+  ["KeyValue"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("Panel")
+      AtlasUI:DownloadIcon(panel, "2QGKAd6")
+      panel.ArrowColor = Color(180, 180, 180)
+      panel.Rotation = 0
+      panel:SetCursor("hand")
+      panel.Paint = (pnl, w, h) =>
+        local size = 48 / 3
+        AtlasUI:DrawIconRotated(w - size, size + size / 2, size, size, pnl.Rotation, pnl, pnl.ArrowColor)
+      end
+      panel.SetExpanded = (pnl, state) =>
+        pnl.Active = state
+        pnl:Lerp("Rotation", state and 180 or 0, 0.4)
+
+        if (!IsValid(pnl.SettingsDropdown) and state) then
+          pnl:CreateDropdown()
+        end
+
+        pnl:SetHeight(state)
+      end
+      panel.SetHeight = (pnl, state) =>
+        local parent = pnl:GetParent()
+        local height = 48
+        if (state) then
+          height += pnl.SettingsDropdown:GetHeight()
+        end
+        pnl.Think = () =>
+          -- for fucking fuck sake wtf
+          parent:GetParent():GetParent():GetParent():InvalidateLayout(true)
+        end
+        parent:EndAnimations()
+        parent:Lerp("Height", height, 0.4)
+        parent:LerpHeight(height, 0.4, () =>
+          stopif !IsValid(pnl)
+
+          pnl.Think = () => end
+        end)
+      end
+      panel.OnCursorEntered = (pnl) =>
+        pnl:LerpColor("ArrowColor", color_white)
+      end
+      panel.OnCursorExited = (pnl) =>
+        stopif pnl.Active
+
+        pnl:LerpColor("ArrowColor", Color(180, 180, 180))
+      end
+      panel.OnMousePressed = (pnl) =>
+        pnl:SetExpanded(!pnl.Active)
+      end
+      panel.CreateDropdown = (pnl) =>     
+        local settings = pnl:Add("Panel")
+        pnl.SettingsDropdown = settings
+        settings:Dock(FILL)
+        settings:DockMargin(0, 48, 0, 8)
+        settings.GetHeight = (pnl) =>
+          local h = 48
+          for i, v in ipairs(pnl.Rows) do
+            h += v:GetTall() + 4
+          end
+
+          return h
+        end
+
+        settings.Content = settings:Add("Panel")
+        settings.Content:Dock(FILL)
+        settings.Content:DockMargin(0, 0, 0, 8)
+
+        settings.Rows = {}
+
+        settings.Bottom = settings:Add("Panel")
+        settings.Bottom:Dock(BOTTOM)
+        settings.Bottom:SetTall(32)
+
+        settings.New = settings.Bottom:Add("AtlasUI.ButtonV2")
+        settings.New:Dock(RIGHT)
+        settings.New:SetText("Create New")
+        settings.New:SetFont("Atlas.Configurator.KeyValue")
+        settings.New:SizeToContentsX(24)
+        settings.New:SetRoundness(6)
+        settings.New:SetSolidColor(AtlasUI.Theme.Primary)
+        settings.New:SetHoverColor(AtlasUI.Theme.Green)
+        settings.New.DoClick = (pnl) =>
+          settings:CreateRow(nil, tbl.data.right.default)
+
+          settings:GetParent():SetHeight(true)
+        end
+
+        settings.SetData = (pnl, data) =>
+          for i, v in pairs(data) do
+            pnl:CreateRow(i, v)
+          end
+        end
+
+        settings.CreateRow = (pnl, i, v) =>
+          local col = AtlasUI.Theme.Navbar
+          local row = settings.Content:Add("Panel")
+          row:Dock(TOP)
+          row:DockMargin(0, 0, 0, 4)
+          row:SetTall(40)
+          row.Think = (pnl) =>
+            pnl.Delete:SetVisible(pnl:IsHovered() or pnl:IsChildHovered())
+          end
+          row.Paint = (pnl, w, h) =>
+            AtlasUI:DrawRoundedBox(6, 0, 0, w, h, col)
+          end
+
+          local left = tbl.data.left or {}
+          row.Left = AtlasUI.Configurator:CreateInputPanel(left.type, self, tbl)
+          row.Left:SetParent(row)
+          row.Left:Dock(LEFT)
+          row.Left:DockMargin(0, 0, 0, 0)
+          if (left.type == "Textentry") then
+            row.Left:SetPlaceholder(left.placeholder or "")
+            row.Left:SetInput(i or "")
+            row.Left:SetTextColor(Color(180, 180, 180))
+            local paint = row.Left.Paint
+            row.Left.OutlineColor = AtlasUI.Theme.Primary
+            row.Left.Paint = (pnl, w, h) =>
+              if (paint) then paint(pnl, w, h) end
+
+              AtlasUI:MaskInverse(() =>
+                AtlasUI:DrawRoundedBoxEx(6, 1, 1, w - 2, h - 2, pnl.OutlineColor, true, false, true, false)
+              end, () =>
+                AtlasUI:DrawRoundedBoxEx(6, 0, 0, w, h, pnl.textentry:HasFocus() and AtlasUI.Theme.Accent or pnl.OutlineColor, true, false, true, false)
+              end)
+            end
+          end
+          if (row.Left.SetData) then
+            row.Left:SetData(tbl.data.left)
+            row.Left:SetInput(i or tbl.data.left.default)
+          end
+          if (row.Left.SetBackgroundColor) then
+            row.Left:SetBackgroundColor(col)
+          end
+
+          local right = tbl.data.right or {}
+          row.Right = AtlasUI.Configurator:CreateInputPanel(right.type, self, right)
+          row.Right:SetParent(row)
+          row.Right:Dock(RIGHT)
+          row.Right:DockMargin(0, 0, 0, 0)
+          if (right.type == "Textentry") then
+            if (right.placeholder) then
+              row.Right:SetPlaceholder(right.placeholder)
+            end
+            row.Right:SetInput(tostring(v))
+            if (right.readOnly) then
+              row.Right:SetEnabled(false)
+              row.Right.textentry:SetEnabled(false)
+              row.Right.textentry:SetCursor("no")
+            end
+            if (right.number) then
+              row.Right:SetNumeric(true)
+            end
+          elseif (right.type == "TextentryWithLabel") then
+            row.Right.textentry:SetPlaceholder(right.placeholder or "")
+            row.Right.textentry:SetText(v or right.default or "")
+            row.Right.textentry:DoSizing(row.Right.textentry:GetText())
+          end
+
+          if (row.Right.SetBackgroundColor) then
+            row.Right:SetBackgroundColor(col)
+          end
+
+          row.Right:SetVisible(!right.hide)
+
+          row.Delete = row:Add("DButton")
+          row.Delete:SetVisible(false)
+          row.Delete:Dock(RIGHT)
+          row.Delete:SetText("")
+          row.Delete.Paint = (pnl, w, h) =>
+            AtlasUI:DrawRoundedBox(6, 4, 4, w - 8, h - 8, AtlasUI.Theme.Red)
+
+            surface.SetMaterial(AtlasUI.Materials.CloseButton)
+            surface.SetDrawColor(color_white)
+            local size = h * 0.35
+            surface.DrawTexturedRect(w / 2 - size / 2, h / 2 - size / 2, size, size)
+          end
+          row.Delete.DoClick = (pnl, w, h) =>
+            for i, v in ipairs(settings.Rows) do
+              continueif tobool(v != row)
+
+              table.remove(settings.Rows, i)
+            end
+       
+            row:Remove()
+            settings:GetParent():SetHeight(true)
+          end
+          row.Delete:SetWide(40)
+
+          row.GetSettingValue = (pnl) =>
+            return {
+              key = pnl.Left:GetSettingValue(),
+              value = pnl.Right:GetSettingValue()
+            }
+          end
+
+          table.insert(pnl.Rows, row)
+        end
+        
+        settings:SetData(tbl.value)
+      end
+      panel:SetWide(600)
+      panel.GetSettingValue = (pnl) =>
+        if (!IsValid(pnl.SettingsDropdown)) then
+          pnl:CreateDropdown()
+        end
+
+        local tbl = {}
+
+        for i, v in ipairs(pnl.SettingsDropdown.Rows) do
+          local rowTbl = v:GetSettingValue()
+          tbl[rowTbl.key] = rowTbl.value
+        end
+
+        return tbl
+      end
+
+      return panel
+    end
+  },
+  ["SliderPad"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("AtlasUI.SliderPad")
+      panel:DockMargin(0, 8, 0, 8)
+      panel.GetSettingValue = (pnl) =>
+        return pnl:GetValue()
+      end
+      panel.Textentry:SetWide(tbl?.data?.textWidth or 40)
+
+      panel:SetMin(tbl?.data?.min or 0)
+      panel:SetMax(tbl?.data?.max or 10)
+      panel:SetValue(tbl.value)
+      panel:SetWide(tbl?.data?.width or 200)
+      panel:SetColor(tbl?.data?.color or AtlasUI.Theme.Accent)
+
+      return panel
+    end
+  },
+  ["ListDropdownDarkRPCategories"] = {
+    panel = (tbl) ->
+      local panel = vgui.Create("Panel")
+      AtlasUI:DownloadIcon(panel, "2QGKAd6")
+      panel.ArrowColor = Color(180, 180, 180)
+      panel.Rotation = 0
+      panel:SetCursor("hand")
+      panel.Paint = (pnl, w, h) =>
+        local size = 48 / 3
+        AtlasUI:DrawIconRotated(w - size, size + size / 2, size, size, pnl.Rotation, pnl, pnl.ArrowColor)
+      end
+      panel.SetExpanded = (pnl, state) =>
+        pnl.Active = state
+        pnl:Lerp("Rotation", state and 180 or 0, 0.4)
+
+        if (!IsValid(pnl.SettingsDropdown) and state) then
+          pnl:CreateDropdown()
+        end
+
+        pnl:SetHeight(state)
+      end
+      panel.SetHeight = (pnl, state) =>
+        local parent = pnl:GetParent()
+        local height = 48
+        if (state) then
+          height += pnl.SettingsDropdown:GetHeight()
+        end
+        pnl.Think = () =>
+          -- for fucking fuck sake wtf
+          parent:GetParent():GetParent():GetParent():InvalidateLayout(true)
+        end
+        parent:EndAnimations()
+        parent:Lerp("Height", height, 0.4)
+        parent:LerpHeight(height, 0.4, () =>
+          stopif !IsValid(pnl)
+
+          pnl.Think = () => end
+        end)
+      end
+      panel.OnCursorEntered = (pnl) =>
+        pnl:LerpColor("ArrowColor", color_white)
+      end
+      panel.OnCursorExited = (pnl) =>
+        stopif pnl.Active
+
+        pnl:LerpColor("ArrowColor", Color(180, 180, 180))
+      end
+      panel.OnMousePressed = (pnl) =>
+        pnl:SetExpanded(!pnl.Active)
+      end
+      panel.CreateDropdown = (pnl) =>     
+        local settings = pnl:Add("Panel")
+        pnl.SettingsDropdown = settings
+        settings:Dock(FILL)
+        settings:DockMargin(0, 48, 0, 8)
+        settings.GetHeight = (pnl) =>
+          local h = 48
+          for i, v in ipairs(pnl.Rows) do
+            h += v:GetTall() + 4
+          end
+
+          return h
+        end
+
+        settings.Content = settings:Add("Panel")
+        settings.Content:Dock(FILL)
+        settings.Content:DockMargin(0, 0, 0, 8)
+
+        settings.Rows = {}
+
+        settings.Bottom = settings:Add("Panel")
+        settings.Bottom:Dock(BOTTOM)
+        settings.Bottom:SetTall(32)
+
+        settings.New = settings.Bottom:Add("AtlasUI.ButtonV2")
+        settings.New:Dock(RIGHT)
+        settings.New:SetText("Add New")
+        settings.New:SetFont("Atlas.Configurator.KeyValue")
+        settings.New:SizeToContentsX(24)
+        settings.New:SetRoundness(6)
+        settings.New:SetSolidColor(AtlasUI.Theme.Primary)
+        settings.New:SetHoverColor(AtlasUI.Theme.Green)
+        settings.New.DoClick = (btn) =>
+          local existingCategories = pnl:GetSettingValue()
+          local allCategories = DarkRP.getCategories().jobs
+          local categories = {}
+          for i, v in ipairs(allCategories) do
+            continueif existingCategories[v.name]
+
+            table.insert(categories, v)
+          end
+
+          local options = AtlasUI.Options(pnl)
+          for i, v in ipairs(categories) do
+            options:addButton({ 
+              text = v.name,
+              onClick = () =>
+                settings:CreateRow(v.name)
+                settings:GetParent():SetHeight(true)
+              end
+            })
+          end
+          options:create()
+        end
+
+        settings.SetData = (pnl, data) =>
+          for i, v of data do
+            print(i, v)
+            pnl:CreateRow(i)
+          end
+        end
+        settings.CreateRow = (pnl, name) =>
+          local col = AtlasUI.Theme.Navbar
+          local row = settings.Content:Add("Panel")
+          row:Dock(TOP)
+          row:DockMargin(0, 0, 0, 4)
+          row:SetTall(40)
+          row.Think = (pnl) =>
+            pnl.Delete:SetVisible(pnl:IsHovered() or pnl:IsChildHovered())
+          end
+          row.Paint = (pnl, w, h) =>
+            AtlasUI:DrawRoundedBox(6, 0, 0, w, h, col)
+          end
+
+          row.Left = row:Add("DLabel")
+          row.Left:Dock(LEFT)
+          row.Left:DockMargin(12, 0, 0, 0)
+          row.Left:SetFont("AtlasUI.TextEntry")
+          row.Left:SetText(name)
+          row.Left:SetTextColor(Color(180, 180, 180))
+          row.Left:SizeToContentsX()
+
+          row.Delete = row:Add("DButton")
+          row.Delete:SetVisible(false)
+          row.Delete:Dock(RIGHT)
+          row.Delete:SetText("")
+          row.Delete.Paint = (pnl, w, h) =>
+            AtlasUI:DrawRoundedBox(6, 4, 4, w - 8, h - 8, AtlasUI.Theme.Red)
+
+            surface.SetMaterial(AtlasUI.Materials.CloseButton)
+            surface.SetDrawColor(color_white)
+            local size = h * 0.35
+            surface.DrawTexturedRect(w / 2 - size / 2, h / 2 - size / 2, size, size)
+          end
+          row.Delete.DoClick = (pnl, w, h) =>
+            for i, v in ipairs(settings.Rows) do
+              continueif tobool(v != row)
+
+              table.remove(settings.Rows, i)
+            end
+       
+            row:Remove()
+            settings:GetParent():SetHeight(true)
+          end
+          row.Delete:SetWide(40)
+
+          row.GetSettingValue = (pnl) =>
+            return {
+              key = pnl.Left:GetText(),
+              value = true
+            }
+          end
+
+          table.insert(pnl.Rows, row)
+        end
+        
+        settings:SetData(tbl.value)
+      end
+      panel:SetWide(600)
+      panel.GetSettingValue = (pnl) =>
+        if (!IsValid(pnl.SettingsDropdown)) then
+          pnl:CreateDropdown()
+        end
+
+        local tbl = {}
+
+        for i, v in ipairs(pnl.SettingsDropdown.Rows) do
+          local rowTbl = v:GetSettingValue()
+          tbl[rowTbl.key] = rowTbl.value
+        end
+
+        return tbl
+      end
+
+      return panel
+    end
+  }
+}
+
+function AtlasUI.Configurator:CreateInputPanel(panel, bindTo, tbl, extra = {})
+  return self.InputPanels[panel].panel(bindTo, tbl, extra)
+end
+
+local PANEL = {}
+
+AtlasUI:CreateFont("Atlas.Configurator.Admin.Data.Title", 22)
+AtlasUI:CreateFont("Atlas.Configurator.Admin.Data.Button", 16)
+AtlasUI:CreateFont("Atlas.Configurator.Admin.Data.Row", 16)
+
+function PANEL:Init()
+  self:SetSize(ScrW(), ScrH())
+  self:SetBackgroundWidth(500)
+  self:SetBackgroundHeight(500)
+  self:MakePopup()
+
+  self.Body = self:Add("Panel")
+  self.Body:Dock(FILL)
+  self.Body:DockPadding(16, 16, 16, 16)
+
+  self.Top = self.Body:Add("Panel")
+  self.Top:Dock(TOP)
+  self.Top:SetTall(28)
+  
+  self.Title = self.Top:Add("DLabel")
+  self.Title:Dock(LEFT)
+  self.Title:SetFont("Atlas.Configurator.Admin.Data.Title")
+    
+  self.Save = self.Top:Add("AtlasUI.ButtonV2")
+  self.Save:Dock(RIGHT)
+  self.Save:SetFont("Atlas.Configurator.Admin.Data.Button")
+  self.Save:SetText("Save Rows")
+  self.Save:SizeToContentsX(16)
+  self.Save:SetRoundness(6)
+  self.Save:SetSolidColor(AtlasUI.Theme.Blue)
+  self.Save.DoClick = (pnl) =>
+    self:OnSave(self.Results)
+  end
+
+  self.Create = self.Top:Add("AtlasUI.ButtonV2")
+  self.Create:Dock(RIGHT)
+  self.Create:DockMargin(0, 0, 8, 0)
+  self.Create:SetFont("Atlas.Configurator.Admin.Data.Button")
+  self.Create:SetText("Create New")
+  self.Create:SizeToContentsX(16)
+  self.Create:SetRoundness(6)
+  self.Create:SetSolidColor(AtlasUI.Theme.Primary)
+  self.Create.DoClick = (pnl) =>
+    local newId = #self.Results + 1
+
+    self:CreateRow(newId, "")
+    self:SetResultsTitle()
+  end
+
+  self.Scroll = self.Body:Add("AtlasUI.Scrollpanel.Wyvern")
+  self.Scroll:Dock(FILL)
+  self.Scroll:DockMargin(0, 16, 0, 0)
+end
+
+function PANEL:Add(pnl)
+  return self.background:Add(pnl)
+end
+
+function PANEL:SetData(data, extra)
+  self.Results = data.dataRows
+  self.Data = data
+  self.Extra = extra
+
+  self:SetTitle(extra.name)
+  self:CreateRows(self.Results)
+end
+
+function PANEL:SetResultsTitle()
+  local amt = #self.Results
+  local str = "row" .. (amt != 1 and "s" or "")
+  self.Title:SetText(amt .. " " .. str)
+  self.Title:SizeToContents()
+end
+
+function PANEL:CreateRows(data)
+  for i, v in ipairs(data) do 
+    self:CreateRow(i, v)
+  end
+
+  self:SetResultsTitle()
+end
+
+function PANEL:CreateRow(id, val)
+  local row = self.Scroll:Add("DPanel")
+  row:Dock(TOP)
+  row:DockMargin(0, 0, 8, 4)
+  row:SetTall(36)
+  row.Id = id
+  row.Color = id % 2 == 0 and AtlasUI.Theme.Primary or AtlasUI.Theme.Navbar
+  row.Paint = (pnl, w, h) =>
+    AtlasUI:DrawRoundedBox(6, 0, 0, w, h, pnl.Color)
+
+    draw.SimpleText(`#${pnl.Id}`, "Atlas.Configurator.Admin.Data.Row", 8, h / 2, Color(174, 174, 174), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+
+    pnl.Delete:SetVisible(pnl:IsHovered() or pnl:IsChildHovered())
+  end
+
+  row.Delete = row:Add("DButton")
+  row.Delete:Dock(LEFT)
+  row.Delete:SetWide(40)
+  row.Delete:SetText("")
+  row.Delete.Paint = (pnl, w, h) =>
+    AtlasUI:DrawRoundedBoxEx(6, 0, 0, w, h, AtlasUI.Theme.Red, true, false, true, false)
+
+    surface.SetMaterial(AtlasUI.Materials.CloseButton)
+    surface.SetDrawColor(color_white)
+    local size = h * 0.4
+    surface.DrawTexturedRect(w / 2 - size / 2, h / 2 - size / 2, size, size)
+  end
+  row.Delete.DoClick = (pnl, w, h) =>
+    table.remove(self.Results, row.Id)
+    row:Remove()
+
+    local index = 1
+    for i, v in ipairs(self.Scroll:GetCanvas():GetChildren()) do
+      continueif !IsValid(v)
+
+      v.Id = index
+      v.Input.textentry:OnValueChange(v.Input:GetText())
+
+      index++
+    end
+
+    self:SetResultsTitle()
+  end
+
+  row.Input = row:Add("AtlasUI.TextEntry")
+  row.Input:Dock(RIGHT)
+  row.Input:SetBackgroundColor(row.Color)
+  row.Input:SetFont("Atlas.Configurator.Admin.Data.Row")
+  row.Input:SetPlaceholder("Value")
+  row.Input.textentry:SetUpdateOnType(true)
+  row.Input.textentry.OnValueChange = (pnl, text) =>
+    surface.SetFont(pnl:GetFont())
+    local text = pnl:GetText()
+    self.Results[row.Id] = text
+    if (text == "") then text = row.Input:GetPlaceholder() end
+    local tw = surface.GetTextSize(text)
+    tw += 24
+    local width = math.Clamp(tw, 28, 600)
+    row.Input:SetWide(width)
+  end
+  row.Input:SetText(val)
+  row.Input.textentry:OnValueChange(val)
+end
+
+function PANEL:OnSave(data)
+  self.Extra.parent.Input:SetTableData(data)
+end
+
+vgui.Register("AtlasUI.Configurator.DataPopup", PANEL, "AtlasUI.Popup")

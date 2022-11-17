@@ -1,0 +1,176 @@
+public class AtlasUI.ORM.Table
+  columns = {}
+  constraints = {}
+
+  constructor(conn, name, func = () => end, afterFunc = () => end)
+    self.conn = conn
+    self.debugName = debugName
+    
+    func(self)
+
+    self:create(name):next((result) =>
+      afterFunc()
+    end)
+  end
+
+  isMySQL()
+    return self.conn.isMySQL()
+  end
+
+  -- Utility
+  column(name, type)
+    local col = AtlasUI.ORM.Column(name, type, self:isMySQL())
+    table.insert(self.columns, col)
+
+    return col
+  end
+
+  constraint(name)
+    local constraint = AtlasUI.ORM.Constraint(name, self:isMySQL())
+    table.insert(self.constraints, constraint)
+
+    return constraint
+  end
+
+  --[[
+    Commands
+  ]]
+
+  integer(name)
+    return self:column(name, "int")
+  end
+
+  increments(name)
+    local col = self:integer(name)
+      :increments()
+      :primary()
+
+    if (self:isMySQL()) then
+      col:unsigned()
+    end
+
+    return col
+  end
+
+  string(name, length)
+    local col = self:column(name, "varchar")
+    if (length) then
+      col:length(length)
+    end
+
+    return col
+  end
+
+  json(name)
+    return self:column(name, "json")
+  end
+  
+  boolean(name)
+    return self:column(name, "boolean")
+  end
+
+  char(name, length)
+    return self:column(name, "char"):length(length)
+  end
+
+  date(name)
+    return self:column(name, "date")
+  end
+
+  dateTime(name)
+    return self:column(name, "datetime")
+  end
+
+  decimal(name)
+    return self:column(name, "decimal")
+  end
+
+  double(name)
+    return self:column(name, "double")
+  end
+
+  float(name)
+    return self:column(name, "float")
+  end
+
+  longText(name)
+    return self:column(name, "longtext")
+  end
+
+  smallInteger(name)
+    return self:column(name, "smallint")
+  end
+
+  tinyInteger(name)
+    return self:column(name, "tinyint")
+  end
+
+  text(name)
+    return self:column(name, "text")
+  end
+
+  time(name)
+    return self:column(name, "time")
+  end
+
+  timestamp(name)
+    return self:column(name, "timestamp")
+  end
+
+  timestamps()
+    self:timestamp("created_at")
+    self:timestamp("updated_at")
+  end
+
+  --[[
+    This is Gmod, lets make some helper functions
+  ]]
+
+  steamid(name)
+    return self:string(name, 24)
+  end
+
+  steamid64(name)
+    return self:char(name, 21)
+  end
+  
+  create(name)
+    local columns = AtlasUI:Map(self.columns, (x) => return x:buildString() end)
+    local constraints = AtlasUI:Map(self.constraints, (x) => return x:build() end)
+    local query = [[
+      CREATE TABLE IF NOT EXISTS :name: (
+        :content:
+      )
+    ]]
+    query = query:Replace(":name:", name)
+    local contents = {}
+    for i, v in ipairs(columns) do
+      table.insert(contents, v)
+    end
+    for i, v in ipairs(constraints) do
+      table.insert(contents, v)
+    end
+    query = query:Replace(":content:", table.concat(contents, ",\n        "))
+
+    local tblName = ""
+    local split = string.Explode("_", name)
+    local splitSize = #split
+    for i, v in ipairs(split) do
+      local isLast = splitSize == i
+
+      tblName ..= v:sub(1, 1):upper() .. v:sub(2) .. (isLast and "" or ".")
+    end
+
+    if (AtlasUI.Debug) then
+      print(query)
+    end
+
+    return AtlasUI:InvokeSQL(self.conn, query, tblName .. ".Create", () => end, (err) =>
+      print("Failed to create table " .. tblName)
+      print("Query:")
+      print(query)
+    end)
+  end
+
+  __type() return "AtlasUI.ORM.Table" end
+end

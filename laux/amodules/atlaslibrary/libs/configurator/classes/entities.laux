@@ -1,0 +1,34 @@
+class Entities
+  entities = {}
+  _get entities
+
+  register(name, entity)
+    self.entities[name] = entity
+  end
+
+  get(name)
+    return self.entities[name]
+  end
+
+  create(name)
+    return self:get(name)()
+  end
+
+  createSQLTable(entity)
+    local inst = entity()
+    local name = inst:getDatabaseEntity()
+    AtlasUI.Configurator:PrintMessage(`Creating SQL table for entity ${name}`)
+    inst:createSQLTable()
+  end
+
+  __type() return "AtlasUI.Configurator.Entities" end
+end
+
+AtlasUI.Configurator.Entities ||= Entities()
+
+hook.Add("Atlas.Configurator.InitialisedDatabase", "AtlasUI.Configurator.Entities", () =>
+  local ents = AtlasUI.Configurator.Entities
+  for i, v in pairs(ents:getEntities()) do
+    ents:createSQLTable(v)
+  end
+end)

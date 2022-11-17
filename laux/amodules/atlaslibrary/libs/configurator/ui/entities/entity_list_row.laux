@@ -1,0 +1,83 @@
+local PANEL = {}
+
+function PANEL:OnDelete() end
+function PANEL:DoClick() end
+
+function PANEL:SetEntity(entity, template, isList)
+  local { display, title, subtitle } = template.getListView(entity, isList)
+
+  self.Entity = entity
+  self.Title = markup.Parse(`<font=Atlas.Configurator.Row.Title><color=255,255,255>${title}</color></font>`)
+  self.Subtitle = markup.Parse(`<font=Atlas.Configurator.Row.Subtitle><color=174,174,174>${subtitle}</color></font>`)
+  self:SetDisplay(display)
+end
+
+function PANEL:Init()
+  self.Edit = self:Add("AtlasUI.ButtonV2")
+  self.Edit:SetText("Edit")
+  self.Edit:SetFont("Atlas.Configurator.Row.Title")
+  self.Edit:SetSolidColor(AtlasUI.Theme.GreenDark)
+  self.Edit:SetRoundness(6)
+  self.Edit.DoClick = (pnl) =>
+    self:DoClick()
+  end
+
+  self.Delete = self:Add("AtlasUI.ButtonV2")
+  self.Delete:SetVisible(false)
+  self.Delete:SetText("")
+  self.Delete:SetSolidColor(AtlasUI.Theme.Red)
+  self.Delete:SetRoundness(6)
+  self.Delete.DoClick = (pnl) =>
+    self:OnDelete()
+  end
+  self.Delete.PaintOver = (pnl, w, h) =>
+    local size = h / 2
+    surface.SetMaterial(AtlasUI.Materials.CloseButton)
+    surface.SetDrawColor(color_white)
+    surface.DrawTexturedRect(w / 2 - size / 2 + 1, h / 2 - size / 2, size, size)
+  end
+end
+
+function PANEL:Think()
+  stopif self.DeleteDisabled
+
+  self.Delete:SetVisible(self:IsHovered() or self:IsChildHovered())
+end
+
+function PANEL:SetDisplay(display)
+  stopif !display
+  stopif IsValid(self.Display)
+
+  self.Display = self:Add("SpawnIcon")
+  self.Display:Dock(LEFT)
+  self.Display:SetWide(56)
+  self.Display.Model = display
+  self.Display:SetMouseInputEnabled(false)
+
+  -- Load model later to prevent a layout issue
+  timer.Simple(0, () => 
+    self.Display:SetModel(self.Display.Model)
+  end)
+end
+
+function PANEL:Paint(w, h)
+  AtlasUI:DrawRoundedBox(6, 0, 0, w, h, AtlasUI.Theme.Navbar)
+
+  local x = h + 4
+
+  self.Title:Draw(x, h / 2 + 1, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+  self.Subtitle:Draw(x, h / 2 + 2, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+end
+
+function PANEL:PerformLayout(w, h)
+  self.Edit:SizeToContentsX(24)
+  self.Edit:SizeToContentsY(8)
+  self.Edit:AlignRight(12)
+  self.Edit:CenterVertical()
+
+  self.Delete:SetSize(self.Edit:GetTall(), self.Edit:GetTall())
+  self.Delete:AlignRight(w - self.Edit.x + 12)
+  self.Delete:CenterVertical()
+end
+
+vgui.Register("Atlas.Configurator.Admin.EntityList.Row", PANEL)

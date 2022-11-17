@@ -1,0 +1,413 @@
+-- A bit of a mess, need to improve later on.
+
+local PANEL = {}
+
+local matArrow = Material("atlas/next.png", "smooth")
+
+AtlasUI:CreateFont("Atlas.Configurator.Row.Title", 20)
+AtlasUI:CreateFont("Atlas.Configurator.Row.Subtitle", 14)
+
+function PANEL:Init()
+  self.Scroll = self:Add("AtlasUI.Scrollpanel.Wyvern")
+  self.Scroll:Dock(FILL)
+
+  self.Body = self.Scroll:Add("Panel")
+
+  self.Save.DoClick = (pnl) =>
+    for _, row in pairs(self.Rows) do
+      row.Entity:save(true)
+    end
+  end
+end
+
+function PANEL:SetData(tbl)
+  local { __entity, name, script } = tbl
+
+  self:SetScript(script)
+  self.Entity = __entity
+  self:SetTitle(name)
+  --self.Search:SetVisible(false)
+  self.Navbar:SetVisible(false)
+  self.Template = AtlasUI.Configurator.Entities:get(self.Entity)
+  self.BaseEnt = AtlasUI.Configurator.Entities:create(self.Entity)
+
+  if (!self.Template.getListView) then
+    error("To use a list you need to implement a static getListView function for your model")
+  end
+  
+  self.New = self.Body:Add("DButton")
+  self.New:Dock(TOP)
+  self.New:DockMargin(0, 0, 0, 12)
+  self.New:SetText("")
+  self.New:SetTall(48)
+  self.New.Color = AtlasUI.Theme.Background
+  self.New.OutlineColor = AtlasUI.Theme.Primary
+  self.New.TextColor = Color(174, 174, 174)
+  self.New.Paint = (pnl, w, h) =>
+    AtlasUI:DrawRoundedBox(6, 0, 0, w, h, pnl.Color)
+
+    AtlasUI:MaskInverse(() =>
+      AtlasUI:DrawRoundedBox(6, 1, 1, w - 2, h - 2, pnl.OutlineColor)
+    end, () =>
+      AtlasUI:DrawRoundedBox(6, 0, 0, w, h, pnl.OutlineColor)
+    end)
+
+    draw.SimpleText("Create New", "Atlas.Configurator.Row.Title", w / 2, h / 2, pnl.TextColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+  end
+  self.New.OnCursorEntered = (pnl) =>
+    pnl:LerpColor("OutlineColor", AtlasUI.Theme.Green)
+    pnl:LerpColor("TextColor", color_white)
+  end
+  self.New.OnCursorExited = (pnl) =>
+    pnl:LerpColor("OutlineColor", AtlasUI.Theme.Primary)
+    pnl:LerpColor("TextColor", Color(174, 174, 174))
+  end
+  self.New.DoClick = (pnl) =>
+    self.Body.Alpha ||= 255
+    self.Body:LerpAlpha(0, 0.15, () =>
+      self.Body:SetAlpha(0)
+      self:CreateNew(self.Template)
+    end)
+  end
+
+  self.ToDelete = {}
+
+  local rows = self.Template.getAllEntities()
+  self.Rows = {}
+  self.RowsIds = {}
+  for i, v in pairs(rows) do
+    self:CreateRow(v, i)
+  end
+end
+
+function PANEL:CreateNew()
+  local entity = AtlasUI.Configurator.Entities:create(self.Entity)
+
+  for i, v in pairs(self.Rows) do
+    continueif !IsValid(v)
+
+    v:SetVisible(false)
+  end
+  self.New:SetVisible(false)
+
+  if (IsValid(self.ListBody)) then self.ListBody:Remove() end
+
+  self.Body:LerpAlpha(255, 0.15, () =>
+    self.Body:SetAlpha(255)
+  end)
+
+  self.ListBody = self.Body:Add("Panel")
+  self.ListBody.Alpha = 0
+  self.ListBody:LerpAlpha(255, nil, () =>
+    self.ListBody:SetAlpha(255)
+  end)
+  self.ListBody:Dock(TOP)
+  self.ListBody.Rows = {}
+
+  self.ListBody.Header = self.ListBody:Add("Panel")
+  self.ListBody.Header:Dock(TOP)
+  self.ListBody.Header:DockMargin(0, 0, 0, 8)
+  self.ListBody.Header:SetTall(32)
+  self.ListBody.Header.Paint = (pnl, w, h) =>
+    draw.SimpleText(self.Template.selectRowString or "Select a row", "Atlas.Configurator.Row.Title", 8, h / 2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+  end
+  
+  self.ListBody.Header.Back = self.ListBody.Header:Add("AtlasUI.ButtonV2")
+  self.ListBody.Header.Back:Dock(RIGHT)
+  self.ListBody.Header.Back:DockMargin(0, 6, 6, 0)
+  self.ListBody.Header.Back:SetText("")
+  self.ListBody.Header.Back:SetSolidColor(AtlasUI.Theme.Primary)
+  self.ListBody.Header.Back:SetRoundness(6)
+  self.ListBody.Header.Back.Text = "Go Back"
+  self.ListBody.Header.Back.PaintOver = (pnl, w, h) =>
+    surface.SetMaterial(matArrow)
+    surface.SetDrawColor(color_white)
+    local size = h - 14
+    surface.DrawTexturedRectRotated(size, h / 2, size, size, 180)
+
+    draw.SimpleText(pnl.Text, "Atlas.Configurator.Row.Subtitle", size * 1.75, h / 2, Color(174, 174, 174), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+  end
+  surface.SetFont("Atlas.Configurator.Row.Subtitle")
+  local tw = surface.GetTextSize(self.ListBody.Header.Back.Text)
+  self.ListBody.Header.Back:SetWide((14 * 1.75) + tw + 8)
+  self.ListBody.Header.Back.HasClicked = false
+  self.ListBody.Header.Back.DoClick = (pnl) =>
+    stopif pnl.HasClicked
+    pnl.HasClicked = true
+
+    self.ListBody:LerpAlpha(0, 0.15, () =>
+      self.ListBody:Remove()
+      self.Body.Alpha = 0
+      self.Body:LerpAlpha(255, 0.15)
+
+      for i, v in pairs(self.Rows) do
+        continueif !IsValid(v)
+
+        v:SetVisible(true)
+      end
+      self.New:SetVisible(true)
+      self:InvalidateLayout(true)
+    end)
+  end
+
+  for i, v in ipairs(self.Template.getGridContent()) do
+    local data = self.Template.getGridData(v)
+    continueif !data
+    local ent = AtlasUI.Configurator.Entities:create(self.Entity)
+    self.Template.gridSetDefaultData(ent, data, i)
+    continueif self.RowsIds[ent:getId()]
+    local search = self.Template.getListView(ent).search
+
+    local row = self.ListBody:Add("Atlas.Configurator.Admin.EntityList.Row")
+    row:Dock(TOP)
+    row:DockMargin(0, 0, 0, 4)
+    row:SetTall(56)
+    row.DeleteDisabled = true
+    row:SetEntity(ent, self.Template, true)
+    row.Search = search or (pnl, text) =>
+      return pnl.Entity:getId():lower():find(text)
+    end
+
+    row.Edit:SetText("Select")
+    row.Edit:SetSolidColor(AtlasUI.Theme.OrangeRed)
+    row.Edit.DoClick = (pnl) =>
+      self.ListBody:LerpAlpha(0, 0.15, () =>
+        self.ListBody:Remove()
+        local newId = #self.Rows + 1
+        self:CreateRow(row.Entity, newId)
+        self:SwitchToEdit(row.Entity, self.Rows[newId], true)
+        self:InvalidateLayout(true)
+      end)
+    end
+
+    table.insert(self.ListBody.Rows, row)
+  end
+
+  self.ListBody.PerformLayout = (pnl, w, h) =>
+    pnl:SizeToChildren(false, true)
+  end
+
+  self:InvalidateLayout(true)
+end
+
+function PANEL:SwitchToEdit(entity, parent, isNew)
+  local copy = table.Copy(entity)
+
+  for i, v in pairs(self.Rows) do
+    continueif !IsValid(v)
+
+    v:SetVisible(false)
+  end
+  self.New:SetVisible(false)
+
+  if (IsValid(self.SettingsPanel)) then self.SettingsPanel:Remove() end
+
+  self.Body:LerpAlpha(255, 0.15, () =>
+    self.Body:SetAlpha(255)
+  end)
+  
+  self.SettingsPanel = self.Body:Add("Atlas.Configurator.Admin.Entity.Row.Settings")
+  self.SettingsPanel:DockMargin(0, 0, 0, 0)
+  self.SettingsPanel.FadeOut = (pnl) =>
+    self.Body:LerpAlpha(0, 0.15, () =>
+      self.Body:SetAlpha(0)
+      self.SettingsPanel:Remove()
+
+      self.Body:LerpAlpha(255, 0.15, () =>
+        self.Body:SetAlpha(255)
+      end)
+      for i, v in pairs(self.Rows) do
+        continueif !IsValid(v)
+
+        v:SetVisible(true)
+      end
+      self.New:SetVisible(true)
+      self:InvalidateLayout(true)
+    end)
+  end
+
+  self.SettingsPanel.Header = self.SettingsPanel:Add("Panel")
+  self.SettingsPanel.Header:Dock(TOP)
+  self.SettingsPanel.Header:DockMargin(0, 0, 0, 8)
+  self.SettingsPanel.Header:SetTall(32)
+  self.SettingsPanel.Header.Text = isNew and "Creating New Object" or "Editing Object"
+  self.SettingsPanel.Header.Paint = (pnl, w, h) =>
+    draw.SimpleText(pnl.Text, "Atlas.Configurator.Row.Title", 8, h / 2, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+  end
+  
+  self.SettingsPanel.Header.Back = self.SettingsPanel.Header:Add("AtlasUI.ButtonV2")
+  self.SettingsPanel.Header.Back:Dock(RIGHT)
+  self.SettingsPanel.Header.Back:DockMargin(0, 6, 6, 0)
+  self.SettingsPanel.Header.Back:SetText("")
+  self.SettingsPanel.Header.Back:SetSolidColor(AtlasUI.Theme.Primary)
+  self.SettingsPanel.Header.Back:SetRoundness(6)
+  self.SettingsPanel.Header.Back.Text = isNew and "Cancel" or "Go Back"
+  self.SettingsPanel.Header.Back.PaintOver = (pnl, w, h) =>
+    surface.SetMaterial(matArrow)
+    surface.SetDrawColor(color_white)
+    local size = h - 14
+    surface.DrawTexturedRectRotated(size, h / 2, size, size, 180)
+
+    draw.SimpleText(pnl.Text, "Atlas.Configurator.Row.Subtitle", size * 1.75, h / 2, Color(174, 174, 174), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+  end
+  surface.SetFont("Atlas.Configurator.Row.Subtitle")
+  local tw = surface.GetTextSize(self.SettingsPanel.Header.Back.Text)
+  self.SettingsPanel.Header.Back:SetWide((14 * 1.75) + tw + 8)
+  self.SettingsPanel.Header.Back.DoClick = (pnl) =>
+    if (isNew) then
+      local foundAt
+      for i, v in ipairs(self.Rows) do
+        continueif v.Id != parent.Id
+
+        v:Remove()
+
+        foundAt = i
+      end
+      if (foundAt) then
+        table.remove(self.Rows, foundAt)
+
+        parent:Remove()
+      end
+
+      self.SettingsPanel:LerpAlpha(0, 0.15, () =>
+        self.SettingsPanel:Remove()
+        self:CreateNew()
+        self:InvalidateLayout(true)
+      end)
+    else
+      self.SettingsPanel:FadeOut()
+    end
+  end
+
+  self.SettingsPanel.Top = self.SettingsPanel:Add("Atlas.Configurator.Admin.EntityList.Row")
+  self.SettingsPanel.Top:Dock(TOP)
+  self.SettingsPanel.Top:DockMargin(0, 0, 0, 4)
+  self.SettingsPanel.Top:SetTall(56)
+  self.SettingsPanel.Top.DeleteDisabled = true
+  self.SettingsPanel.Top:SetEntity(entity, self.Template)
+
+  self.SettingsPanel.Top.Edit:SetText(isNew and "Create" or "Save")
+  self.SettingsPanel.Top.Edit.DoClick = (pnl, w, h) =>
+    parent:SetEntity(copy, self.Template)
+    --copy:save(true)
+
+    self.SettingsPanel:FadeOut()
+  end
+
+  self.SettingsPanel:AddSettings(entity)
+  self.SettingsPanel.OnValueChanged = (pnl) =>
+    local settings = pnl:GetSettings()
+    for i, v in pairs(settings) do
+      copy[`set${i}`](copy, v)
+    end
+
+    pnl.Top:SetEntity(copy, self.Template)
+    pnl.Top:InvalidateLayout(true)
+    --self.SettingsPanel.Top:SetEntity(entity, self.Template)
+  end
+
+  self.SettingsPanel:Dock(TOP)
+  self.SettingsPanel.GetChildSize = (pnl) =>
+    local height = 0
+    local size = 0
+    for i, v in ipairs(pnl.Settings) do
+      continueif !v:IsVisible()
+
+      size++
+      height += v:GetTall()
+    end
+    height -= size * 3
+
+    return height + 8 + pnl.Top:GetTall() + 8 + 40
+  end
+
+  self:InvalidateLayout(true)
+end
+
+function PANEL:CreateRow(entity, index)
+  local listView = self.Template.getListView(entity)
+  stopif !listView
+  local { height, search } = listView
+  
+  self.RowsIds[entity:getId()] = true
+
+  local row = self.Body:Add("Atlas.Configurator.Admin.EntityList.Row")
+  row:Dock(TOP)
+  row:DockMargin(0, 0, 0, 4)
+  row:SetTall(height or 56)
+  row.Id = index
+  row:SetEntity(entity, self.Template)
+  row.DoClick = (pnl) =>
+    self.Body.Alpha = 255
+    self.Body:LerpAlpha(0, 0.15, () =>
+      self.Body:SetAlpha(0)
+      self:SwitchToEdit(pnl.Entity, pnl)
+    end)
+  end
+  row.OnRemove = (pnl) => self.RowsIds[pnl.Entity:getId()] = nil end
+  row.OnDelete = (pnl) =>
+    AtlasUI:SimpleQuery("Delete",
+      "Are you sure you want to delete this?",
+      "Yes", () =>
+        local foundAt
+        for i, v in ipairs(self.Rows) do
+          continueif v.Id != pnl.Id
+
+          v:Remove()
+
+          foundAt = i
+        end
+        stopif !foundAt
+
+        table.remove(self.Rows, foundAt)
+
+        self.RowsIds[pnl.Entity:getId()] = nil
+        pnl.Entity:delete(true)
+        
+        pnl:Remove()
+      end,
+      "No", () => end
+    )
+  end
+  row.Search = search or (pnl, text) =>
+    return pnl.Entity:getId():lower():find(text)
+  end
+
+  table.insert(self.Rows, row)
+end
+
+function PANEL:OnSearch(text)
+  text = text:lower()
+
+  local panels = self.Rows
+  if (IsValid(self.ListBody)) then
+    panels = self.ListBody.Rows
+  end
+  stopif IsValid(self.SettingsPanel)
+
+  for i, v in pairs(panels) do
+    local result = v:Search(text)
+    v:SetVisible(result)
+  end
+
+  self:InvalidateLayout(true)
+
+  if (IsValid(self.ListBody)) then
+    self.ListBody:InvalidateLayout(true)
+    self.ListBody:SizeToChildren(false, true)
+  end
+end
+
+function PANEL:PerformLayout(w, h)
+  self.BaseClass.PerformLayout(self, w, h)
+
+  self.Body:SetWide(math.min(600, w))
+  self.Body:CenterHorizontal()
+  self.Body:SizeToChildren(false, true)
+
+  stopif !IsValid(self.SettingsPanel)
+  
+  self.SettingsPanel:SetTall(self.SettingsPanel:GetChildSize())
+end
+
+vgui.Register("Atlas.Configurator.Admin.EntityList", PANEL, "Atlas.Configurator.Admin.Panel")

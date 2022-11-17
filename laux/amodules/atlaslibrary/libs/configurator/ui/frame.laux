@@ -1,0 +1,80 @@
+local PANEL = {}
+
+function PANEL:Init()
+  if (IsValid(AtlasUI.Configurator.AdminMenu)) then AtlasUI.Configurator.AdminMenu:Remove() end
+  
+  AtlasUI.Configurator.AdminMenu = self
+
+  self:SetSize(1020, 800)
+  self:Center()
+  self:MakePopup()
+  
+  self.Top = self:Add("Atlas.Configurator.Admin.Top")
+  self.Top:Dock(TOP)
+  self.Top:DockMargin(16, 16, 16, 16)
+  self.Top:SetText({ "Title", "Subtitle" })
+
+  self.Sidebar = self:Add("Atlas.Configurator.Admin.Sidebar")
+  self.Sidebar:Dock(LEFT)
+end
+
+function PANEL:AddTab(...)
+  self.Sidebar:AddTab(...)
+end
+
+function PANEL:SetActive(id)
+  self.Sidebar:SetActive(id)
+end
+
+function PANEL:PerformLayout(w, h)
+  self.Top:SetTall(40)
+  self.Sidebar:SetWide(200)
+end
+
+function PANEL:Paint(w, h)
+	local x, y = self:LocalToScreen()
+
+	BSHADOWS.BeginShadow()
+		draw.RoundedBox(6, x, y, w, h, AtlasUI.Theme.Background)
+	BSHADOWS.EndShadow(1, 2, 2, 255, 0, 0)
+
+  draw.RoundedBoxEx(6, 0, 0, w, 40 + 32, AtlasUI.Theme.Primary, true, true, false, false)
+end
+
+function PANEL:SetScript(script: string)
+  self.script = script
+  local ctr = AtlasUI.Configurator:FindControllerByScriptName(script)
+  local tabs = ctr:getTabs()
+  for i, v in ipairs(tabs) do
+    self.Sidebar:AddTab(v.name, v.icon, v.color, v.panel, script, v)
+  end
+  self.Top:SetScript(script, ctr)
+  self.Top:SetText(ctr:getTitle())
+  self.Sidebar:SetActive(1)
+end
+
+vgui.Register("Atlas.Configurator.Admin", PANEL, "EditablePanel")
+
+concommand.Add("atlas_config", (ply, cmd, args) =>
+  assert(AtlasUI.Permissions:canAccessLibrary(ply), "You don't have access to this config")
+  local script = args[1]
+  assert(isstring(script), "You need the script ID you're looking for")
+  local controller = AtlasUI.Configurator:FindControllerByScriptName(script)
+  assert(controller != nil, "That script does not exist")
+
+  local frame = vgui.Create("Atlas.Configurator.Admin")
+  frame:SetScript(script)
+end, (cmd, args) =>
+  local script = string.lower(string.Trim(args))
+  local tbl = {}
+  for i, v in ipairs(AtlasUI.Configurator:GetControllers()) do
+    continueif #script > 0 and !v:getScript():find(script)
+
+    table.insert(tbl, "atlas_config " .. v:getScript())
+  end
+
+  -- Sort
+  table.sort(tbl, (a, b) => return a > b end)
+
+  return tbl
+end)

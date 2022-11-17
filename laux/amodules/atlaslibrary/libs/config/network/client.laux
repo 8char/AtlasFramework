@@ -1,0 +1,7 @@
+net.Receive("Atlas.RequestConfig", (len, ply) =>
+  local selector = net.ReadString()
+  local len = net.ReadUInt(32)
+  local tbl = von.deserialize(net.ReadData(len))
+  
+  AtlasUI.Config:set(selector, tbl)
+end)

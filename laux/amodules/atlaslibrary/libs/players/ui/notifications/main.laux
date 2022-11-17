@@ -1,0 +1,112 @@
+local PANEL = {}
+
+AtlasUI:CreateFont("AtlasUI.Players.Notifications", 20)
+
+function PANEL:Init()
+  self:DockPadding(16, 16, 16, 16)
+
+  self.Top = self:Add("Panel")
+  self.Top:Dock(TOP)
+
+  self.Top.Title = self.Top:Add("DLabel")
+  self.Top.Title:Dock(LEFT)
+  self.Top.Title:SetFont("AtlasUI.Players.Notifications")
+  self.Top.Title:SetTextColor(Color(222, 222, 222))
+  self.Top.Title:SetText("Latest Notifications")
+
+  self.Scroll = self:Add("AtlasUI.Scrollpanel.Wyvern")
+  self.Scroll:Dock(FILL)
+  self.Scroll:DockMargin(0, 8, 0, 0)
+
+  self.Layout = self.Scroll:Add("DListLayout")
+  self.Layout:Dock(TOP)
+  self.Layout:DockMargin(0, 0, 8, 0)
+
+  self.Loading = true
+  hook.Add("AtlasUI.Players.GotNotifications", self, (notifications) ->
+    if (self.Loading) then
+      self:ClearNotifications()
+      for i, v in ipairs(notifications) do
+        self:AddNotification(v)
+      end
+      self.Loading = false
+      self:InvalidateLayout()
+    end
+  end)
+
+  self:GetNotifications()
+
+  self:AddTimer("AtlasUI.Players.Notifications.UpdateRead", 1, 0, () =>
+    stopif !IsValid(self)
+
+    local notificationPanels = self:GetNotificationsInView()
+    local notifications = {}
+    for i, v in ipairs(notificationPanels) do
+      continueif !v.Notification
+      continueif v.Notification.readAt
+
+      v.Notification.readAt = os.time()
+      v.BackgroundColor = AtlasUI.Theme.Primary
+
+      table.insert(notifications, v.Notification.id)
+    end
+
+    stopif #notifications == 0
+    AtlasUI.Players.Network:sendReadNotifications(notifications)
+  end)
+end
+
+function PANEL:GetNotifications()
+  AtlasUI.Players.Network:sendReceiveNotifications()
+end
+
+function PANEL:ClearNotifications()
+  self.Layout:Clear()
+end
+
+function PANEL:AddNotification(notification)
+  local row = self.Layout:Add("AtlasUI.Players.Notifications.Row")
+  row:Dock(TOP)
+  row:DockMargin(0, 0, 0, 4)
+  row:SetNotification(notification)
+end
+
+function PANEL:PerformLayout(w, h)
+  self.Top.Title:SizeToContents()
+
+  for i, v in ipairs(self.Layout:GetChildren()) do
+    v:SetTall(v:CalculateHeight())
+        print(v:IsVisible())
+  end
+end
+
+function PANEL:Paint(w, h)
+  if (self.Loading) then
+    draw.SimpleText("Loading", "AtlasJC.Admin.Queue.Loading", w / 2, h / 2 - h / 8, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+    AtlasUI:DrawLoadingCircle(w / 2, h / 2 + 16, h / 4, AtlasUI.Theme.Accent)
+  end
+end
+
+function PANEL:GetNotificationsInView()
+  local sH = self.Scroll:GetTall()
+  local sY = self.Scroll.VBar.Scroll
+  local sB = sH + sY
+
+  local notifications = {}
+  for i,v in ipairs(self.Layout:GetChildren()) do
+    local { y } = v
+    continueif y > sB
+    continueif sY > y
+    continueif sB < y
+    continueif !v.Notification
+    continueif v.Notification.readAt
+    
+    table.insert(notifications, v)
+  end
+
+  return notifications
+end
+
+vgui.Register("AtlasUI.Players.Notifications", PANEL)
+
+--vgui.Create("AtlasUI.Players")

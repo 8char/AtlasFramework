@@ -1,0 +1,143 @@
+local PANEL = {}
+
+function PANEL:Init()
+  self.textentry:SetUpdateOnType(true)
+  self.textentry.OnValueChange = (pnl, text) =>
+    self:Search(text:lower())
+  end
+end
+
+function PANEL:RemovePopup()
+  if (IsValid(self.Popup)) then self.Popup:Remove() end
+end
+
+PANEL.OnRemove = PANEL.RemovePopup
+
+AtlasUI:CreateFont("Atlas.Configurator.Admin.SearchBar.Title", 18)
+AtlasUI:CreateFont("Atlas.Configurator.Admin.SearchBar.Subtitle", 13)
+
+function PANEL:Paint(w, h)
+  if (IsValid(self.Popup)) then
+    return draw.RoundedBoxEx(self:GetRounded(), 0, 0, w, h, self:GetBackgroundColor(), true, true, false, false)
+  end
+
+  draw.RoundedBox(self:GetRounded(), 0, 0, w, h, self:GetBackgroundColor())
+end
+
+function PANEL:CreatePopup(results)
+  local size = #results
+  local x, y = self:GetPos()
+  x += 16
+  y += 16
+  y += self:GetTall()
+  local w = self:GetWide()
+  local h = 16 + (size * 48 + ((size - 1) * 4))
+  if (size == 0) then
+    h += 30
+  end
+
+  self.Popup = AtlasUI.Configurator.AdminMenu:Add("DPanel")
+  self.Popup:SetPos(x, y)
+  self.Popup:SetSize(w, h)
+  self.Popup:SetZPos(100)
+  self.Popup:SetDrawOnTop(true)
+  self.Popup.Paint = (pnl, w, h) =>
+    AtlasUI:DrawRoundedBoxEx(6, 0, 0, w, h, AtlasUI.Theme.Navbar, false, false, true, true)
+  end
+
+  self.Popup.Layout = self.Popup:Add("DListLayout")
+  self.Popup.Layout:DockPadding(8, 8, 8, 8)
+  self.Popup.Layout:Dock(TOP)
+
+  if (size == 0) then
+    local panel = self.Popup.Layout:Add("DLabel")
+    panel:SetText("No Results")
+    panel:SetFont("Atlas.Configurator.Admin.SearchBar.Title")
+    panel:SetTextColor(color_white)
+    panel:SetContentAlignment(5)
+
+    return
+  end
+
+  for i = 1, size do
+    local result = results[i]
+    local panel = self.Popup.Layout:Add("DButton")
+    panel:DockMargin(0, 0, 0, 4)
+    panel:SetText("")
+    panel:SetTall(48)
+    panel.Result = result
+    panel.Color = AtlasUI.Theme.Navbar
+    local cat = { icon = result.icon, color = result.color }
+    AtlasUI:DownloadIcon(panel, cat.icon)
+    local desc = result.desc
+    if (#desc >= 58) then
+      desc = result.desc:sub(1, 58 - 3) .. "..."
+    end
+    panel.Markup = markup.Parse(`<font=Atlas.Configurator.Admin.SearchBar.Title><color=255,255,255>${result.name}</color></font>`)
+    panel.Paint = (pnl, w, h) =>
+      AtlasUI:DrawRoundedBox(6, 0, 0, w, h, pnl.Color)
+      AtlasUI:DrawIcon(8, 8, h - 16, h - 16, pnl, cat.color)
+
+      pnl.Markup:Draw(h, h / 2, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM)
+      AtlasUI:DrawShadowText(desc, "Atlas.Configurator.Admin.SearchBar.Subtitle", h, h / 2, Color(179, 179, 179), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, 150)
+      
+      surface.SetFont("Atlas.Configurator.Admin.SearchBar.Title")
+      local tw, th = pnl.Markup:GetWidth(), pnl.Markup:GetHeight()
+      surface.SetFont("Atlas.Configurator.Admin.SearchBar.Subtitle")
+      local sw, sh = surface.GetTextSize(result.category)
+      AtlasUI:DrawRoundedBox(6, h + tw + 4, h / 2 - th / 2 - 6, sw + 8, sh, result.color or cat.color)
+      local col = AtlasUI:GetContrastColor(result.color or cat.color, color_white, Color(65, 65, 65))
+      draw.SimpleText(result.category, "Atlas.Configurator.Admin.SearchBar.Subtitle", h + tw + 4 + 4, h / 2 - th / 2 - 6, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    end
+    panel.OnCursorEntered = (pnl, w, h) =>
+      pnl:LerpColor("Color", AtlasUI.Theme.Background)
+    end
+    panel.OnCursorExited = (pnl, w, h) =>
+      pnl:LerpColor("Color", AtlasUI.Theme.Navbar)
+    end
+    panel.DoClick = (pnl) =>
+      if (result.onClick) then
+        result.onClick(pnl, AtlasUI.Configurator.AdminMenu)
+      end
+
+      self:RemovePopup()
+    end
+  end
+end
+
+function PANEL:Find(text, search)
+  return text:find(search, nil, nil, true)
+end
+
+function PANEL:SetScript(script, ctr)
+  self.script = script
+  self.ctr = ctr
+end
+
+function PANEL:AddToSearch(name, desc, category, id, extra = {})
+  table.insert(self.Results, {
+    name = name,
+    desc = desc,
+    category = category,
+    catId = id,
+    ...extra
+  })
+end
+
+function PANEL:GetSettings()
+  stopif self:HasReachedSearchLimit()
+end
+
+function PANEL:HasReachedSearchLimit()
+  return #self.Results >= 4
+end
+
+function PANEL:Search(text)
+  self:RemovePopup()
+  stopif #text == 0
+  self.Results = self.ctr:getSearch(text)
+
+  self:CreatePopup(self.Results)
+end
+
+vgui.Register("Atlas.Configurator.Admin.SearchBar", PANEL, "AtlasUI.TextEntry")

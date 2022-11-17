@@ -1,0 +1,20 @@
+local Driver = AtlasUI.ORM.Driver
+
+class MySQL extends Driver
+  static queryOrder = {
+    Driver.NAME, 
+    Driver.TYPE,
+    Driver.LENGTH,
+    Driver.UNSIGNED,
+    Driver.PRIMARY,
+    Driver.FOREIGN,
+    Driver.INCREMENTS,
+    Driver.NULLABLE,
+    Driver.ONUPDATE
+  }
+
+  __type() return "AtlasUI.ORM.MySQL" end
+end
+
+AtlasUI.ORM.MySQL = MySQL
+

@@ -1,0 +1,82 @@
+class Controller
+  onPlayerInitialSpawn(ply)
+    local db = AtlasUI.Players.Database
+    db:begin()
+      self:playTimeJoin(ply)
+    db:commit()
+      :next(() =>
+        stopif !IsValid(ply)
+
+        hook.Run("Atlas.PlayerInitialSpawn", ply)
+      end)
+  end
+
+  onPlayerDisconnect(ply)
+    self:playTimeDisconnect(ply)
+  end
+
+  playTimeJoin(ply)
+    local sid64 = ply:SteamID64()
+    local db = AtlasUI.Players.Database
+    db:insertPlayer(sid64)
+    db:deleteInactivePlayerJoins(sid64)
+    db:insertPlayerJoin(sid64)
+    db:getPlayerPlayTime(sid64)
+      :next((result) =>
+        stopif !IsValid(ply)
+
+        ply.atlasPlaytime = result
+      end)
+  end
+
+  getAmountOfUnreadNotifications(ply)
+    return AtlasUI.Players.Database:getAmountOfUnreadNotifications(ply:SteamID64())
+  end
+
+  getNotifications(ply)
+    return AtlasUI.Players.Database:getNotifications(ply:SteamID64())
+  end
+
+  addNotificationSid64(sid64, notification)
+    local { scriptId, type, content, data } = notification
+    local db = AtlasUI.Players.Database
+
+    return db:insertNotification(sid64, scriptId, type, content, data)
+      :next((id) =>
+        return db:getNotification(id)
+      end)
+  end
+
+  markNotificationsRead(sid64, ids)
+    local db = AtlasUI.Players.Database
+    db:begin()
+      for i, v in ipairs(ids) do
+        db:markNotificationRead(sid64, v)
+      end
+    return db:commit()
+  end
+
+  addNotification(ply, notification)
+    return self:addNotificationSid64(ply:SteamID64(), notification)
+      :next((result) =>
+        return result
+      end)
+  end
+
+  playTimeDisconnect(ply)
+    AtlasUI.Players.Database:insertPlayerLeave(ply:SteamID64())
+  end
+end
+
+AtlasUI.Players.Controller = Controller()
+
+if (SERVER) then
+  hook.Add("PlayerInitialSpawn", "AtlasUI.Players", (ply) =>
+    AtlasUI.Players.Controller:onPlayerInitialSpawn(ply)
+  end)
+
+  hook.Add("PlayerDisconnected", "AtlasUI.Players", (ply) =>
+    AtlasUI.Players.Controller:onPlayerDisconnect(ply)
+  end)
+end
+

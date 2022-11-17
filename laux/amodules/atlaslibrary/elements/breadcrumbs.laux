@@ -1,0 +1,150 @@
+local PANEL = {}
+
+AtlasUI:CreateFont("AtlasUI.Breadcrumbs", 22)
+
+local matArrow = Material("atlas/next.png", "smooth")
+
+function PANEL:Init()
+  self.Buttons = {}
+end
+
+function PANEL:SetBreadcrumbs(tbl)
+  self.Location = tbl
+  for i, v in ipairs(self.Buttons) do
+    v:Remove()
+    self.Buttons[i] = nil
+  end
+  
+  for i, v in ipairs(tbl) do
+    self:CreateBreadcrumb(v, i)
+  end
+
+  self:InvalidateLayout(true)
+end
+
+function PANEL:CreateBreadcrumb(data, index)
+  local size = #self.Location
+  local isLast = size == index
+  local name = istable(data) and data.name or data
+  local onClick = istable(data) and data.onClick or function() return true end
+
+  local btn = self:Add("DButton")
+  btn:Dock(LEFT)
+  btn:DockMargin(0, 0, 16, 0)
+  btn:SetText(name)
+  btn:SetExpensiveShadow(1)
+  btn:SetFont("AtlasUI.Breadcrumbs")
+  btn:SizeToContentsX(10)
+  btn.TextColor = isLast and AtlasUI.Theme.Accent or Color(185, 185, 185)
+  btn.IsActive = isLast
+  btn.Alpha = 0
+  btn.Paint = function(pnl, w, h)
+    pnl:SetTextColor(pnl.TextColor)
+
+    if (pnl.Alpha > 0) then
+      AtlasUI:DrawRoundedBox(6, 0, 0, w, h, ColorAlpha(AtlasUI.Theme.Accent, pnl.Alpha))
+    end
+  end
+  btn.OnCursorEntered = function(pnl)
+    pnl:LerpColor("TextColor", color_white)
+    pnl:Lerp("Alpha", 255)
+  end
+  btn.OnCursorExited = function(pnl)
+    pnl:LerpColor("TextColor", pnl.IsActive and AtlasUI.Theme.Accent or Color(185, 185, 185))
+    pnl:Lerp("Alpha", 0)
+  end
+  btn.DoClick = function(pnl)
+    local close = onClick(pnl.IsActive, pnl)
+
+    if (close) then
+      self:RemoveTo(pnl:GetText())
+    end
+  end
+
+  table.insert(self.Buttons, btn)
+
+  self:CorrectColors()
+end
+
+function PANEL:CorrectColors()
+  local size = #self.Buttons
+  for i, v in ipairs(self.Buttons) do
+    local isHovered = v:IsHovered()
+    local isActive = i == size
+    if (isHovered and isActive) then continue end
+
+    v.IsActive = i == size
+    v.TextColor = i == size and AtlasUI.Theme.Accent or Color(185, 185, 185)
+  end
+end
+
+function PANEL:AddBreadcrumb(name, onClick)
+  local breadcrumb = onClick and { name = name, onClick = onClick } or name
+  local id = table.insert(self.Location, breadcrumb)
+
+  self:CreateBreadcrumb(breadcrumb, id)
+  self:InvalidateLayout()
+end
+
+function PANEL:RemoveTo(removeToName)
+  for i = #self.Location, 1, -1 do
+    local breadcrumb = self.Location[i]
+    local name = istable(breadcrumb) and breadcrumb.name or breadcrumb
+
+    if (name == removeToName) then 
+      self.Buttons[i].IsActive = true
+      
+      break 
+    end
+
+    table.remove(self.Location, i)
+    if (IsValid(self.Buttons[i])) then
+      self.Buttons[i]:Remove()
+      self.Buttons[i] = nil
+    end
+  end
+
+  self:CorrectColors()
+  self:InvalidateLayout()
+end
+
+function PANEL:PerformLayout(w, h)
+  self:SizeToContentsX()
+end
+
+function PANEL:Paint(w, h)
+  local x = 0
+  local size = #self.Buttons
+  for i, v in ipairs(self.Buttons) do
+    if (i == size) then continue end
+
+    surface.SetFont(v:GetFont())
+    local tw = surface.GetTextSize(v:GetText())
+    x = x + tw + 10 + 16
+
+    surface.SetDrawColor(i == (size - 1) and AtlasUI.Theme.Accent or Color(185, 185, 185))
+    surface.SetMaterial(matArrow)
+    surface.DrawTexturedRect(x - 12, h / 2 - h / 5 + 2, h / 2.5, h / 2.5)
+  end
+end
+
+function PANEL:SizeToContentsX()
+  local w = 0
+
+  surface.SetFont("AtlasUI.Breadcrumbs")
+  local size = #self.Buttons
+  for i, v in ipairs(self.Buttons) do
+    local tw = surface.GetTextSize(v:GetText())
+    tw = tw + 10
+
+    if (i != size) then
+      tw = tw + 16
+    end
+
+    w = w + tw
+  end
+
+  self:SetWide(w)
+end
+
+vgui.Register("AtlasUI.Breadcrumbs", PANEL)
