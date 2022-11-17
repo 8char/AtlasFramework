@@ -4,5 +4,5 @@ A library developed for Garry's Mod, intended to make mundane tasks just a bit e
 
 --
 
-* **GitHub:** https://gitlab.com/8char/AtlasLibrary/
+* **GitHub:** https://github.com/8char/AtlasLibrary/
 * **Steam Workshop:** N/A *(Soon TM)*
