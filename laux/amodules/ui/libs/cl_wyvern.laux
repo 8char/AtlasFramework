@@ -1,0 +1,282 @@
+AtlasUI.openTime = 0.15
+AtlasUI.closeTime = 0.15
+
+function AtlasUI:GetColorLightness(color)
+    local uiColors = { color.r / 255, color.g / 255, color.b / 255 }
+    for i, c in ipairs(uiColors) do
+        if c <= 0.03928 then
+            uiColors[i] = c / 12.92
+        else
+            uiColors[i] = math.pow((c + 0.055) / 1.055, 2.4)
+        end
+    end
+    return 0.2126 * uiColors[1] + 0.6152 * uiColors[2] + 0.0622 * uiColors[3]
+end
+
+function AtlasUI:GetContrastColor(bgColor, colLight, colDark, darkRequirement)
+    colLight = colLight or Color(255, 255, 255)
+    colDark = colDark or Color(0, 0, 0)
+    darkRequirement = darkRequirement or 0.21
+
+    if AtlasUI:GetColorLightness(bgColor) > darkRequirement then
+        return colDark
+    end
+
+    return colLight
+end
+
+function AtlasUI:GetCommonRippleColor()
+    return AtlasUI:GetContrastColor(AtlasUI.Theme.Accent, ColorAlpha(AtlasUI.Theme.Accent, 20), ColorAlpha(AtlasUI.Theme.Accent, 100))
+end
+
+function AtlasUI:ManipulateColor(col, deltaH, deltaS, deltaV)
+    local h, s, v = ColorToHSV(col)
+
+    return HSVToColor(math.Clamp(h + deltaH, 0, 360), math.Clamp(s + deltaS, 0, 1), math.Clamp(v + deltaV, 0, 1))
+end
+
+local surface_SetDrawColor = surface.SetDrawColor
+local rad = math.rad
+local sin = math.sin
+local cos = math.cos
+
+function AtlasUI:CalculateCircle(sx, sy, radius, vertexCount, angle)
+    local vertices = {}
+    local ang = -rad(angle or 0)
+    local c = cos(ang)
+    local s = sin(ang)
+    for i = 0, 360, 360 / vertexCount do
+        local radd = rad(i)
+        local x = cos(radd)
+        local y = sin(radd)
+
+        local tempx = x * radius * c - y * radius * s + sx
+        y = x * radius * s + y * radius * c + sy
+        x = tempx
+
+        vertices[#vertices + 1] = {
+            x = x, 
+            y = y, 
+            u = u, 
+            v = v 
+        }
+    end
+
+    return vertices
+end
+
+function AtlasUI:DrawCachedCircle(vertices, color)
+    if vertices and #vertices > 0 then
+        draw.NoTexture()
+        surface_SetDrawColor(color)
+        surface.DrawPoly(vertices)
+    end
+end
+
+function AtlasUI:DrawCircle(sx, sy, radius, vertexCount, color)
+    local vertices = {}
+    local ang = -rad(0)
+    local c = cos(ang)
+    local s = sin(ang)
+    for i = 0, 360, 360 / vertexCount do
+        local radd = rad(i)
+        local x = cos(radd)
+        local y = sin(radd)
+
+        local tempx = x * radius * c - y * radius * s + sx
+        y = x * radius * s + y * radius * c + sy
+        x = tempx
+
+        vertices[#vertices + 1] = {
+            x = x, 
+            y = y, 
+            u = u, 
+            v = v 
+        }
+    end
+
+    if vertices and #vertices > 0 then
+        draw.NoTexture()
+        surface_SetDrawColor(color)
+        surface.DrawPoly(vertices)
+    end
+end
+
+local matCorner8 = Material("materials/wyvernf4/corner_8.png")
+local matCorner16 = Material("materials/wyvernf4/corner_16.png")
+--[[
+function AtlasUI:DrawRoundedBox(bordersize, x, y, w, h, color)
+    return AtlasUI:DrawRoundedBoxEx(bordersize, x, y, w, h, color, true, true, true, true)
+end
+
+function AtlasUI:DrawRoundedBoxEx(bordersize, x, y, w, h, color, a, b, c, d)
+    x = math.Round(x)
+    y = math.Round(y)
+    w = math.Round(w)
+    h = math.Round(h)
+
+    surface.SetDrawColor(color.r, color.g, color.b, color.a)
+
+    surface.DrawRect(x + bordersize, y, w - bordersize * 2, h)
+    surface.DrawRect(x, y + bordersize, bordersize, h - bordersize * 2)
+    surface.DrawRect(x + w - bordersize, y + bordersize, bordersize, h - bordersize * 2)
+
+    local mat = bordersize > 8 and matCorner16 or matCorner8
+
+    surface.SetMaterial(mat)
+
+    if a then
+        surface.DrawTexturedRectUV(x, y, bordersize, bordersize, 0, 0, 1, 1)
+    else
+        surface.DrawRect(x, y, bordersize, bordersize)
+    end
+
+    if b then
+        surface.DrawTexturedRectUV(x + w - bordersize, y, bordersize, bordersize, 1, 0, 0, 1)
+    else
+        surface.DrawRect(x + w - bordersize, y, bordersize, bordersize)
+    end
+
+    if c then
+        surface.DrawTexturedRectUV(x, y + h - bordersize, bordersize, bordersize, 0, 1, 1, 0)
+    else
+        surface.DrawRect(x, y + h - bordersize, bordersize, bordersize)
+    end
+
+    if d then
+        surface.DrawTexturedRectUV(x + w - bordersize, y + h - bordersize, bordersize, bordersize, 1, 1, 0, 0)
+    else
+        surface.DrawRect(x + w - bordersize, y + h - bordersize, bordersize, bordersize)
+    end
+end
+--]]
+
+function AtlasUI:Ease2(t, b, c, d)
+    t = t / d
+    local ts = t * t
+    local tc = ts * t
+    return b + c * (9.3475 * tc * ts + -22.6425 * ts * ts + 15.495 * tc + -1.3 * ts + 0.1 * t)
+end
+
+function AtlasUI:AddRippleFunctions(pnl)
+    pnl.ripples = {}
+
+    function pnl:PaintRipples(w, h)
+        draw.NoTexture()
+        for i, ripple in ipairs(self.ripples) do
+            local t = ripple.endTime - CurTime()
+            local f = math.Clamp(1 - (t / ripple.duration), 0, 1)
+            local f2 = AtlasUI:Ease2(f, 0, 1, 1)
+
+            local r = self:GetFurthestDistanceFrom(ripple.x, ripple.y) + 5
+            AtlasUI:DrawCircle(ripple.x, ripple.y, r * f2, ripple.vertexCount, ColorAlpha(ripple.color, math.Clamp(ripple.alpha * ripple.color.a, 0, 100)))
+
+            if f >= 1 then
+                local doFade = true
+                if input.IsMouseDown(MOUSE_LEFT) and i == #self.ripples and pnl:IsHovered() then
+                    doFade = false
+                end
+
+                if doFade then
+                    ripple.alpha = ripple.alpha + (0 - ripple.alpha) * 10 * FrameTime()
+
+                    if not ripple.isFading then
+                        if ripple.callback then ripple.callback(false)end
+
+                        ripple.isFading = true
+                    end
+                end
+            end
+        end
+
+        for i = #self.ripples, 1, -1 do
+            local ripple = self.ripples[i]
+            if ripple.alpha < 0.01 then
+                if ripple.callback then
+                    ripple.callback(true)
+                end
+
+                table.remove(self.ripples, i)
+            end
+        end
+    end
+
+    local oldPaint = pnl.Paint
+    function pnl:Paint(w, h)
+        if oldPaint then oldPaint(self, w, h)end
+
+        AtlasUI:Mask(function()
+            AtlasUI:DrawRoundedBox(8, 0, 0, w, h, color_white)
+        end, function()
+            self:PaintRipples(w, h)
+        end)
+    end
+
+    function pnl:AddRipple(x, y, options)
+        local duration = options.duration or 0.5
+
+        self.ripples[#self.ripples + 1] = {
+            x = x,
+            y = y,
+            endTime = CurTime() + duration,
+            alpha = 1,
+            duration = duration,
+            color = options.color or Color(255, 255, 255, 2),
+            vertexCount = options.vertexCount or 30,
+            callback = options.callback
+        }
+    end
+
+    function pnl:GetFurthestDistanceFrom(x, y)
+        local w, h = self:GetSize()
+        local dx, dy
+
+        if x < w / 2 then
+            if y < h / 2 then
+                dx = w - x
+                dy = h - y
+            else
+                dx = w - x
+                dy = 0 - y
+            end
+        else
+            if y < h / 2 then
+                dx = 0 - x
+                dy = h - y
+            else
+                dx = 0 - x
+                dy = 0 - y
+            end
+        end
+
+        return math.sqrt(dx * dx + dy * dy)
+    end
+end
+
+function AtlasUI:AddRippleClickEffect(pnl, color, duration)
+    self:AddRippleFunctions(pnl)
+
+    pnl.rippleColor = color
+    pnl.rippleDuration = duration
+
+    function pnl:OnMousePressedRipple(code)
+        if self.GetDisabled and self:GetDisabled() then return end
+
+        if code == MOUSE_LEFT then
+            local cx, cy = self:CursorPos()
+            self:AddRipple(cx, cy, {
+                color = pnl.rippleColor,
+                duration = pnl.rippleDuration
+            })
+        end
+    end
+
+    local oldMousePressed = pnl.OnMousePressed
+    function pnl:OnMousePressed(code)
+        pnl:OnMousePressedRipple(code)
+
+        if oldMousePressed then
+            return oldMousePressed(self, code)
+        end
+    end
+end
