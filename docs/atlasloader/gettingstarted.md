@@ -11,7 +11,7 @@ AtlasLoader is designed to make developing addons simple. It's made so that you 
 * Custom Environment (Avoiding unnecessarily increasing [_G](https://wiki.facepunch.com/gmod/Global_Variables)’s size)
 
 # Info.lua <shared>SHARED</shared>
-The Info.lua gives Infomation about the Module to AtlasLoader so that it can be loaded properly. This file should always exist within all `/addons/amodule_*/` directories to provide the necessary information for loading & logging/debugging. The [Info Struct](#info-table-struct) is to be followed, here's an example of an `info.lua` file:
+The Info.lua gives Infomation about the Module to AtlasLoader so that it can be loaded properly. This file should always exist within all `/addons/amod_*/` directories to provide the necessary information for loading & logging/debugging. The [Info Struct](#info-table-struct) is to be followed, here's an example of an `info.lua` file:
 
 ```lua
 return {

@@ -10,7 +10,7 @@
 | `ERROR`  | `99`  | Error level - No Log prints |
 
 ## Info (Table Struct) <shared>SHARED</shared>
-The table used for loading modules, returned by an `info.lua` file in the base of your `garrysmod/addons/*/amodule_*/`
+The table used for loading modules, returned by an `info.lua` file in the base of your `garrysmod/addons/*/amod_*/`
 
 `name` \[[string](https://wiki.facepunch.com/gmod/string)\]<br>
 The name of your module. This is what will be displayed in the log messages aswell as when you refference a dependency module.
