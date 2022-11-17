@@ -50,8 +50,8 @@ function AtlasLoader:LoadModule(info,force_env)
 
     --- Automaticly add Clientside files ( if we are a server )
     if SERVER then
-        local clientFiles = self:FindFilesRecursive(info.dir, "cl_*.lua")
-        local sharedFiles = self:FindFilesRecursive(info.dir, "sh_*.lua")
+        local clientFiles = self:FindFilesRecursive(info.dir, "cl_auto_*.lua")
+        local sharedFiles = self:FindFilesRecursive(info.dir, "sh_auto_*.lua")
         AddCSLuaFile(info.dir .. "info.lua")
 
         for _, fileName in ipairs(clientFiles) do
