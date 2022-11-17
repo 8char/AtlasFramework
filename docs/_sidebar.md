@@ -1,6 +1,7 @@
 * [Introduction](/installation.md)
 * [AtlasLoader](/atlasloader.md)
     * [Getting Started](/atlasloader/gettingstarted.md)
+        * [Loading Your Addons](/atlasloader/gettingstarted/loading-your-addons.md)
     * [Documentation](/atlasloader/gettingstarted.md)
         * [Functions](/atlasloader/documentation/functions.md)
         * [Structs & Enums](/atlasloader/documentation/structs-and-enums.md)
