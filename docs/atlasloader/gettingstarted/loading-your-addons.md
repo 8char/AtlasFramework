@@ -31,7 +31,7 @@ A Unified System allowing the loading of Lua Modules, providing:
 ## Environment
 
 All Module Files (excluding `info.lua`) are loaded inside a custom environment, this has the effect that global variables setup normally are not inside `_G` but stored in `AModules[name]`.<br>
-All Variables/Functions inside `_G` are still accessible. However they will need to be accesed using the `_G.<GLOBAL VARIABLE>` if they are being overshadowed by a local environment variable.<br>
+All Variables/Functions inside `_G` are still accessible. However they will need to be accesed using `_G.<GLOBAL VARIABLE>` if they are being overshadowed by a local environment variable.<br>
 See the following examples:
 
 ```lua
