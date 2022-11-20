@@ -1,0 +1,33 @@
+class Permissions
+  atlasDevelopers = {
+    ["76561198202328247"] = "sleeppyy",
+    ["76561198058042338"] = "Hoofy"
+  }
+
+  canAccessFramework(ply)
+    local dev = self:isAtlasDeveloper(ply) 
+    if (dev and tonumber(GetConVar("atlas_easy_permissions")) == 1) then
+      return true
+    end
+
+    return self:isSuperAdmin(ply)
+  end
+
+  isAdmin(ply, level = 1)
+    return ply:IsAdmin()
+  end
+
+  isSuperAdmin(ply)
+    return ply:IsSuperAdmin() -- or self:isAdmin(ply, 100)
+  end
+
+  isAtlasDeveloper(ply)
+    return self.atlasDevelopers[ply:SteamID64()]
+  end
+
+  __type() return "AtlasUI.Permissions" end
+end
+
+AtlasUI.Permissions = Permissions()
+
+CreateConVar("atlas_easy_permissions", 1)

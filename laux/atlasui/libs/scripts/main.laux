@@ -1,0 +1,137 @@
+class Scripts
+  scripts = {}
+
+  constructor()
+    stopif CLIENT
+
+    timer.Create("Atlas.Framework.Version", 600, 0, () =>
+      http.Fetch("https://gitlab.com/sleeppyy/atlas-version-tracker/-/raw/master/versions.json", function(body, size, headers, code)
+        stopif code >= 400
+        stopif size == 0
+        local tbl = util.JSONToTable(body)
+        stopif !tbl
+
+        self:checkScriptVersions(tbl)
+      end)
+    end)
+  end
+
+  checkScriptVersions(tbl)
+    local scripts = self:getAll()
+    local needUpdate = {}
+
+    for i, v of scripts do
+      continueif !v.versionCheck
+
+      local tblVersion = tbl[v.id]
+      local version = tonumber(v.version)
+      continueif !isnumber(version)
+      continueif !isnumber(tblVersion)
+
+      if (tblVersion and version < tblVersion) then
+        needUpdate[v.id] = {
+          name = v.name,
+          version = tblVersion,
+          currentVersion = v.version
+        }
+      end
+    end
+
+    local msgs = {}
+    for i, v of needUpdate do
+      table.insert(msgs, {
+        AtlasUI.Theme.Accent,
+        `[Atlas ${v.name}] `,
+        Color(255, 255, 255),
+        "Please update to ",
+        AtlasUI.Theme.Green,
+        `version ${v.version}`,
+        Color(255, 255, 255),
+        ` you are on `,
+        AtlasUI.Theme.Red,
+        `version ${v.currentVersion}`
+      })
+    end
+    local targets = {}
+    for i, v in ipairs(player.GetAll()) do
+      if (AtlasUI.Permissions:canAccessFramework(v) or AtlasUI.Permissions:isAdmin(v)) then
+        table.insert(targets, v)
+      end
+    end
+
+    AtlasUI.ScriptsNetwork:sendUpdateMessage(targets, msgs)
+
+    for i, v in ipairs(msgs) do
+      table.insert(v, "\n")
+
+      MsgC(unpack(v))
+    end
+  end
+
+  register(id, name, version, author, tbl = {})
+    local script = {
+      id = id,
+      name = name,
+      author = author,
+      version = version
+    }
+
+    table.Merge(script, tbl)
+
+    self.scripts[id] = script
+  end
+
+  setAll(tbl)
+    self.scripts = tbl
+  end
+
+  get(id)
+    return self.scripts[id]
+  end
+
+  getAll()
+    return self.scripts
+  end
+
+  getByName(name)
+    for i, v of self.scripts do
+      if (v.name != name) then continue end
+
+      return name
+    end
+  end
+
+  __type() return "AtlasUI.Scripts" end
+end
+
+AtlasUI.Scripts = Scripts()
+
+--[[
+AtlasUI.Addons:register("atlas_warnings", "Warn System", "1.0", "The Atlas Team", {
+  firstParty = true,
+  config = {
+    { 
+      type = "cat",
+      name = "General",
+      key = "general",
+      value = {},
+      children = {
+        {
+          type = "textentry",
+          name = "Frame Title",
+          key = "general.frame_title",
+          value = "Atlas Warnings",
+          length = { 0, 32 }
+        },
+        {
+          type = "textentry",
+          name = "Max Warns",
+          key = "general.max_warns",
+          value = 5,
+          numeric = true
+        }
+      }
+    }
+  }
+})
+--]]

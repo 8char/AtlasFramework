@@ -1,0 +1,392 @@
+AtlasUI:CreateFont("Atlas.Framework.Config.Container.Name", 24)
+AtlasUI:CreateFont("Atlas.Framework.Config.Container.Desc", 18)
+AtlasUI:CreateFont("Atlas.Framework.Config.Tabs", 26)
+
+local PANEL = {}
+
+function PANEL:Init()
+  self.Name = "No Name"
+
+  self:DockMargin(0, 0, 8, 0)
+
+  self.Text = self:Add("DPanel")
+  self.Text:Dock(TOP)
+  self.Text.Offset = draw.GetFontHeight("Atlas.Framework.Config.Container.Name") + 4
+  self.Text.Paint = (pnl, w, h) =>
+    AtlasUI:DrawShadowText(self.Name, "Atlas.Framework.Config.Container.Name", 0, 0, Color(231, 232, 235), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, 150)
+    AtlasUI:DrawShadowText(self.Desc, "Atlas.Framework.Config.Container.Desc", 0, pnl.Offset, Color(156, 156, 156), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, 150)
+  end
+  self.Text:SetTall(50)
+end
+
+function PANEL:Paint(w, h)
+  draw.RoundedBox(6, 0, 0, w, h, AtlasUI.Theme.Primary)
+end
+
+function PANEL:SetName(name)
+  self.Name = name
+end
+
+function PANEL:SetDesc(desc)
+  self.Desc = desc
+end
+
+function PANEL:PerformLayout(w, h)
+ 
+end
+
+vgui.Register("Atlas.Framework.Config.Container", PANEL, "AtlasUI.Panel")
+
+local PANEL = {}
+
+AtlasUI:CreateFont("Atlas.Framework.Category", 22)
+
+function PANEL:SetData(data, scriptId)
+  self.Data = data
+  self.Panels = {}
+  self.Cats = {}
+
+  self.Scroll = self:Add("AtlasUI.Scrollpanel.Wyvern")
+  self.Scroll:Dock(FILL)
+
+  self.Tabs = self:Add("AtlasUI.NavbarBody")
+  self.Tabs:Dock(TOP)
+  self.Tabs:DockMargin(-6, 0, -12, 8)
+  self.Tabs:SetTall(32)
+  self.Tabs:SetBody(self.Scroll)
+  self.Tabs.Margin = 12
+
+  self.Save = self:Add("AtlasUI.ButtonV2")
+  self.Save:SetVisible(false)
+  self.Save:SetText("Save")
+  self.Save:SetGradient(false)
+  self.Save:SetSolidColor(AtlasUI.Theme.GreenDark)
+  self.Save.DoClick = (pnl) =>
+    local config = {}
+    for i, v in pairs(self.Panels) do
+      config[i] = v:GetValue()
+    end
+    for i, v in pairs(self.Cats) do
+      config[i] = {}
+    end
+
+    AtlasUI.Config:save(scriptId, config)
+  end
+
+  self:PostInit()
+end
+
+function PANEL:UpdateSaveVisibility()
+  local difference
+  local function recursiveCheck(tbl)
+    for i, v in ipairs(tbl) do
+     if (!v.children) then
+        if (v.value != self.Panels[v.key]:GetValue()) then
+          difference = true 
+          
+          break
+        end
+
+        continue
+     end
+
+     recursiveCheck(v.children)
+    end
+  end
+
+  for i, v in ipairs(self.Data) do
+    recursiveCheck(v.children)
+  end
+
+  self.Save:SetVisible(difference)
+  if (difference) then
+    self:InvalidateLayout()
+  end
+end
+
+function PANEL:PostInit()
+  self:CreateConfigRecursive(self.Data)
+end
+
+PANEL.Types = {
+  cat = (tbl, parent) ->
+    --[[
+    local panel = parent:Add("AtlasUI.Panel")
+    panel:Dock(TOP)
+    panel:DockMargin(0, 0, 8, 0)
+    panel:SetTall(32)
+    panel.Paint = (pnl, w, h) =>
+      AtlasUI:DrawShadowText(tbl.name, "Atlas.Framework.Category", 0, h / 2 - 1, Color(242, 242, 242), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, 150)
+
+      local x, y = gui.MousePos()
+      local bX, bY = pnl:LocalToScreen()
+      local bW = bX + pnl:GetWide()
+      local bH = bY + pnl:GetTall() + pnl.Body:GetTall() + 8 + 8
+      local inside = 
+        -- Left
+        x >= bX
+        -- Right
+        and x <= bW
+        -- Top
+        and y >= bY
+        -- Bottom
+        and y <= bH
+
+      local col = inside and AtlasUI.Theme.Accent or Color(220, 220, 220)
+      surface.SetDrawColor(col)
+      surface.DrawRect(0, h - 1, w, 1)
+    end
+
+    panel.Body = parent:Add("DListLayout")
+    panel.Body:DockMargin(0, 8, 0, 0)
+    panel.Body:Dock(TOP)
+    --]]
+
+    self.Tabs:AddTab(tbl.name, "Panel", { fill = TOP })
+    local panel = self.Tabs.Tabs[#self.Tabs.Tabs].Panel
+    panel:DockMargin(0, 0, 0, 8)
+    self.Tabs:SetActive(1)
+
+    self:CreateConfigRecursive(tbl.children, panel)
+    
+    return panel
+  end,
+  textentry = (tbl, parent) ->
+    local panel = parent:Add("Atlas.Framework.Config.Container")
+    panel:Dock(TOP)
+    panel:DockMargin(0, 0, 8, 8)
+    panel:SetName(tbl.name)
+    panel:SetDesc(tbl.desc)
+    panel:SetTall(104)
+    panel.GetValue = (pnl) =>
+      return panel.Content:GetText()
+    end
+    panel:DockPadding(8, 6, 8, 8)
+
+    panel.Content = panel:Add("AtlasUI.TextEntry")
+    panel.Content:Dock(FILL)
+    panel.Content:DockMargin(0, 4, 0, 0)
+    panel.Content:SetText(AtlasUI.Config:get(tbl.key) or tbl.value)
+    panel.Content.textentry:SetUpdateOnType(true)
+    panel.Content.textentry.OnValueChange = (pnl, w, h) =>
+      self:UpdateSaveVisibility()
+    end
+
+    if (tbl.numeric) then
+      panel.Content.textentry:SetNumeric(true)
+    end
+
+    return panel
+  end,
+  checkbox = (tbl, parent) ->
+    local panel = parent:Add("Atlas.Framework.Config.Container")
+    panel:Dock(TOP)
+    panel:DockMargin(0, 0, 8, 8)
+    panel:SetName(tbl.name)
+    panel:SetDesc(tbl.desc)
+    panel:SetTall(104)
+    panel.GetValue = (pnl) =>
+      return panel.Content:GetState()
+    end
+    panel:DockPadding(8, 6, 8, 8)
+
+    panel.Content = panel:Add("AtlasUI.Checkbox")
+    panel.Content:Dock(LEFT)
+    panel.Content:DockMargin(0, 4, 0, 0)
+    panel.Content:SetWide(100)
+    panel.Content:SetState(tbl.value, true)
+    panel.Content.OnStateChanged = () =>
+      self:UpdateSaveVisibility()
+    end
+
+    return panel
+  end
+}
+
+function PANEL:CreateConfigRecursive(tbl, parent = self.Scroll)
+  for i, v in ipairs(tbl) do
+    local panel = self.Types[v.type](self, v, parent)
+    if (v.type == "cat") then 
+      self.Cats[v.key] = v
+
+      continue 
+    end
+
+    self.Panels[v.key] = panel
+  end
+end
+
+function PANEL:PerformLayout(w, h)
+  self.Save:AlignRight(24)
+  self.Save:AlignBottom(8)
+  self.Save:SizeToContentsX(24)
+  self.Save:SizeToContentsY(8)
+  self.Save:SetRoundness(self.Save:GetTall() / 2)
+
+  for i, v in ipairs(self.Tabs.Tabs) do
+    local pnl = v.Panel
+    local h = 0
+    for i, v in ipairs(pnl:GetChildren()) do
+      h += v:GetTall()
+      local l, t, b, r = v:GetDockMargin()
+      h += t + b
+    end
+
+    pnl:SetTall(h)
+  end
+end
+
+vgui.Register("Atlas.Framework.Config", PANEL, "AtlasUI.Panel")
+
+local PANEL = {}
+
+AtlasUI:CreateFont("Atlas.Framework.Title", 26)
+AtlasUI:CreateFont("Atlas.Framework.Subtitle", 18)
+
+function PANEL:OnSwitchedTo()
+  if (self.HaveSwitchedTo) then return end
+
+  self.HaveSwitchedTo = true 
+  self:PostInit()
+end
+
+function PANEL:PostInit()
+  self:DockPadding(16, 16, 16, 16)
+
+  local { version, author, config, id, licensee, licenseeProof } = self.Data
+  local titleHeight = draw.GetFontHeight("Atlas.Framework.Title")
+  local versionStr = version == "{{ script_version_name }}" and "DEV BUILD" or version
+  self.Info = self:Add("DPanel")
+  self.Info:Dock(TOP)
+  self.Info:SetTall(48)
+  self.Info.Paint = (pnl, w, h) =>
+    AtlasUI:DrawShadowText(`Version ${versionStr}`, "Atlas.Framework.Title", 0, 0, color_white, nil, nil, 1, 150)
+    AtlasUI:DrawShadowText(`Author: ${author}`, "Atlas.Framework.Subtitle", 0, titleHeight, Color(183, 183, 183), nil, nil, 1, 150)
+  end
+
+  self.Tabs = self:Add("AtlasUI.NavbarBody")
+  self.Tabs:Dock(TOP)
+  self.Tabs:DockMargin(-12, 8, -12, 0)
+  self.Tabs:SetTall(40)
+  self.Tabs.Font = "Atlas.Framework.Config.Tabs"
+  self.Tabs:SetBody(self)
+  if (AtlasUI.Debug) then
+    self.Tabs:AddTab("Updates")
+    self.Tabs:AddTab("Config", "Atlas.Framework.Config", config, id)
+    self.Tabs:SetActive(2)
+  else
+    self.Tabs:AddTab("License", "Atlas.Framework.Dev", { 
+      licensee = licensee,
+      proof = licenseeProof
+    })
+    self.Tabs:SetActive(1)
+  end
+end
+
+vgui.Register("Atlas.Framework.Tab", PANEL)
+
+local PANEL = {}
+
+AtlasUI:CreateFont("Atlas.Framework.Dev.Licensee", 48)
+AtlasUI:CreateFont("Atlas.Framework.Dev", 20)
+
+function PANEL:Paint(w, h)
+  AtlasUI:DrawShadowText(`Licensed to ${self.licensee}`, "Atlas.Framework.Dev.Licensee",
+    w / 2, 16, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, 150)
+  AtlasUI:DrawShadowText(`Proof: ${self.proof}`, "Atlas.Framework.Dev",
+    w / 2, 16 + draw.GetFontHeight("Atlas.Framework.Dev.Licensee") + 4, 
+    Color(242, 242, 242), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, 150)
+  AtlasUI:DrawShadowText("This menu is currently in development, check back later", 
+    "Atlas.Framework.Dev", w / 2, h / 2, Color(183, 183, 183), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, 150)
+end
+
+function PANEL:SetData(data)
+  self.licensee = data.licensee
+  self.proof = data.proof
+end
+
+vgui.Register("Atlas.Framework.Dev", PANEL)
+
+local PANEL = {}
+AtlasUI:CreateFont("AtlasUI.NavbarBody", 18)
+AccessorFunc(PANEL, "m_body", "Body")
+
+function PANEL:Init()
+  self.Tabs = {}
+  self.Options = {}
+
+  self.Line = self:Add("DPanel")
+  self.Line:SetMouseInputEnabled(false)
+  self.Line:SetTall(2)
+  self.Line.x = 12
+  self.Line.Paint = (pnl, w, h) =>
+    surface.SetDrawColor(AtlasUI.Theme.Accent)
+    surface.DrawRect(0, 0, w, h)
+  end
+end
+
+function PANEL:PerformLayout(w, h)
+  self.Line:SetPos(self.Line.x, h - 2)
+end
+
+function PANEL:SetActive(id)
+  if (IsValid(self.Tabs[self.Active])) then
+    self.Tabs[self.Active]:LerpColor("TextColor", Color(183, 183, 183))
+    self.Tabs[self.Active].Panel:SetVisible(false)
+  end
+
+  self.Active = id
+
+  if (IsValid(self.Tabs[self.Active])) then
+    local margin = self.Margin or 24
+    local x = margin / 2
+    for i = 1, id - 1 do
+      x += self.Tabs[i]:GetWide()
+    end
+
+    self.Line:LerpMoveX(x, 0.3)
+    self.Line:LerpWidth(self.Tabs[id]:GetWide() - margin, 0.3)
+
+    self.Tabs[self.Active]:LerpColor("TextColor", color_white)
+    self.Tabs[self.Active].Panel:SetVisible(true)
+  end
+end
+
+function PANEL:SetOptions(options)
+  self.Options = options
+end
+
+function PANEL:AddTab(name, panelClass, data = {}, scriptId = "none")
+  local margin = self.Margin or 24
+  local btn = self:Add("DButton")
+  btn:Dock(LEFT)
+  btn:SetText(self.Options.upper and name:upper() or name)
+  btn:SetFont(self.Font or "AtlasUI.NavbarBody")
+  btn:SizeToContentsX(margin)
+  btn:SizeToContentsY()
+  btn.TextColor = Color(183, 183, 183)
+  btn.Paint = (pnl, w, h) =>
+    pnl:SetTextColor(pnl.TextColor)
+  end
+  btn.DoClick = (pnl) =>
+    self:SetActive(pnl.Id)
+  end
+
+  local id = table.insert(self.Tabs, btn)
+  self.Tabs[id].Id = id
+
+  if (id == 1) then
+    self.Line:SetWide(btn:GetWide() - margin)
+  end
+
+  local panel = self:GetBody():Add(panelClass or "AtlasUI.Panel")
+  panel:Dock(data.fill or FILL)
+  panel:SetVisible(false)
+  if (panel.SetData) then
+    panel:SetData(data, scriptId)
+  end
+
+  btn.Panel = panel
+end
+
+vgui.Register("AtlasUI.NavbarBody", PANEL)

@@ -1,10 +1,12 @@
-if SERVER then
-    include ("AtlasLoader/core/shared.lua")
-    AddCSLuaFile("AtlasLoader/core/shared.lua")
-end
-
-if CLIENT then
-    include("AtlasLoader/core/shared.lua")
-end
-
-AtlasLoader:LoadModules()
+hook.Add("AtlasUI.Loaded", "AtlasLibrary.LoaderLoad", function()
+    if SERVER then
+        include ("AtlasLoader/core/shared.lua")
+        AddCSLuaFile("AtlasLoader/core/shared.lua")
+    end
+    
+    if CLIENT then
+        include("AtlasLoader/core/shared.lua")
+    end
+    
+    AtlasLoader:LoadModules()
+end)

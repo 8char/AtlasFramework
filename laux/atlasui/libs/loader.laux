@@ -1,0 +1,135 @@
+ATLASUI_SERVER = 1
+ATLASUI_CLIENT = 2
+ATLASUI_SHARED = 3
+
+public class AtlasUI.Loader
+  _get _set name
+  _get _set acronym
+  _get _set directory
+  _get _set color
+
+  realms = {
+    [1] = {
+      color = AtlasUI.Theme.Blue,
+      name = "SV",
+      func = (path) ->
+        stopif CLIENT
+        
+        return include(path)
+      end
+    },
+    [2] = {
+      color = AtlasUI.Theme.Orange,
+      name = "CL",
+      func = (path) ->
+        if (CLIENT) then
+          return include(path)
+        end
+        
+        AddCSLuaFile(path)
+      end
+    },
+    [3] = {
+      color = AtlasUI.Theme.Purple,
+      name = "SH",
+      func = (path) ->
+        self.realms[ATLASUI_CLIENT].func(self, path)
+        return self.realms[ATLASUI_SERVER].func(self, path)
+      end
+    }
+  }
+
+  constructor(suppressDuplicates)
+    self.suppressDuplicates = suppressDuplicates or !AtlasUI.Debug
+    self.start = SysTime()
+    self.loadedFiles = {}
+  end
+
+  loadMessage(path: string, realm, col = self:getColor())
+    stopif AtlasUI.DisableLoadMessages
+
+    local name = self:getName()
+
+    MsgC(self:getColor(), `[${name}`, col, ` - ${realm}] `, color_white, "Loaded ", Color(0, 255, 0), `${path}\n`)
+  end
+
+  loadFile(path: string, realm: number, func)
+    if (!string.EndsWith(path, ".lua")) then
+      path ..= ".lua"
+    end
+
+    local fullPath = self:getDirectory() .. "/" .. path
+    if (self.loadedFiles[path]) then
+      if (!self.suppressDuplicates and !AtlasUI.DisableLoadMessages) then
+        local name = self:getName()
+        MsgC(AtlasUI.Theme.Red, `[${name}]`, color_white, ` ${fullPath} has already been loaded. Skipping\n`)
+      end
+
+      return
+    end
+
+    local tbl = self.realms[realm]
+    self:loadMessage(string.StripExtension(fullPath), tbl.name, tbl.color)
+    func = func or tbl.func
+    func(self, fullPath)
+
+    self.loadedFiles[path] = true
+
+    return self
+  end
+
+  loadFileOrIgnore(...)
+    pcall(self:loadFile(...))
+
+    return self
+  end
+
+  load(dir: string, realm: number|table, recursive = false: boolean, options = {})
+    local ignoreFiles = options.ignoreFiles or {}
+    local overwriteRealm = options.overwriteRealm or {}
+    local path = self:getDirectory()
+    if (!string.EndsWith(path, "/")) then path ..= "/" end
+    if (!string.EndsWith(dir, "/")) then dir ..= "/" end
+
+    local realmTbl = isnumber(realm) and self.realms[realm]
+    local files, folders = file.Find(path .. dir .. "*", "LUA")
+    for i, file in ipairs(files) do
+      local name = string.StripExtension(file)
+      continueif ignoreFiles[name]
+
+      local fileRealm = realm
+      local func = realmTbl?.func
+      local color = realmTbl?.color
+      local realmName = realmTbl?.name
+      if (istable(realm) or overwriteRealm[name]) then
+        local realm = overwriteRealm[name] or realm[name]
+        if (realm) then
+          local tbl = self.realms[realm]
+          func = tbl.func
+          color = tbl.color
+          realmName = tbl.name
+          fileRealm = realm
+        end
+      end
+
+      local filePath = dir .. file
+      self:loadFile(filePath, fileRealm, func)
+    end
+
+    if (recursive) then
+      for i, folder in ipairs(folders) do
+        self:load(dir .. folder, realm, recursive, options)
+      end
+    end
+
+    return self
+  end
+
+  done()
+    local time = math.Round(SysTime() - self.start, 4)
+    local files = table.Count(self.loadedFiles)
+
+    MsgC(self:getColor(), "[" .. self:getName() .. "]", color_white, ` Finished loading ${files} files in ${time}s\n`)
+  end
+end
+

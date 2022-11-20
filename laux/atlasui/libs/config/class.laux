@@ -1,0 +1,133 @@
+class Config
+  config = {}
+
+  constructor()
+    self:load()
+  end
+
+  load()
+    if (SERVER) then
+      self:loadServer()
+    else
+      self:loadClient()
+    end 
+  end
+
+  loadServer()
+    hook.Add("AtlasDB.Connected", "Atlas.Config", () =>
+      self:loadConfig()
+    end)
+
+    local db = file.Read("atlas/mysql.txt")
+    MsgC(AtlasUI.Theme.Red, "[Atlas Framework] ", color_white, "Using " .. (db and "MySQL" or "SQLite") .. " connection\n")
+    if (db) then
+      local tbl = util.JSONToTable(db)
+      AtlasDB.initialize(tbl)
+      self.serverId = tbl.serverId or 1
+    else
+      AtlasDB.initialize({
+        EnableMySQL = false,
+        Host = "ip",
+        Username = "root",
+        Password = "password",
+        Database_name = "gmod_server",
+        Database_port = 3306,
+        MultiStatements = false
+      })
+    end
+  end
+
+  loadConfig()
+    AtlasUI.ORM.DB = AtlasUI.ORM.ORM("atlasui/server/migrations/")
+    -- Give it 3 seconds, hack but works
+
+    timer.Simple(3, () =>
+      self.db = AtlasUI.ORM.DB
+      self.builder = AtlasUI.ORM.Builder
+      local id = self.serverId or 1
+
+      self.db:orm("atlas_framework_settings")
+        :select()
+        :where("server_id", "=", self.builder.raw(`${id} or NULL`))
+        :run():next((result) =>
+          for i, v in ipairs(result or {}) do
+            local val = v.json and util.JSONToTable(v.value) or v.value
+
+            self:register(v.id, val)
+          end
+
+          self.loaded = true
+
+          hook.Run("Atlas.ConfigLoaded")
+        end)
+    end)
+  end
+
+  loadClient(selector = "scripts")
+    net.Start("Atlas.RequestConfig")
+      net.WriteString(selector)
+    net.SendToServer()
+  end
+
+  getIndex(selector)
+    local tbl = self.config
+    local split = string.Explode(".", selector)
+
+    for i, v in ipairs(split) do
+      if (v == "") then continue end
+      if (!tbl[v]) then return end
+
+      tbl = tbl[v]
+    end
+
+    return tbl
+  end
+
+  save(scriptId, tbl = {})
+    if (CLIENT) then
+      tbl = von.serialize(tbl)
+      local len = tbl:len()
+
+      net.Start("Atlas.Config")
+        net.WriteString(scriptId)
+        net.WriteUInt(len, 32)
+        net.WriteData(tbl, len)
+      net.SendToServer()
+    else
+      local tbl = AtlasUI.Config:get("scripts")[scriptId]
+      if (!tbl) then return end
+
+      local id = self.serverId or 1
+
+      for i, v in pairs(tbl) do
+        local json = istable(v)
+        local val = json and util.TableToJSON(v) or v
+
+        self.db:orm("atlas_framework_settings")
+          :upsert({
+            id = `${scriptId}.${i}`,
+            value = val,
+            json = json,
+            server_id = id
+          }, { "id" })
+          :run()
+      end
+    end
+  end
+
+  get(selector, default)
+    return self:getIndex(selector) or default
+  end
+
+  set(selector, key, value)
+    local tbl = self:getIndex(selector)
+    tbl[key] = value
+
+    return self
+  end
+
+  __type() return "AtlasUI.Config" end
+end
+
+AtlasUI.Config = Config()
+AtlasUI.Config:set("", "scripts", {})

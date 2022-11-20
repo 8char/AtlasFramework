@@ -1,3 +1,0 @@
-AtlasUI ||= {}
-AtlasUI.ORM ||= {}
-AtlasUI.Players ||= {}

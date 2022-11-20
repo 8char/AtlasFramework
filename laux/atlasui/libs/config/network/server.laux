@@ -1,0 +1,27 @@
+util.AddNetworkString("Atlas.Config")
+util.AddNetworkString("Atlas.RequestConfig")
+
+net.Receive("Atlas.Config", (len, ply) =>
+  if (!AtlasUI.Permissions:isDeveloper(ply)) then return end
+
+  local scriptId = net.ReadString()
+  local len = net.ReadUInt(32)
+  local tbl = von.deserialize(net.ReadData(len))
+
+  AtlasUI.Config:set("scripts", scriptId, tbl)
+  AtlasUI.Config:save(scriptId)
+end)
+
+net.Receive("Atlas.RequestConfig", (len, ply) =>
+  local selector = net.ReadString()
+  local data = von.serialize(AtlasUI.Config:get(selector, {}))
+  local len = data:len()
+
+  net.Start("Atlas.RequestConfig")
+    net.WriteString(selector)
+    net.WriteUInt(len, 32)
+    net.WriteData(data, len)
+  net.Send(ply)
+end)
+
+print("hi")

@@ -1,0 +1,171 @@
+--[[
+	Created by Patrick Ratzow (sleeppyy).
+
+	Credits goes to Metamist for his previously closed source library Wyvern,
+		CupCakeR for various improvements, the animated texture VGUI panel, and misc.
+]]
+ 
+local PANEL = {}
+
+AtlasUI:CreateFont("AtlasUI.Sidebar.Category.Title", 22)
+
+AccessorFunc(PANEL, "m_body", "Body")
+AccessorFunc(PANEL, "m_backgroundColor", "BackgroundColor")
+
+function PANEL:Init()
+	self:SetBackgroundColor(AtlasUI.Theme.Navbar)
+
+  self.buttons = {}
+  self.panels = {}
+
+  self:DockPadding(0, 0, 0, 0)
+end
+
+function PANEL:AddCategory(name)
+  local panel = self:Add("Panel")
+  panel:Dock(TOP)
+  panel:DockMargin(0, 8, 0, 8)
+  panel:SetTall(25)
+  panel.color = Color(202, 202, 202)
+  panel.Paint = function(pnl, w, h)
+    draw.SimpleText(name, "AtlasUI.Sidebar.Category.Title", w / 2, 0, pnl.color, TEXT_ALIGN_CENTER)
+    surface.SetFont("AtlasUI.Sidebar.Category.Title")
+    local tw, th = surface.GetTextSize(name)
+
+    surface.SetDrawColor(pnl.color)
+    surface.DrawLine(10, th + 2, w - 10, th + 2)
+  end
+end
+
+function PANEL:AddTab(name, icon, panelClass, panelFunc)
+  local button = self:Add("AtlasUI.Sidebar.Category")
+  button:Dock(TOP)
+  button:SetName(name)
+  button:SetIcon(icon)
+  button.OnMouseReleased = function(pnl)
+    self:SetActive(pnl.Id)
+  end
+  button.panelClass = panelClass
+  button.OnPanelCreated = function(pnl, panel)
+    panelFunc(pnl, panel)
+  end
+
+  local id = table.insert(self.buttons, button)
+  button.Id = id
+end
+
+function PANEL:SetActive(id, instant)
+  if (self.active == id) then return end
+  if (self.active and self.buttons[self.active]) then
+    self.buttons[self.active].active = false
+    self.buttons[self.active]:OnCursorExited()
+
+    if (IsValid(self.panels[self.active])) then
+      self.panels[self.active]:SetVisible(false)
+    end
+  end
+
+  self.active = id
+  self.buttons[id].active = true
+  
+  if (!IsValid(self.panels[id])) then
+    local panel = self:GetBody():Add(self.buttons[id].panelClass)
+    panel:Dock(FILL)
+
+    self.panels[id] = panel
+    self.buttons[id]:OnPanelCreated(self.panels[id])
+  else
+    self.panels[id]:SetVisible(true)
+  end
+
+	if (self.panels[id].OnSwitchedTo) then
+		self.panels[id]:OnSwitchedTo(self.buttons[id]:GetName())
+	end
+
+  if (instant) then
+    self.buttons[id].Color = color_white
+    self.buttons[id].Alpha = 255
+  else
+    self.buttons[id]:LerpColor("Color", color_white)
+    self.buttons[id]:Lerp("Alpha", 255)
+  end
+
+  self:OnActiveChanged(id)
+end
+
+function PANEL:OnActiveChanged(id)
+  -- override
+end
+
+function PANEL:PerformLayout(w, h)
+  local width = 0
+
+  surface.SetFont("AtlasUI.Sidebar.Category")
+  for i, v in pairs(self.buttons) do
+    local tw = surface.GetTextSize(v:GetName())
+    tw = tw + 64
+
+    if (tw > width) then
+      width = tw
+    end
+
+    v:SetTall(48)
+  end
+
+  self:SetWide(width)
+end
+
+function PANEL:Paint(w, h)
+  draw.RoundedBoxEx(6, 0, 0, w, h, self:GetBackgroundColor(), false, false, true, false)
+end
+
+vgui.Register("AtlasUI.Sidebar", PANEL)
+
+-- Category
+local PANEL = {}
+
+AtlasUI:CreateFont("AtlasUI.Sidebar.Category", 20)
+
+local matGradientSidebar = Material("atlas/gradient_ltr.png")
+
+AccessorFunc(PANEL, "m_name", "Name")
+AccessorFunc(PANEL, "m_icon", "Icon")
+
+function PANEL:Init()
+  self.Color = Color(140, 140, 140)
+  self.Alpha = 0
+  self:SetCursor("hand")
+end
+
+function PANEL:OnCursorEntered()
+  if (self.active) then return end
+  
+  self:Lerp("Alpha", 255)
+  self:LerpColor("Color", Color(200, 200, 200))
+end
+
+function PANEL:OnCursorExited()
+  if (self.active) then return end
+
+  self:Lerp("Alpha", 0)
+  self:LerpColor("Color", Color(140, 140, 140))
+end
+
+function PANEL:Paint(w, h)
+  surface.SetMaterial(matGradientSidebar)
+  surface.SetDrawColor(ColorAlpha(AtlasUI.Theme.Accent, self.Alpha))
+  surface.DrawTexturedRect(0, 0, w, h)
+
+  local offset = 16
+  if (self:GetIcon()) then
+    surface.SetDrawColor(self.Color)
+    surface.SetMaterial(self:GetIcon())
+    surface.DrawTexturedRect(10, 10, h - 20, h - 20)
+
+    offset = h
+  end
+
+  draw.SimpleText(self:GetName():upper(), "AtlasUI.Sidebar.Category", offset, h / 2, self.Color, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+end
+
+vgui.Register("AtlasUI.Sidebar.Category", PANEL)

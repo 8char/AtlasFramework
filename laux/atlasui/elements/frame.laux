@@ -1,0 +1,104 @@
+--[[
+	Created by Patrick Ratzow (sleeppyy).
+
+	Credits goes to Metamist for his previously closed source library Wyvern,
+		CupCakeR for various improvements, the animated texture VGUI panel, and misc.
+]]
+ 
+AtlasUI:CreateFont("AtlasUI.Frame.Title", 28)
+
+local PANEL = {}
+
+function PANEL:Init()
+	self.top = vgui.Create("Panel", self)
+	self.top:Dock(TOP)
+	self.top.Paint = function(pnl, w, h)
+		draw.RoundedBoxEx(6, 0, 0, w, h, AtlasUI.Theme.Primary, true, true, false, false)
+	end
+
+	if (AtlasUI.Branding) then
+		local isMat = type(AtlasUI.Branding) == "IMaterial"
+
+		self.branding = vgui.Create("Panel", self.top)
+		self.branding:Dock(LEFT)
+		if (!isMat) then
+			AtlasUI:DownloadIcon(self.branding, AtlasUI.Branding)
+		end
+		self.branding.Paint = function(pnl, w, h)
+			if (isMat) then
+				surface.SetDrawColor(color_white)
+				surface.SetMaterial(AtlasUI.Branding)
+				surface.DrawTexturedRect(4, 4, w - 8, h - 8)
+			else
+				AtlasUI:DrawIcon(4, 4, w - 8, h - 8, pnl)
+			end
+		end
+	end
+
+	self.title = vgui.Create("DLabel", self.top)
+	self.title:Dock(LEFT)
+	self.title:DockMargin(IsValid(self.branding) and 0 or 10, 0, 0, 0)
+	self.title:SetFont("AtlasUI.Frame.Title")
+	self.title:SetTextColor(color_white)
+
+	self.closeBtn = vgui.Create("DButton", self.top)
+	self.closeBtn:Dock(RIGHT)
+	self.closeBtn:SetText("")
+	self.closeBtn.CloseButton = Color(195, 195, 195)
+	self.closeBtn.Alpha = 0
+	self.closeBtn.DoClick = function(pnl)
+		self:Remove()
+	end
+	self.closeBtn.Paint = function(pnl, w ,h)
+		draw.RoundedBox(6, 0, 0, w, h, ColorAlpha(AtlasUI.Theme.Red, pnl.Alpha))
+
+		surface.SetDrawColor(pnl.CloseButton)
+		surface.SetMaterial(AtlasUI.Materials.CloseButton)
+		surface.DrawTexturedRect(12, 12, w - 24, h - 24)
+	end
+	self.closeBtn.OnCursorEntered = function(pnl)
+		pnl:Lerp("Alpha", 255)
+		pnl:LerpColor("CloseButton", Color(255, 255, 255))
+	end
+	self.closeBtn.OnCursorExited = function(pnl)
+		pnl:Lerp("Alpha", 0)
+		pnl:LerpColor("CloseButton", Color(195, 195, 195))
+	end
+end
+
+function PANEL:SetTitle(str)
+	self.title:SetText(str)
+	self.title:SizeToContents()
+end
+
+function PANEL:PerformLayout(w, h)
+	self.top:SetTall(40)
+
+	if (IsValid(self.branding)) then
+		self.branding:SetWide(self.top:GetTall())
+	end
+
+	self.closeBtn:SetWide(self.top:GetTall())
+end
+
+function PANEL:Paint(w, h)
+	local x, y = self:LocalToScreen()
+
+	BSHADOWS.BeginShadow()
+		draw.RoundedBox(6, x, y, w, h, AtlasUI.Theme.Background)
+	BSHADOWS.EndShadow(1, 2, 2, 255, 0, 0)
+end
+
+function PANEL:ShowCloseButton(show)
+	self.closeBtn:SetVisible(show)
+end
+
+vgui.Register("AtlasUI.Frame", PANEL, "EditablePanel")
+
+concommand.Add("atlasui", function()
+	local frame = vgui.Create("AtlasUI.Frame")
+	frame:SetSize(960, 720)
+	frame:Center()
+	frame:MakePopup()
+	frame:SetTitle("Party")
+end)

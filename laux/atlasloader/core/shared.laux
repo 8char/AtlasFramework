@@ -31,7 +31,7 @@ function AtlasLoader:FindFilesRecursive(dir, filter, path, prefix)
     filter = filter or "*"
     prefix = prefix or ""
     local files, _ = file.Find(dir .. "/" .. filter, path)
-    local _,dirs = file.Find(dir .. "/*", path)
+    local _, dirs = file.Find(dir .. "/*", path)
     for _, sub_dir in ipairs(dirs) do
         local dirFiles = self:FindFilesRecursive(dir .. "/" .. sub_dir, filter, path, sub_dir .. "/" )
         table.Add(files, dirFiles)

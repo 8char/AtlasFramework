@@ -1,0 +1,197 @@
+class ORM extends AtlasUI.ORM.ORM
+  constructor()
+    super("atlasui/libs/players/migrations/")
+  end
+
+  insertPlayer(sid64)
+    return self:orm("atlas_framework_players")
+      :insert({
+        id = sid64,
+        created_at = self.b.raw("CURRENT_TIMESTAMP")
+      })
+      :ignore()
+      :run()
+  end
+
+  insertPlayerJoin(sid64)
+    return self:orm("atlas_framework_players_history")
+      :insert({
+        player_id = sid64,
+        joined_at = self.b.raw("CURRENT_TIMESTAMP")
+      })
+      :ignore()
+      :run()
+  end
+
+  insertPlayerLeave(sid64)
+    return self:orm("atlas_framework_players_history")
+      :update({
+        left_at = self.b.raw("CURRENT_TIMESTAMP")
+      })
+      :where("player_id", "=", sid64)
+      :where("left_at", "", self.b.isNull())
+      :run()
+  end
+
+  deleteInactivePlayerJoins(sid64)
+    return self:orm("atlas_framework_players_history")
+      :delete()
+      :where("player_id", "=", sid64)
+      :where("left_at", "", self.b.isNull())
+      :run()
+  end
+
+  getPlayerPlayTime(sid64)
+    local mySQL = self:isMySQL()
+    local str = [[
+      SELECT
+        (
+            SELECT IFNULL(SUM(:playTime:), 0)
+            FROM atlas_framework_players_history
+            WHERE left_at IS NOT NULL
+              AND player_id = ':steamid64:'
+        ) AS playTime,
+        (
+            SELECT IFNULL(SUM(:currentPlayTime:), 0)
+            FROM atlas_framework_players_history
+            WHERE left_at IS NULL
+              AND player_id = ':steamid64:'
+        ) AS currentPlayTime
+    ]]
+    str = str:Replace(":steamid64:", sid64)
+    str = str:Replace(":playTime:", mySQL and
+      "TIMEDIFF(left_at, joined_at)" or
+      "strftime('%s', left_at) - strftime('%s', joined_at)")
+    str = str:Replace(":currentPlayTime:", mySQL and
+      "TIMEDIFF(CURRENT_TIMESTAMP, joined_at)" or
+      "strftime('%s', CURRENT_TIMESTAMP) - strftime('%s', joined_at)")
+
+    return self:rawQuery(str)
+      :next((results) =>
+        if (!results) then return {} end
+        if (!results[1]) then return {} end
+
+        return results[1]
+      end)
+  end
+
+  insertNotification(sid64, scriptId, type, content, data)
+    return self:orm("atlas_framework_notifications", true)
+      :insert({
+        target_id = sid64,
+        script_id = scriptId,
+        type = type,
+        content = content,
+        data = data and util.TableToJSON(data)
+      })
+      :run()
+      :next((results) =>
+        -- Returns insertId
+        return results[2]
+      end)
+  end
+
+  markNotificationRead(sid64, id)
+    return self:orm("atlas_framework_notifications")
+      :update({
+        read_at = self.b.raw("CURRENT_TIMESTAMP")
+      })
+      :where("id", "=", id)
+      :where("target_id", "=", sid64)
+      :where("read_at", "", self.b.isNull())
+      :run()
+  end
+
+  getAmountOfUnreadNotifications(sid64)
+    return self:orm("atlas_framework_notifications")
+      :select(self.b.raw("COUNT(*) AS amount"))
+      :where("target_id", "=", sid64)
+      :where("read_at", "", self.b.isNull())
+      :getOne()
+      :next((result) =>
+        return result.amount == "NULL" and 0 or result.amount
+      end)
+  end
+
+  getNotification(id)
+    return self:orm("atlas_framework_notifications")
+      :select("id", "script_id", "type", "content", "data", 
+        self.b.alias(self.b.timestamp("created_at"), "created_at"), 
+        self.b.alias(self.b.timestamp("read_at"), "read_at"))
+      :where("id", "=", id)
+      :run()
+      :next((results) =>
+        local tbl = {}
+
+        for i, v in ipairs(results) do
+          local entry = {
+            id = v.id,
+            type = v.type,
+            scriptId = v.script_id,
+            content = v.content,
+            createdAt = v.created_at,
+          }
+          if (v.data != "NULL") then
+            entry.data = util.JSONToTable(v.data)
+          end
+          if (v.read_at != "NULL") then
+            entry.readAt = v.read_at
+          end
+
+          table.insert(tbl, entry)
+        end
+
+        return tbl
+      end)
+  end
+
+  getNotifications(sid64, limit = 10, offset = 0)
+    return self:orm("atlas_framework_notifications")
+      :select("id", "type", "script_id", "content", "data", 
+        self.b.alias(self.b.timestamp("created_at"), "created_at"), 
+        self.b.alias(self.b.timestamp("read_at"), "read_at"))
+      :where("target_id", "=", sid64)
+      :orderBy("id", self.b.DESC)
+      :limit(limit)
+      :offset(offset)
+      :run()
+      :next((results) =>
+        local tbl = {}
+
+        for i, v in ipairs(results) do
+          local entry = {
+            id = v.id,
+            type = v.type,
+            scriptId = v.script_id,
+            content = v.content,
+            createdAt = v.created_at
+          }
+          if (v.data != "NULL") then
+            entry.data = util.JSONToTable(v.data)
+          end
+          if (v.read_at != "NULL") then
+            entry.readAt = v.read_at
+          end
+
+          table.insert(tbl, entry)
+        end
+
+        return tbl
+      end)
+  end
+
+  __type() return "Atlas.Notification.Database" end
+end
+
+local function Load()
+  AtlasUI.Players.Database = ORM()
+end
+
+if (AtlasUI.Configurator?.ORM?.LoadedInsideHook) then
+  Load()
+else
+  hook.Add("Atlas.Configurator.InitialisedDatabase", "Atlas.Players.Database", () =>
+    Load()
+  end)
+end
+

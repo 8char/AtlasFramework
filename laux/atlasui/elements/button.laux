@@ -1,0 +1,137 @@
+--[[
+	Created by Patrick Ratzow (sleeppyy).
+
+	Credits goes to Metamist for his previously closed source library Wyvern,
+		CupCakeR for various improvements, the animated texture VGUI panel, and misc.
+]]
+ 
+local PANEL = {}
+
+AccessorFunc( PANEL, "roundness", "Roundness", FORCE_NUMBER )
+AccessorFunc( PANEL, "disabled", "Disabled" )
+AccessorFunc( PANEL, "loading_size", "LoadingImageSizeSub", FORCE_NUMBER )
+AccessorFunc( PANEL, "awaiting_response", "AwaitingResponse", FORCE_BOOL )
+AccessorFunc( PANEL, "loading_color", "LoadingColor")
+AccessorFunc( PANEL, "old_text", "OldText" )
+AccessorFunc( PANEL, "outline", "Outline", FORCE_NUMBER )
+
+AccessorFunc( PANEL, "clr_background_cur", "BackgroundColor" )
+AccessorFunc( PANEL, "clr_background_on", "BackgroundColorOn" )
+AccessorFunc( PANEL, "clr_background_off", "BackgroundColorOff" )
+
+AccessorFunc( PANEL, "clr_text_cur", "TextColorCur" )
+AccessorFunc( PANEL, "clr_text_on", "TextColorOn" )
+AccessorFunc( PANEL, "clr_text_off", "TextColorOff" )
+
+AccessorFunc( PANEL, "enable_shadow", "EnableShadow" )
+AccessorFunc( PANEL, "shadow_alpha", "ShadowAlpha" )
+AccessorFunc( PANEL, "shadow_alpha_on", "ShadowAlphaOn" )
+AccessorFunc( PANEL, "shadow_alpha_off", "ShadowAlphaOff" )
+
+AtlasUI:CreateFont("AtlasUI.Checkbox", 16)
+AtlasUI:CreateFont("AtlasUI.Checkbox.Small", 15)
+
+function PANEL:Init()
+	self:SetText( "" )
+	self:SetLoadingImageSizeSub( 16 )
+	self:SetEnableShadow( true )
+	self:SetShadowAlphaOn( 150 )
+	self:SetShadowAlphaOff( 0 )
+	self:SetOutline( 0 )
+end
+
+function PANEL:SetAwaitingResponse( b )
+	self.awaiting_response = b
+
+	if !b then
+		self:SetText( self:GetOldText() )
+	end
+end
+
+function PANEL:Paint( w, h )
+	if !self.DidPostInit then return end
+
+	self:SetTextColor(self:GetTextColorCur())
+
+	local r = self:GetRoundness()
+	if self:GetEnableShadow() then
+		local x, y = self:LocalToScreen(0, 0)
+		BSHADOWS.BeginShadow()
+				local sub = self:GetOutline()
+				if sub > 0 then
+					draw.RoundedBox(r or h/2, x, y, w, h, self:GetTextColorCur() )
+				end
+				draw.RoundedBox(r or h/2, x + sub, y + sub, w - sub*2, h - sub*2, self:GetBackgroundColor() )
+		BSHADOWS.EndShadow(2, 2, 2, self:GetShadowAlpha(), 0, 0)
+	else
+		local sub = self:GetOutline()
+		if sub > 0 then
+			draw.RoundedBox(r or h/2, 0, 0, w, h, self:GetTextColorCur() )
+		end
+		draw.RoundedBox(r or h/2, 0+sub, 0+sub, w - sub*2, h - sub*2, self:GetBackgroundColor() )
+	end
+
+	if self:GetAwaitingResponse() then
+		self:SetText( "" )
+		AtlasUI:DrawLoadingCircle( w/2, h/2, h - self:GetLoadingImageSizeSub(), self:GetLoadingColor() or self:GetTextColor() )
+	end
+end
+
+function PANEL:RefreshColors( anim )
+	for k, v in pairs( self.m_AnimList or {} ) do
+		if ( v.OnEnd ) then v:OnEnd( self ) end
+		self.m_AnimList[k] = nil
+	end
+
+	if self:IsHovered() then
+		if anim then
+			self:LerpColor( "clr_text_cur", self:GetTextColorOn() )
+			self:LerpColor( "clr_background_cur", self:GetBackgroundColorOn() )
+		else
+			self:SetTextColorCur( self:GetTextColorOn() )
+			self:SetBackgroundColor( self:GetBackgroundColorOn() )
+		end
+	else
+		if anim then
+			self:LerpColor( "clr_text_cur", self:GetTextColorOff() )
+			self:LerpColor( "clr_background_cur", self:GetBackgroundColorOff() )
+		else
+			self:SetTextColorCur( self:GetTextColorOff() )
+			self:SetBackgroundColor( self:GetBackgroundColorOff() )
+		end
+	end
+end
+
+function PANEL:OnCursorEntered()
+	if !self.DidPostInit then return end
+
+	if self:GetDisabled() then
+		self:SetCursor( "no" )
+		return
+	else
+		self:SetCursor( "hand" )
+	end
+
+	self:Lerp( "shadow_alpha", self:GetShadowAlphaOn() )
+	self:LerpColor( "clr_text_cur", self:GetTextColorOn() )
+	self:LerpColor( "clr_background_cur", self:GetBackgroundColorOn() )
+end
+
+function PANEL:OnCursorExited()
+	if self:GetDisabled() or !self.DidPostInit then return end
+
+	self:Lerp( "shadow_alpha", self:GetShadowAlphaOff() )
+	self:LerpColor( "clr_text_cur", self:GetTextColorOff() )
+	self:LerpColor( "clr_background_cur", self:GetBackgroundColorOff() )
+end
+
+function PANEL:PostInit()
+	self:SetOldText( self:GetText() )
+	self:SetShadowAlpha( self:GetShadowAlphaOff() )
+	self:SetBackgroundColor( self:GetBackgroundColorOff() )
+	self:SetTextColorCur( self:GetTextColorOff() )
+
+	self.DidPostInit = true
+end
+
+vgui.Register("AtlasUI.Button", PANEL, "DButton")

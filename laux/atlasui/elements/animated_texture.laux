@@ -1,0 +1,76 @@
+--[[
+	Created by Patrick Ratzow (sleeppyy).
+
+	Credits goes to Metamist for his previously closed source library Wyvern,
+		CupCakeR for various improvements, the animated texture VGUI panel, and misc.
+]]
+ 
+local PANEL = {}
+
+AccessorFunc( PANEL, "m_paused", "Paused" )
+
+function PANEL:Init()
+    self.images = {}
+    self.slots = {}
+    self:SetPaused( false )
+end
+
+function PANEL:SetDirectory( dir )
+    local files = file.Find( "materials/" .. dir .. "/*", "GAME" ) or {}
+    for k, v in pairs( files ) do
+        files[k] = tonumber( string.StripExtension( v ) )
+    end
+
+    table.sort( files, function( a, b ) return a < b end)
+
+    local new = {}
+    for k, v in pairs( files ) do
+        new[k] = Material( dir .. "/" .. v .. ".png", "smooth" )
+    end
+
+    self.dir = dir
+    self.images = new
+end
+
+function PANEL:SetImages( tbl )
+    self.images = tbl
+end
+
+function PANEL:SetTimes( normal, idle )
+    self.times = {
+        normal = normal or .02,
+        idle = idle or 1
+    }
+end
+
+function PANEL:PostInit()
+    self.start_slot = 1
+    self.end_slot = #self.images
+    
+    self.slots = {
+        min = 1,
+        max = #self.images
+    }
+
+    self.cur_image = self.slots.min
+    self.next_change = UnPredictedCurTime() + self.times.normal
+
+    self.can_draw = true
+end
+
+function PANEL:Paint(w, h)
+    if !self.can_draw then return end
+
+	if !self.images[self.cur_image] then return end
+
+    surface.SetMaterial( self.images[self.cur_image] )
+    surface.SetDrawColor( 255, 255, 255 )
+    surface.DrawTexturedRect( 0, 0, w, h )
+
+    if self.next_change < UnPredictedCurTime() and !self:GetPaused() then
+        self.cur_image = self.cur_image < self.slots.max and self.cur_image + 1 or self.slots.min
+        self.next_change = UnPredictedCurTime() + (self.cur_image < self.slots.max and self.times.normal or self.times.idle)
+    end
+end
+
+vgui.Register("AtlasUI.AnimatedTexture", PANEL, "Panel")

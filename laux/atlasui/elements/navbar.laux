@@ -1,0 +1,250 @@
+--[[
+	Created by Patrick Ratzow (sleeppyy).
+
+	Credits goes to Metamist for his previously closed source library Wyvern,
+		CupCakeR for various improvements, the animated texture VGUI panel, and misc.
+]]
+ 
+AtlasUI:CreateFont("AtlasUI.Navbar.Button", 25)
+
+local function navbarEase(t, b, c, d)
+	t = t / d
+	local ts = t * t
+	local tc = ts * t
+
+	return b + c * (6 * tc * ts + -15 * ts * ts + 10 * tc)
+end
+
+local PANEL = {}
+
+function PANEL:Init()
+	self.buttons = {}
+	self.panels = {}
+	self.buttonsNum = {}
+
+	self.font = "AtlasUI.Navbar.Button"
+	self.accent = AtlasUI.Theme.Accent
+	self.textActive = self.accent
+	self.padding = 60
+	self.minSize = 80
+	self.dockLeft = 0
+	self.lineBasedOffText = false
+	self.animation = "alpha"
+
+	self.active = 0
+
+	self.line = self:Add("DPanel")
+	self.line:SetMouseInputEnabled(false)
+	self.line:SetTall(2)
+	self.line.Paint = function(pnl, w, h)
+		surface.SetDrawColor(self.accent)
+		surface.DrawRect(0, 0, w, h)
+	end
+end
+
+function PANEL:AddTab(name, panel, tbl)
+	-- This was added after a ton of add-ons has been made using this, so the method for achieveing the line animation is gonna be a bit hacky..
+	self.buttonsNum[#self.buttonsNum + 1] = name
+	
+	self.buttons[name] = vgui.Create("DButton", self)
+	if (!tbl or (tbl and !tbl.dontDock)) then
+		self.buttons[name]:Dock(LEFT)
+		self.buttons[name]:DockMargin(self.dockLeft, 0, -self.dockLeft, 0)
+	end
+	self.buttons[name]:SetText(name)
+	self.buttons[name]:SetFont(self.font)
+	self.buttons[name].textColor = Color(120, 120, 120)
+	self.buttons[name].Paint = function(pnl, w, h)
+		pnl:SetTextColor(pnl.textColor)
+	end
+	self.buttons[name].DoClick = function(pnl)
+		self:SetActive(name)
+	end
+	self.buttons[name].OnCursorEntered = function(pnl)
+		pnl:LerpColor("textColor", self.textActive)
+	end
+	self.buttons[name].OnCursorExited = function(pnl)
+		if (self.active == name) then return end
+		
+		pnl:LerpColor("textColor", Color(120, 120, 120))
+	end
+
+	surface.SetFont(self.font)
+	local tw, th = surface.GetTextSize(name)
+	self.buttons[name]:SetWide(math.max(self.minSize, tw + self.padding))
+
+	if (!panel) then panel = "Panel" end
+
+	self.panels[name] = vgui.Create(panel, self.body)
+	self.panels[name]:Dock(FILL)
+	self.panels[name]:SetVisible(false)
+	self.panels[name].Data = tbl
+	
+	if (self.panels[name].SetData) then
+		self.panels[name]:SetData(tbl)
+	end
+
+	if (tbl and tbl.PostInit) then
+		tbl.PostInit(self.panels[name])
+	end
+
+	return self.panels[name]
+end
+
+function PANEL:FindIndex(name)
+	for i, v in pairs(self.buttonsNum) do
+		if (v != name) then continue end
+
+		return i
+	end
+end
+
+function PANEL:SetActive(name)
+	if (self.active == name) then return end
+
+	local instant = !IsValid(self.buttons[self.active])
+	if (self.buttons[self.active]) then
+		self.buttons[self.active]:LerpColor("textColor", Color(120, 120, 120))
+	end
+
+	if (self.panels[self.active]) then
+		if (self.animation == "alpha") then
+			local pnl = self.panels[self.active]
+			pnl.DrawAlpha = pnl.DrawAlpha or 0
+			pnl.PaintOver = function(pnl, w, h)
+				draw.RoundedBoxEx(6, 0, 0, w, h, ColorAlpha(AtlasUI.Theme.Background, pnl.DrawAlpha), false, false, true, true)
+			end
+			pnl:Lerp("DrawAlpha", 255,  0.15, function()
+				pnl.PaintOver = nil
+				pnl:SetVisible(false)
+			end)
+		else
+			local pnl = self.panels[self.active]
+			pnl:SetVisible(false)
+		end
+	
+		if (self.panels[name].OnSwitchedFrom) then
+			self.panels[name]:OnSwitchedFrom()
+		end
+	end
+
+	self.active = name
+	
+	if (self.buttons[name]) then
+		if (instant) then
+			self.buttons[name].textColor = self.textActive
+			local id = self:FindIndex(name)
+			local x = self.dockLeft
+			if (self.lineBasedOffText) then
+				x = x + self.padding / 2
+			end
+			surface.SetFont(self.font)
+			for i, v in ipairs(self.buttonsNum) do
+				if (i >= id) then break end
+
+				if (self.lineBasedOffText and i == id) then
+					local tw = surface.GetTextSize(self.buttons[v]:GetText())
+					x = x + tw + self.padding
+				else
+					x = x + self.buttons[v]:GetWide()
+				end
+			end
+
+			self.line:SetPos(x, (self.startHeight or 56) - self.line:GetTall())
+			local width = self.buttons[name]:GetWide()
+			if (self.lineBasedOffText) then
+				surface.SetFont(self.font)
+				width = surface.GetTextSize(self.buttons[name]:GetText())
+			end
+			self.line:SetWide(width)
+		else
+			self.buttons[name]:LerpColor("textColor", self.textActive)
+			local id = self:FindIndex(name)
+			local x = self.dockLeft
+			if (self.lineBasedOffText) then
+				x = x + self.padding / 2
+			end
+			surface.SetFont(self.font)
+			for i, v in ipairs(self.buttonsNum) do
+				if (i >= id) then break end
+
+				if (self.lineBasedOffText and i == id) then
+					local tw = surface.GetTextSize(self.buttons[v]:GetText())
+					x = x + tw
+				else
+					x = x + self.buttons[v]:GetWide()
+				end
+			end
+
+			self.line:LerpMoveX(x, 0.3, nil, navbarEase)
+			local width = self.buttons[name]:GetWide()
+			if (self.lineBasedOffText) then
+				surface.SetFont(self.font)
+				width = surface.GetTextSize(self.buttons[name]:GetText())
+			end
+			self.line:LerpWidth(width, 0.3, nil, navbarEase)
+		end
+	end
+
+	if (self.panels[name]) then
+		if (instant) then
+			local pnl = self.panels[name]
+			pnl:SetVisible(true)
+		else
+			if (self.animation == "alpha") then
+				timer.Simple(0.15, function()
+					if (!IsValid(self)) then return end
+
+					local pnl = self.panels[name]
+					pnl.DrawAlpha = pnl.DrawAlpha or 255
+					pnl:SetVisible(true)
+					pnl.PaintOver = function(pnl, w, h)
+						draw.RoundedBoxEx(6, 0, 0, w, h, ColorAlpha(AtlasUI.Theme.Background, pnl.DrawAlpha), false, false, true, true)
+					end
+					pnl:Lerp("DrawAlpha", 0,  0.15, function()
+						pnl.PaintOver = nil
+					end)
+				end)
+			else
+				local pnl = self.panels[name]
+				pnl:SetVisible(true)
+			end
+		end
+
+		if (self.panels[name].OnSwitchedTo) then
+			self.panels[name]:OnSwitchedTo(name)
+		end
+	end
+
+	self:SwitchedTab(name)
+end
+
+function PANEL:SwitchedTab(name)
+	-- Override
+end
+
+function PANEL:GetActive()
+	return self.panels[self.active]
+end
+
+function PANEL:SetBody(pnl)
+	self.body = pnl:Add("Panel")
+	self.body:Dock(FILL)
+	self.body.Offset = 0
+	self.body.PerformLayout = function(pnl, w, h)
+		local num = 0
+		for i, v in pairs(self.panels) do
+			local x  = num * w - (pnl.Offset * w)
+
+			v:SetSize(w, h)
+			v:SetPos(x, 0)
+		end
+	end
+end
+
+function PANEL:Paint(w, h)
+	surface.SetDrawColor(AtlasUI.Theme.Navbar)
+	surface.DrawRect(0, 0, w, h)
+end
+
+vgui.Register("AtlasUI.Navbar", PANEL)

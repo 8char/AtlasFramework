@@ -1,0 +1,42 @@
+class ScriptsNetwork extends AtlasUI.Network
+  constructor()
+    super()
+
+    self:receiver("Atlas.Framework.Scripts", self.receiveScripts)
+    self:receiver("Atlas.Framework.UpdateScriptsMessage", self.receiveUpdateScripts)
+  end
+
+  receiveScripts(ply)
+    local scripts = self:decompress()
+    AtlasUI.Scripts:setAll(scripts)
+
+    hook.Run("Atlas.Framework.ReceivedScripts", scripts)
+  end
+
+  receiveUpdateScripts(ply)
+    local tbl = self:decompress()
+    for i, v in ipairs(tbl) do
+      chat.AddText(unpack(v))
+    end
+  end
+
+  requestScripts()
+    if (self.SentScriptsRequest) then
+      hook.Run("Atlas.Framework.ReceivedScripts", AtlasUI.Scripts:getAll())
+
+      return
+    end
+
+    self.SentScriptsRequest = true
+
+    self:sendRequestScripts()
+  end
+
+  sendRequestScripts()
+    self:send("Atlas.Framework.Scripts", () -> end)
+  end
+
+  __type() return "AtlasUI.ScriptsNetwork" end
+end
+
+AtlasUI.ScriptsNetwork = ScriptsNetwork()

@@ -1,0 +1,8 @@
+return (Table) =>
+  Table("atlas_framework_settings", (tbl) =>
+    tbl:string("id", 191):primary()
+    tbl:text("value")
+    tbl:boolean("json"):nullable()
+    tbl:integer("server_id"):nullable()
+  end)
+end

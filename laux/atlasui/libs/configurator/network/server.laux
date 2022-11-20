@@ -1,0 +1,174 @@
+class Network extends AtlasUI.Network
+  constructor()
+    super()
+
+    self:setPrefix("AtlasUI.Configuator.")
+    self:prepare({
+      "Settings",
+      "SaveSettings",
+      "SaveSetting",
+      "GetSettings",
+      "Entity",
+      "SaveEntity",
+      "GetEntities",
+      "CreateEntity",
+      "DeleteEntity"
+    })
+
+    self:receiver("SaveSettings", self.receiveSaveSettings)
+    self:receiver("GetEntities", self.receiveGetEntities)
+    self:receiver("SaveEntity", self.receiveSaveEntity)
+    self:receiver("CreateEntity", self.receiveCreateEntity)
+    self:receiver("DeleteEntity", self.receiveDeleteEntity)
+    self:receiver("SaveSetting", self.receiveSaveSetting)
+  end
+
+  sendEntity(target, entity)
+    self:send("Entity", target, () ->
+      net.WriteString(entity:getDatabaseEntity())
+      entity:onNetworkSend()
+    end)
+  end
+
+  sendEntities(target, entities)
+    for i, v in pairs(entities) do
+      self:sendEntity(target, v)
+    end
+  end
+
+  sendSettings(target: Player, script: string, settings: table)
+    self:send("Settings", target, () ->
+      net.WriteString(script)
+      net.WriteUInt(table.Count(settings), 12)
+      for i, v in pairs(settings) do
+        net.WriteString(i)
+        self:write(v)
+      end
+    end)
+  end
+
+  sendGetEntities(target, entities)
+    local size = #entities
+    self:send("GetEntities", target, () ->
+      net.WriteUInt(size, 16)
+      for i, v in ipairs(entities) do
+        net.WriteString(v:getDatabaseEntity())
+        v:onNetworkSend()
+      end
+    end)
+  end
+
+  receiveSaveSettings(ply)
+    stopif !AtlasUI.Permissions:canAccessFramework(ply)
+
+    local script = net.ReadString()
+    local size = net.ReadUInt(12)
+    local settings = {}
+    for i = 1, size do
+      local id = net.ReadString()
+      local val = self:read()
+
+      table.insert(settings, {
+        id = id,
+        val = val
+      })
+    end
+
+    local controller = AtlasUI.Configurator:FindControllerByScriptName(script)
+    for i, v in ipairs(settings) do
+      controller:set(v.id, v.val)
+      controller:saveSetting(v.id, v.val)
+    end
+  end
+
+  receiveSaveSetting(ply)
+    stopif !AtlasUI.Permissions:canAccessFramework(ply)
+
+    local script = net.ReadString()
+    local id = net:ReadString()
+    local val = self:read()
+    local controller = AtlasUI.Configurator:FindControllerByScriptName(script)
+    controller:set(id, val)
+    controller:saveSetting(id, val)
+  end
+
+  receiveGetEntities(ply)
+    stopif !AtlasUI.Permissions:canAccessFramework(ply)
+
+    local entity = net.ReadString()
+    local limit = net.ReadUInt(16)
+    local offset = net.ReadUInt(16)
+    local search = net.ReadString()
+    if (search == "") then search = nil end
+    local ent = AtlasUI.Configurator.Entities:create(entity)
+    local tbl = {}
+    if (search) then
+      for i, v in ipairs(ent:getColumns()) do
+        if (v.primary) then
+          tbl[v.id] = search
+        end
+      end
+    end
+
+    AtlasUI.Configurator.ORM:findEntities(ent, tbl)
+      :next((results) =>
+        stopif !IsValid(ply)
+        results ||= {}
+      
+        local tbl = {}
+        -- Entities
+        for _, ent in ipairs(results) do
+          local inst = AtlasUI.Configurator.Entities:create(entity)
+          for i, v in pairs(ent) do
+            inst[`set${i}`](inst, v)
+          end
+          table.insert(tbl, inst)
+        end
+
+        self:sendGetEntities(ply, tbl)
+      end)
+  end
+
+  receiveSaveEntity(ply)
+    stopif !AtlasUI.Permissions:canAccessFramework(ply)
+
+    local entity = net.ReadString()
+    local ent = AtlasUI.Configurator.Entities:create(entity)
+    ent:onNetworkReceive()
+    ent:save(true)
+  end
+
+  receiveDeleteEntity(ply)
+    stopif !AtlasUI.Permissions:canAccessFramework(ply)
+
+    local entity = net.ReadString()
+    local ent = AtlasUI.Configurator.Entities:create(entity)
+    ent:onNetworkReceive()
+    ent:delete(true)
+  end
+  
+  receiveCreateEntity(ply)
+    stopif !AtlasUI.Permissions:canAccessFramework(ply)
+    
+    local entity = net.ReadString()
+    local ent = AtlasUI.Configurator.Entities:create(entity)
+    ent:onNetworkReceive()
+
+    AtlasUI.Configurator.ORM:createEntity(ent)
+      :next((result) =>
+        stopif !IsValid(ply)
+        if (ent.setId and result?[2]) then
+          ent:setId(result[2])
+        end
+
+        self:send("CreateEntity", ply, () ->
+          net.WriteString(entity)
+          ent:onNetworkSend()
+        end)
+      end)
+    end
+
+  __type() return "AtlasUI.Configurator.Network" end
+end
+
+AtlasUI.Configurator.Network = Network()

@@ -1,0 +1,309 @@
+AtlasUI.Configurator.Controllers ||= {}
+
+function AtlasUI.Configurator:GetControllers()
+  return self.Controllers
+end
+
+function AtlasUI.Configurator:FindControllerByScriptName(script)
+  return self:GetControllers()[script]
+end
+
+public class AtlasUI.Configurator.Controller
+  hasLoadedSettings = false
+  settings = {}
+  settingTab = {}
+  tabs = {}
+  _get settings
+  _get tabs
+  _get script
+  _get _set title
+  loadedEntities = {}
+  search = {}
+
+  IsValid()
+    return AtlasUI.Configurator:FindControllerByScriptName(self.script) == self
+  end
+
+  constructor(script)
+    self.cache = AtlasUI.Configurator.Cache()
+    self.script = script:lower()
+
+    AtlasUI.Configurator.Controllers[self.script] = self
+
+    hook.Add("PlayerInitialSpawn", `AtlasUI.Configurator.Scripts.${script}`, (ply) =>
+      timer.Simple(3, () =>
+        self:load()
+          :next(() =>
+            stopif !IsValid(ply)
+
+            self:networkSettings(ply)
+            self:networkEntities(ply)
+          end)
+      end)
+    end)
+  end
+
+  addSettingTab(name)
+    table.insert(self.settingTab, {
+      name = name,
+      subtabs = {}
+    })
+  end
+
+  getSettingTabs()
+    return self.settingTab
+  end
+
+  addSetting(id, category, subCategory, name, desc, value, type, data = {}, sortOrder)
+    self.settings[id] = {
+      id = id,
+      category = category,
+      subCategory = subCategory,
+      name = name,
+      desc = desc,
+      value = value,
+      defaultValue = value,
+      type = type,
+      data = data,
+      sortOrder = sortOrder or table.Count(self.settings) + 1
+    }
+
+    self.cache:set(id, value)
+  end
+
+  addTab(name, icon, color, panel, settings = {})
+    table.insert(self.tabs, {
+      name = name,
+      icon = icon,
+      color = color or color_white,
+      panel = panel or "DPanel",
+      ...settings
+    })
+  end
+
+  addSettingsTab(name, icon, color, settings = {})
+    local panel = "Atlas.Configurator.Admin.Panel"
+    settings.settingsTab = true
+
+    self:addTab(name, icon, color, panel, settings)
+  end
+
+  addEntityTab(name, icon, color, entity, settings = {})
+    local panel = settings.panelOverride or "Atlas.Configurator.Admin.Entity"
+    if (settings.isGrid and !settings.panelOverride) then
+      panel = "Atlas.Configurator.Admin.EntityGrid"
+    end
+    if (settings.isList and !settings.panelOverride) then
+      panel = "Atlas.Configurator.Admin.EntityList"
+    end
+    
+    table.Merge(settings, {
+      __entity = entity,
+      script = self:getScript(),
+      name = name
+    })
+    self:addTab(name, icon, color, panel, settings)
+  end
+
+  getSettingsKV()
+    local tbl = {}
+    for i, v of self:getSettings() do
+      tbl[v.id] = self.cache:get(v.id)
+    end
+
+    return tbl
+  end
+
+  getSortedSettings()
+    local tbl = {}
+    for i, v of self:getSettings() do
+      table.insert(tbl, v)
+    end
+    table.sort(tbl, (a, b) => return a.sortOrder < b.sortOrder end)
+
+    return tbl
+  end
+
+  getSettingsByCategory()
+    local tbl = {}
+    for i, v of self:getSettings() do
+      tbl[v.category] ||= {}
+
+      table.insert(tbl[v.category], v)
+    end
+    for i, v of tbl do
+      table.sort(v, (a, b) => return a.sortOrder < b.sortOrder end)
+    end
+
+    return tbl
+  end
+
+  get(key, default)
+    local val = self.cache:get(key)
+    if (val != nil) then
+      return val
+    end
+
+    return default
+  end
+
+  -- For overriding
+  onSettingChanged(key, value) end
+
+  set(key, value)
+    self.cache:set(key, value)
+    self.settings[key].value = value
+
+    self:onSettingChanged(key, value)
+  end
+
+  saveSetting(id, val)
+    if (CLIENT) then
+      AtlasUI.Configurator.Network:sendSaveSetting(self:getScript(), id, val)
+    else
+      return AtlasUI.Configurator.ORM:saveSetting(self:getScript(), id, val)
+    end
+  end
+
+  load()
+    local p = AtlasUI.Promises.new()
+
+    if (self.hasLoadedSettings) then
+      return p:resolve()
+    end
+
+    AtlasUI.Configurator.ORM:getScriptSettings(self:getScript())
+      :next((results = {}) =>
+        for i, v in ipairs(results) do
+          local { id, value, json } = v
+          if (json and json != "NULL") then
+            value = util.JSONToTable(value)
+          end
+
+          self.cache:set(id, value)
+        end
+
+        self.hasLoadedSettings = true
+        p:resolve()
+      end, (err) =>
+        p:reject(err)
+      end)
+
+    return p
+  end
+
+  networkSettings(target)
+    stopif CLIENT
+
+    local isAdmin = AtlasUI.Permissions:canAccessFramework(target)
+    local tbl = {}
+    for i, v of self:getSettings() do
+      local setting = self.settings[v.id]
+      continueif setting.data.secret and !isAdmin
+
+      tbl[v.id] = self.cache:get(v.id)
+    end
+
+    AtlasUI.Configurator.Network:sendSettings(target, self:getScript(), tbl)
+  end
+
+  loadEntities(ent)
+    local p = AtlasUI.Promises.new()
+    local id = ent:getDatabaseEntity()
+    if (self.loadedEntities[id]) then
+      return p:resolve()
+    end
+
+    AtlasUI.Configurator.ORM:findEntities(ent)
+      :next((results) =>
+        results ||= {}
+      
+        local tbl = {}
+        -- Entities
+        for _, entData in ipairs(results) do
+          local inst = AtlasUI.Configurator.Entities:create(id)
+          for i, v in pairs(entData) do
+            local val = v
+            local col = inst:getColumn(i)
+            if (col.onLoad) then
+              val = col:onLoad(v)
+            end
+            
+            inst[`set${i}`](inst, val)
+          end
+          inst:save()
+          inst:onLoad()
+        end
+
+        self.loadedEntities[id] = true
+        p:resolve()
+      end)
+
+    return p
+  end
+
+  networkEntities(target)
+    stopif CLIENT
+
+    local ents = AtlasUI.Configurator.Entities:getEntities()
+    local type = self:__type()
+    local id = string.Explode(".", type)?[1]
+    local length = #id
+    for entId, ent in pairs(ents) do
+      local str = entId:sub(1, length)
+      continueif str != id
+    
+      if (!ent.getAllEntities) then
+        Error(`${entId} has no way of getting all instances of said entity. Please implement a static getAllEntities function\n`)
+      end
+
+      self:loadEntities(ent())
+        :next((result) =>
+          local allEnts = ent.getAllEntities()
+          
+          AtlasUI.Configurator.Network:sendEntities(target, allEnts)
+        end)
+    end
+  end
+
+  addSearch(id, tabFunc, matchFunc, clickFunc = () => end)
+    table.insert(self.search, {
+      id = id,
+      matchFunc = matchFunc,
+      tabFunc = tabFunc,
+      clickFunc = clickFunc
+    })
+  end
+
+  getSearch(text)
+    text = text:lower()
+
+    local function findTab(func)
+      for i, v of self.tabs do
+        continueif !func(v, i)
+
+        return v, i
+      end
+    end
+
+    local tbl = {}
+    for i, v in ipairs(self.search) do
+      -- Find the tab it belongs to
+      local tab = findTab(v.tabFunc)
+      continueif !tab
+
+      local results = v:matchFunc(text, tab)
+      tbl = { ...tbl, ...results }
+      
+      breakif #tbl >= 4
+    end
+
+    return {
+      tbl[1],
+      tbl[2],
+      tbl[3],
+      tbl[4]
+    }
+  end
+end
+
