@@ -19,6 +19,31 @@
                 loadSidebar: true,
                 coverpage: true,
                 loadNavbar: true,
+                lastModified: {
+                    repo: '8char/AtlasLibrary'
+                },
+                plugins: [
+                    function(hook, vm) {
+                        hook.beforeEach(function (html) {
+                            var docURL = 'https://github.com/8char/AtlasLibrary/blob/main/docs' + vm.router.getFile()
+                            var editHtml = '[📝 Edit Documentation](' + docURL + ')\n'
+
+                            date_url = 'https://api.github.com/repos/8char/AtlasLibrary/commits?per_page=1&path=docs/' + vm.config.basePath + vm.route.file;
+                            fetch(date_url)
+                                .then((response) => {
+                                    return response.json();
+                                })
+                                .then((commits) => {
+                                    var modified = commits[0]['commit']['committer']['date'].slice(0, 10);
+                                    document.getElementById('last-modified').textContent = "Last Modified: " + modified;
+                                });
+                            return html
+                                + '\n\n----\n\n'
+                                + '<span id="last-modified"></span> '
+                                + editHtml
+                        });
+                    }
+                ]
             }
         </script>
         <!-- Docsify v4 -->
@@ -28,6 +53,8 @@
         <script src="//cdn.jsdelivr.net/npm/docsify-edit-on-github"></script>
         <script src="assets//plugins/search.js"></script>
         <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
+        <!-- <script src="//cdn.jsdelivr.net/npm/tinydate@1.3.0/dist/tinydate.min.js"></script>
+        <script src="//cdn.jsdelivr.net/gh/rxmapple/docsify-last-modified@main/src/docsify-last-modified.js"></script> -->
         <!-- docsify-themeable (latest v0.x.x) -->
         <script src="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/js/docsify-themeable.min.js"></script>
         <script>
