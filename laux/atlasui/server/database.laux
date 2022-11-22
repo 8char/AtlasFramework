@@ -1,9 +1,4 @@
---[[
-	Created by Patrick Ratzow (sleeppyy).
 
-	Credits goes to Metamist for his previously closed source library Wyvern,
-		CupCakeR for various improvements, the animated texture VGUI panel, and misc.
-]]
 
 -- due to calling this very early we can't use AtlasUI namespace
 local yellow = Color(201, 176, 15)

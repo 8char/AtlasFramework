@@ -1,9 +1,4 @@
---[[
-	Created by Patrick Ratzow (sleeppyy).
 
-	Credits goes to Metamist for his previously closed source library Wyvern,
-		CupCakeR for various improvements, the animated texture VGUI panel, and misc.
-]]
  
 -- https://github.com/zserge/lua-promises/blob/master/deferred.lua
 

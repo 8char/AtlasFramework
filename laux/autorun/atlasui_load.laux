@@ -1,13 +1,17 @@
---[[
-	Created by Patrick Ratzow (sleeppyy).
 
-	Credits goes to Metamist for his previously closed source library Wyvern,
-		CupCakeR for various improvements, the animated texture VGUI panel, and misc.
-]]
 
 AtlasUI ||= {}
 AtlasUI.ORM ||= {}
 AtlasUI.Players ||= {}
+
+if SERVER then
+    resource.AddSingleFile( "materials/atlas/closebutton.png" )
+    resource.AddSingleFile( "materials/atlas/gradient_lt.png" )
+    resource.AddSingleFile( "materials/atlas/loading.png" )
+    resource.AddSingleFile( "materials/atlas/next.png" )
+    resource.AddSingleFile( "materials/atlas/search.png" )
+    resource.AddSingleFile( "materials/atlas/tick.png" )
+end
 
 function AtlasUI:CreateFont(name, size, weight, mergeTbl)
 	local tbl = {
