@@ -1,7 +1,5 @@
 local PANEL = {}
 
---https://gitlab.com/sleeppyy/atlasui/merge_requests/3
-
 --Accessor Funcs
 AccessorFunc( PANEL, "_cStartCol", "StartColor" ) --Only used if SetGradient( true )
 AccessorFunc( PANEL, "_cEndcol", "EndColor" ) --Only used if SetGradient( true )

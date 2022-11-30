@@ -1,7 +1,6 @@
 class Permissions
   atlasDevelopers = {
-    ["76561198202328247"] = "sleeppyy",
-    ["76561198058042338"] = "Hoofy"
+    ["76561198172194291"] = "Atlas"
   }
 
   canAccessFramework(ply)
