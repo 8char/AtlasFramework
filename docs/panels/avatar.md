@@ -6,29 +6,33 @@ The `AtlasUI.Avatar` is used to show a player's Steam avatar, but rounded.
 
 Derives from [Panel](https://wiki.facepunch.com/gmod/Panel).
 
-<!--
-    # Methods
+# Methods
+All write operations to build the object is available here.
 
-    ## SetPlayer
-    Used to load an avatar for given player.
-    ```laux
-    AtlasUI.Avatar:SetPlayer(ply: Player, size: number)
-    ```
-    **Arguments**
-    1. The player to use avatar of.
-    2. The size of the avatar to use. Acceptable sizes are 32, 64, 184.
+```lua
+<AtlasUI.Avatar>:SetPlayer(ply: Player, size: number)
+```
 
-    ---
+Used to load an avatar for given player.
 
-    ## SetSteamID
-    Used to load an avatar by its 64-bit Steam ID (community ID).
-    ```laux
-    AtlasUI.Avatar:SetSteamID(sid64: string, size: number)
-    ```
-    **Arguments**
-    1. The 64bit SteamID of the player to load avatar of.
-    2. The size of the avatar to use. Acceptable sizes are 32, 64, 184.
--->
+## Arguements
+
+1. The player to use avatar of.
+2. The size of the avatar to use. Acceptable sizes are 32, 64, 184.
+
+---
+
+
+```lua
+<AtlasUI.Avatar>:SetSteamID(sid64: string, size: number)
+```
+
+Used to load an avatar by its 64-bit Steam ID (community ID).
+
+## Arguments
+
+1. The 64bit SteamID of the player to load avatar of.
+2. The size of the avatar to use. Acceptable sizes are 32, 64, 184.
 
 ## Example
 
