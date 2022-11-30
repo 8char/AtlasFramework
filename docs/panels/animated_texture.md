@@ -50,6 +50,32 @@ Used to set the `self.times` which is used for when the next change should be an
 
 
 ```lua
+<AtlasUI.AnimatedTexture>:GetPaused(pauseState: boolean)
+```
+
+Used to get the pause animation state of the AnimatedTexture.
+
+## Returns
+
+1. isPaused - The boolean which informs if the AnimatedTexture is paused or not.
+
+---
+
+
+```lua
+<AtlasUI.AnimatedTexture>:SetPaused(pauseState: boolean)
+```
+
+Used to pause the animation of the texture.
+
+## Arguments
+
+1. pauseState - The argument for if the panel should pause its animation, `true` will pause it & `false` will un-pause it.
+
+---
+
+
+```lua
 <AtlasUI.AnimatedTexture>:PostInit()
 ```
 
