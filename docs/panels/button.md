@@ -1,3 +1,13 @@
+# AtlasUI.Button <client>Client</client>
+
+The `AtlasUI.Button` panel is used to represent a button that can be clicked, hovered, etc.
+
+## Parent
+
+Derives from [DButton](https://wiki.facepunch.com/gmod/DButton).
+
+# AtlasUI.Button :: GetRoundness
+
 ```lua
 <AtlasUI.Button>:GetRoundness()
 ```
@@ -5,6 +15,8 @@
 Gets the roundness of the buttons rectangle.
 
 ---
+
+# AtlasUI.Button :: SetRoundness
 
 ```lua
 <AtlasUI.Button>:SetRoundness(roundness: number)
@@ -18,6 +30,7 @@ Sets the roundness of the buttons rectangle, that being the radius.
 
 ---
 
+# AtlasUI.Button :: GetDisabled
 
 ```lua
 <AtlasUI.Button>:GetDisabled()
@@ -26,6 +39,8 @@ Sets the roundness of the buttons rectangle, that being the radius.
 Used to get if the button is disabled or not. This will turn the mouse in to a red circle with a line going through it signifying that you can't click it.
 
 ---
+
+# AtlasUI.Button :: SetDisabled
 
 ```lua
 <AtlasUI.Button>:SetDisabled(disabled: boolean)
@@ -39,20 +54,23 @@ Used to set if the button is disabled or not. This will turn the mouse in to a r
 
 ---
 
+# AtlasUI.Button :: GetLoadingImageSizeSub <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Button>:GetLoadingImageSizeSub()
 ```
 
-<internal>INTERNAL</internal> Used to get the size of the loading image, might be useful. However this really shouldn't be called as it's only meant for internal use.
+Used to get the size of the loading image, might be useful. However this really shouldn't be called as it's only meant for internal use.
 
 ---
+
+# AtlasUI.Button :: SetLoadingImageSizeSub <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Button>:SetLoadingImageSizeSub(size: number)
 ```
 
-<internal>INTERNAL</internal> Used to set the size of the loading image, might be useful. However this really shouldn't be called as it's only meant for internal use.
+Used to set the size of the loading image, might be useful. However this really shouldn't be called as it's only meant for internal use.
 
 ## Arguments
 
@@ -60,6 +78,7 @@ Used to set if the button is disabled or not. This will turn the mouse in to a r
 
 ---
 
+# AtlasUI.Button :: GetAwaitingResponse
 
 ```lua
 <AtlasUI.Button>:GetAwaitingResponse()
@@ -69,11 +88,13 @@ Used to get weather the button is awaiting a response.
 
 ---
 
+# AtlasUI.Button :: SetAwaitingResponse <internal>INTERNAL</internal>
+
 ```lua
 <AtlasUI.Button>:SetAwaitingResponse(awaitingResponse: boolean)
 ```
 
-<internal>INTERNAL</internal> Used to set if the button should be awaiting a response, this will in turn change its own text to reflect the loading image and such.
+Used to set if the button should be awaiting a response, this will in turn change its own text to reflect the loading image and such.
 
 ## Arguments
 
@@ -81,6 +102,7 @@ Used to get weather the button is awaiting a response.
 
 ---
 
+# AtlasUI.Button :: GetLoadingColor
 
 ```lua
 <AtlasUI.Button>:GetLoadingColor()
@@ -89,6 +111,8 @@ Used to get weather the button is awaiting a response.
 Gets the loading image color of the loading image.
 
 ---
+
+# AtlasUI.Button :: SetLoadingColor
 
 ```lua
 <AtlasUI.Button>:SetLoadingColor(color: Color)
@@ -102,20 +126,23 @@ Sets the loading image color of the loading image.
 
 ---
 
+# AtlasUI.Button :: GetOldText <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Button>:GetOldText()
 ```
 
-<internal>INTERNAL</internal> Internally used to get the old text inside of the `<AtlasUI.Button>:SetAwaitingResponse()` method.
+Internally used to get the old text inside of the `<AtlasUI.Button>:SetAwaitingResponse()` method.
 
 ---
+
+# AtlasUI.Button :: SetOldText <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Button>:SetOldText(oldText: string)
 ```
 
-<internal>INTERNAL</internal> Internally used to set the old text inside of the `<AtlasUI.Button>:SetAwaitingResponse()` method to later be used in the button when the `AwaitingResponse` state changes.
+Internally used to set the old text inside of the `<AtlasUI.Button>:SetAwaitingResponse()` method to later be used in the button when the `AwaitingResponse` state changes.
 
 ## Arguments
 
@@ -123,6 +150,7 @@ Sets the loading image color of the loading image.
 
 ---
 
+# AtlasUI.Button :: GetOutline
 
 ```lua
 <AtlasUI.Button>:GetOutline()
@@ -131,6 +159,8 @@ Sets the loading image color of the loading image.
 Gets the width of the outline of the button.
 
 ---
+
+# AtlasUI.Button :: SetOutline
 
 ```lua
 <AtlasUI.Button>:SetOutline(outline: number)
@@ -144,6 +174,7 @@ Sets the width of the outline of the button. Will draw the outline with the `<At
 
 ---
 
+# AtlasUI.Button :: GetBackgroundColor
 
 ```lua
 <AtlasUI.Button>:GetBackgroundColor()
@@ -152,6 +183,8 @@ Sets the width of the outline of the button. Will draw the outline with the `<At
 Gets the background color of the button.
 
 ---
+
+# AtlasUI.Button :: SetBackgroundColor
 
 ```lua
 <AtlasUI.Button>:SetBackgroundColor(color: Color)
@@ -165,6 +198,7 @@ Sets the background color of the button
 
 ---
 
+# AtlasUI.Button :: GetBackgroundColorOn
 
 ```lua
 <AtlasUI.Button>:GetBackgroundColorOn()
@@ -173,6 +207,8 @@ Sets the background color of the button
 Gets the background color of the button when it's hovered.
 
 ---
+
+# AtlasUI.Button :: SetBackgroundColorOn
 
 ```lua
 <AtlasUI.Button>:SetBackgroundColorOn(color: Color)
@@ -186,6 +222,7 @@ Sets the background color of the button when it's hovered.
 
 ---
 
+# AtlasUI.Button :: GetBackgroundColorOff
 
 ```lua
 <AtlasUI.Button>:GetBackgroundColorOff()
@@ -194,6 +231,8 @@ Sets the background color of the button when it's hovered.
 Gets the background of the button when you are no longer hovering it.
 
 ---
+
+# AtlasUI.Button :: SetBackgroundColorOff
 
 ```lua
 <AtlasUI.Button>:SetBackgroundColorOff(color: Color)
@@ -207,20 +246,23 @@ Sets the background of the button when you are no longer hovering it.
 
 ---
 
+# AtlasUI.Button :: GetTextColorCur <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Button>:GetTextColorCur()
 ```
 
-<internal>INTERNAL</internal> Gets the textcolors current value. Used internally for the chaning of the hover color and such. Really shouldn't have to be called outside of AtlasUI
+Gets the textcolors current value. Used internally for the chaning of the hover color and such. Really shouldn't have to be called outside of AtlasUI
 
 ---
+
+# AtlasUI.Button :: SetTextColorCur <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Button>:SetTextColorCur(color: Color)
 ```
 
-<internal>INTERNAL</internal> Sets the textcolors current value. Used internally for the chaning of the hover color and such. Really shouldn't have to be called outside of AtlasUI
+Sets the textcolors current value. Used internally for the chaning of the hover color and such. Really shouldn't have to be called outside of AtlasUI
 
 ## Arguments
 
@@ -228,6 +270,7 @@ Sets the background of the button when you are no longer hovering it.
 
 ---
 
+# AtlasUI.Button :: GetTextColorOn
 
 ```lua
 <AtlasUI.Button>:GetTextColorOn()
@@ -236,6 +279,8 @@ Sets the background of the button when you are no longer hovering it.
 desc
 
 ---
+
+# AtlasUI.Button :: SetTextColorOn
 
 ```lua
 <AtlasUI.Button>:SetTextColorOn(arg1: TYPE)
@@ -249,6 +294,7 @@ desc
 
 ---
 
+# AtlasUI.Button :: GetTextColorOff
 
 ```lua
 <AtlasUI.Button>:GetTextColorOff()
@@ -257,6 +303,8 @@ desc
 desc
 
 ---
+
+# AtlasUI.Button :: SetTextColorOff
 
 ```lua
 <AtlasUI.Button>:SetTextColorOff(arg1: TYPE)
@@ -270,6 +318,7 @@ desc
 
 ---
 
+# AtlasUI.Button :: GetEnableShadow
 
 ```lua
 <AtlasUI.Button>:GetEnableShadow()
@@ -278,6 +327,8 @@ desc
 desc
 
 ---
+
+# AtlasUI.Button :: SetEnableShadow
 
 ```lua
 <AtlasUI.Button>:SetEnableShadow(arg1: TYPE)
@@ -291,6 +342,7 @@ desc
 
 ---
 
+# AtlasUI.Button :: GetShadowAlpha
 
 ```lua
 <AtlasUI.Button>:GetShadowAlpha()
@@ -299,6 +351,8 @@ desc
 desc
 
 ---
+
+# AtlasUI.Button :: SetShadowAlpha
 
 ```lua
 <AtlasUI.Button>:SetShadowAlpha(arg1: TYPE)
@@ -312,6 +366,7 @@ desc
 
 ---
 
+# AtlasUI.Button :: GetShadowAlphaOn
 
 ```lua
 <AtlasUI.Button>:GetShadowAlphaOn()
@@ -320,6 +375,8 @@ desc
 desc
 
 ---
+
+# AtlasUI.Button :: SetShadowAlphaOn
 
 ```lua
 <AtlasUI.Button>:SetShadowAlphaOn(arg1: TYPE)
@@ -333,6 +390,7 @@ desc
 
 ---
 
+# AtlasUI.Button :: GetShadowAlphaOff
 
 ```lua
 <AtlasUI.Button>:GetShadowAlphaOff()
@@ -341,6 +399,8 @@ desc
 desc
 
 ---
+
+# AtlasUI.Button :: SetShadowAlphaOff
 
 ```lua
 <AtlasUI.Button>:SetShadowAlphaOff(arg1: TYPE)
@@ -351,5 +411,3 @@ desc
 ## Arguments
 
 1. arg1 - DESC
-
----
