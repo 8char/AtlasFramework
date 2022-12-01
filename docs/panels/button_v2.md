@@ -9,6 +9,8 @@ Derives from [DButton](https://wiki.facepunch.com/gmod/DButton).
 # Methods
 All write operations to build the object is available here.
 
+# AtlasUI.ButtonV2 :: SetStartColor
+
 ```lua
 <AtlasUI.ButtonV2>:SetStartColor(color: Color)
 ```
@@ -21,6 +23,8 @@ Sets the start color of the gradient. Note that this will only be used if `<Atla
 
 ---
 
+# AtlasUI.ButtonV2 :: GetStartColor
+
 ```lua
 <AtlasUI.ButtonV2>:GetStartColor()
 ```
@@ -28,6 +32,8 @@ Sets the start color of the gradient. Note that this will only be used if `<Atla
 Gets the start color of the gradient.
 
 ---
+
+# AtlasUI.ButtonV2 :: SetEndColor
 
 ```lua
 <AtlasUI.ButtonV2>:SetEndColor(color: Color)
@@ -41,6 +47,8 @@ Sets the end color of the gradient. Note that this will only be used if `<AtlasU
 
 ---
 
+# AtlasUI.ButtonV2 :: GetEndColor
+
 ```lua
 <AtlasUI.ButtonV2>:GetEndColor()
 ```
@@ -48,6 +56,8 @@ Sets the end color of the gradient. Note that this will only be used if `<AtlasU
 Gets the end color of the gradient.
 
 ---
+
+# AtlasUI.ButtonV2 :: SetRoundness
 
 ```lua
 <AtlasUI.ButtonV2>:SetRoundness(roundness: number)
@@ -61,6 +71,8 @@ Will set the radius of the corners, if this is set to 0, then it will disable ma
 
 ---
 
+# AtlasUI.ButtonV2 :: GetRoundness
+
 ```lua
 <AtlasUI.ButtonV2>:GetRoundness()
 ```
@@ -68,6 +80,8 @@ Will set the radius of the corners, if this is set to 0, then it will disable ma
 Gets the end color of the gradient.
 
 ---
+
+# AtlasUI.ButtonV2 :: SetXOffset
 
 ```lua
 <AtlasUI.ButtonV2>:SetXOffset(offset: number)
@@ -81,6 +95,8 @@ Will set the x offset of the button text.
 
 ---
 
+# AtlasUI.ButtonV2 :: GetXOffset
+
 ```lua
 <AtlasUI.ButtonV2>:GetXOffset()
 ```
@@ -88,6 +104,8 @@ Will set the x offset of the button text.
 Gets the x offset of the buttons text.
 
 ---
+
+# AtlasUI.ButtonV2 :: SetYOffset
 
 ```lua
 <AtlasUI.ButtonV2>:SetYOffset(offset: number)
@@ -101,6 +119,8 @@ Will set the y offset of the button text.
 
 ---
 
+# AtlasUI.ButtonV2 :: GetXOffset
+
 ```lua
 <AtlasUI.ButtonV2>:GetXOffset()
 ```
@@ -108,6 +128,8 @@ Will set the y offset of the button text.
 Gets the x offset of the buttons text.
 
 ---
+
+# AtlasUI.ButtonV2 :: SetIcon
 
 ```lua
 <AtlasUI.ButtonV2>:SetIcon(iconId: number)
@@ -121,6 +143,8 @@ Will set the icon of the button to be that if the icon id. If you're unsure abou
 
 ---
 
+# AtlasUI.ButtonV2 :: GetIcon
+
 ```lua
 <AtlasUI.ButtonV2>:GetIcon()
 ```
@@ -128,6 +152,8 @@ Will set the icon of the button to be that if the icon id. If you're unsure abou
 Gets the icon id of the icon that is stored on the button.
 
 ---
+
+# AtlasUI.ButtonV2 :: SetHoverColor
 
 ```lua
 <AtlasUI.ButtonV2>:SetHoverColor(color: Color)
@@ -141,6 +167,8 @@ Used to change hover for non buttons on hover
 
 ---
 
+# AtlasUI.ButtonV2 :: GetHoverColor
+
 ```lua
 <AtlasUI.ButtonV2>:GetHoverColor()
 ```
@@ -148,6 +176,8 @@ Used to change hover for non buttons on hover
 Gets the color value for the non buttons on hover.
 
 ---
+
+# AtlasUI.ButtonV2 :: SetSolidColor
 
 ```lua
 <AtlasUI.ButtonV2>:SetSolidColor(color: Color)
@@ -161,6 +191,8 @@ Used to change the solid color of the button
 
 ---
 
+# AtlasUI.ButtonV2 :: GetSolidColor
+
 ```lua
 <AtlasUI.ButtonV2>:GetSolidColor()
 ```
@@ -168,6 +200,8 @@ Used to change the solid color of the button
 Gets the color value of the button
 
 ---
+
+# AtlasUI.ButtonV2 :: SetTextColor
 
 ```lua
 <AtlasUI.ButtonV2>:SetTextColor(color: Color)
@@ -181,6 +215,8 @@ Used to change the text color of the button
 
 ---
 
+# AtlasUI.ButtonV2 :: GetTextColor
+
 ```lua
 <AtlasUI.ButtonV2>:GetTextColor()
 ```
@@ -188,6 +224,8 @@ Used to change the text color of the button
 Gets the color value of the button's text
 
 ---
+
+# AtlasUI.ButtonV2 :: SetIconSize
 
 ```lua
 <AtlasUI.ButtonV2>:SetIconSize(size: number)
@@ -201,6 +239,8 @@ Used to change the text color of the button
 
 ---
 
+# AtlasUI.ButtonV2 :: GetIconSize
+
 ```lua
 <AtlasUI.ButtonV2>:GetIconSize()
 ```
@@ -208,6 +248,8 @@ Used to change the text color of the button
 Gets the icon size of the button
 
 ---
+
+# AtlasUI.ButtonV2 :: IsGradient
 
 ```lua
 <AtlasUI.ButtonV2>:IsGradient()
@@ -220,6 +262,8 @@ Used to get if the gradient is active or not
 1. Is the button color displaying a gradient?
 
 ---
+
+# AtlasUI.ButtonV2 :: RoundFromTallness
 
 ```lua
 <AtlasUI.ButtonV2>:RoundFromTallness()

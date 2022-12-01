@@ -9,6 +9,8 @@ Derives from [Panel](https://wiki.facepunch.com/gmod/Panel).
 # Methods
 All write operations to build the object is available here.
 
+# AtlasUI.Avatar :: SetPlayer
+
 ```lua
 <AtlasUI.Avatar>:SetPlayer(ply: Player, size: number)
 ```
@@ -22,6 +24,7 @@ Used to load an avatar for given player.
 
 ---
 
+# AtlasUI.Avatar :: SetSteamID
 
 ```lua
 <AtlasUI.Avatar>:SetSteamID(sid64: string, size: number)

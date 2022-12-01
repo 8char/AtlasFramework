@@ -9,6 +9,8 @@ Derives from [Panel](https://wiki.facepunch.com/gmod/Panel).
 # Methods
 All write operations to build the object is available here.
 
+# AtlasUI.AnimatedTexture :: SetDirectory
+
 ```lua
 <AtlasUI.AnimatedTexture>:SetDirectory(dir: string)
 ```
@@ -21,6 +23,7 @@ Sets the directory of where the texture pngs are located. It will then make sure
 
 ---
 
+# AtlasUI.AnimatedTexture :: SetImages
 
 ```lua
 <AtlasUI.AnimatedTexture>:SetImages(tbl: table)
@@ -34,6 +37,7 @@ Used to manually set the table which contains all of the instanced image texture
 
 ---
 
+# AtlasUI.AnimatedTexture :: SetTimes
 
 ```lua
 <AtlasUI.AnimatedTexture>:SetTimes(normal: number = .02, idle: number = 1)
@@ -48,6 +52,7 @@ Used to set the `self.times` which is used for when the next change should be an
 
 ---
 
+# AtlasUI.AnimatedTexture :: GetPaused
 
 ```lua
 <AtlasUI.AnimatedTexture>:GetPaused(pauseState: boolean)
@@ -61,6 +66,7 @@ Used to get the pause animation state of the AnimatedTexture.
 
 ---
 
+# AtlasUI.AnimatedTexture :: SetPaused
 
 ```lua
 <AtlasUI.AnimatedTexture>:SetPaused(pauseState: boolean)
@@ -74,6 +80,7 @@ Used to pause the animation of the texture.
 
 ---
 
+# AtlasUI.AnimatedTexture :: PostInit
 
 ```lua
 <AtlasUI.AnimatedTexture>:PostInit()

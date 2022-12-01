@@ -9,6 +9,8 @@ This panel doesn't derrive from anything.
 # Methods
 All write operations to build the object is available here.
 
+## AtlasUI.Breadcrumbs :: SetBreadcrumbs
+
 ```lua
 <AtlasUI.Breadcrumbs>:SetBreadcrumbs(tbl: table)
 ```
@@ -21,11 +23,12 @@ Will create individual breadcrumbs using the `<AtlasUI.AnimatedTexture>:CreateBr
 
 ---
 
+## AtlasUI.Breadcrumbs :: CreateBreadcrumb <internal>INTERNAL</internal>
+
 ```lua
 <AtlasUI.Breadcrumbs>:CreateBreadcrumb(data: table, index: number)
 ```
 
-<internal>INTERNAL</internal>
 Will create a singular breadcrumb.
 
 ## Arguments
@@ -35,14 +38,17 @@ Will create a singular breadcrumb.
 
 ---
 
+## AtlasUI.Breadcrumbs :: CorrectColors <internal>INTERNAL</internal>
+
 ```lua
 <AtlasUI.Breadcrumbs>:CorrectColors()
 ```
 
-<internal>INTERNAL</internal>
 Will re-calculate the colors so that everything looks correct.
 
 ---
+
+## AtlasUI.Breadcrumbs :: RemoveTo
 
 ```lua
 <AtlasUI.Breadcrumbs>:RemoveTo(removeToName: string)

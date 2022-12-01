@@ -6,6 +6,8 @@ Derives from [EditablePanel](https://wiki.facepunch.com/gmod/EditablePanel).
 
 ## Methods
 
+# AtlasUI.Frame :: SetTitle
+
 ```lua
 <AtlasUI.Frame>:SetTitle(title: string)
 ```
@@ -17,6 +19,8 @@ Sets the title of the frame.
 1. title - New title of the frame.
 
 ---
+
+# AtlasUI.Frame :: ShowCloseButton
 
 ```lua
 <AtlasUI.Frame>:ShowCloseButton(show: boolean)
