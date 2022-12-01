@@ -6,7 +6,7 @@ The `AtlasUI.Breadcrumbs` is used to draw an animated texture on a panel.
 
 This panel doesn't derrive from anything.
 
-## AtlasUI.Breadcrumbs :: SetBreadcrumbs
+# AtlasUI.Breadcrumbs :: SetBreadcrumbs <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Breadcrumbs>:SetBreadcrumbs(tbl: table)
@@ -20,7 +20,7 @@ Will create individual breadcrumbs using the `<AtlasUI.AnimatedTexture>:CreateBr
 
 ---
 
-## AtlasUI.Breadcrumbs :: CreateBreadcrumb <internal>INTERNAL</internal>
+# AtlasUI.Breadcrumbs :: CreateBreadcrumb <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Breadcrumbs>:CreateBreadcrumb(data: table, index: number)
@@ -35,7 +35,7 @@ Will create a singular breadcrumb.
 
 ---
 
-## AtlasUI.Breadcrumbs :: CorrectColors <internal>INTERNAL</internal>
+# AtlasUI.Breadcrumbs :: CorrectColors <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Breadcrumbs>:CorrectColors()
@@ -45,7 +45,7 @@ Will re-calculate the colors so that everything looks correct.
 
 ---
 
-## AtlasUI.Breadcrumbs :: RemoveTo
+# AtlasUI.Breadcrumbs :: RemoveTo
 
 ```lua
 <AtlasUI.Breadcrumbs>:RemoveTo(removeToName: string)

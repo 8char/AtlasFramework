@@ -276,21 +276,21 @@ Sets the textcolors current value. Used internally for the chaning of the hover 
 <AtlasUI.Button>:GetTextColorOn()
 ```
 
-desc
+Gets the text color for when the button is hovered.
 
 ---
 
 # AtlasUI.Button :: SetTextColorOn
 
 ```lua
-<AtlasUI.Button>:SetTextColorOn(arg1: TYPE)
+<AtlasUI.Button>:SetTextColorOn(color: Color)
 ```
 
-desc
+Sets the textcolor for when the button is hovered.
 
 ## Arguments
 
-1. arg1 - DESC
+1. color - The color that you want the text to be set to when hovered
 
 ---
 
@@ -300,21 +300,21 @@ desc
 <AtlasUI.Button>:GetTextColorOff()
 ```
 
-desc
+Gets the textcolor for when the button is hovered.
 
 ---
 
 # AtlasUI.Button :: SetTextColorOff
 
 ```lua
-<AtlasUI.Button>:SetTextColorOff(arg1: TYPE)
+<AtlasUI.Button>:SetTextColorOff(color: Color)
 ```
 
-desc
+Sets the text color for when the button isn't hovered.
 
 ## Arguments
 
-1. arg1 - DESC
+1. color - The text color that you want the button to change to when hovered
 
 ---
 
@@ -324,21 +324,21 @@ desc
 <AtlasUI.Button>:GetEnableShadow()
 ```
 
-desc
+Gets weather the button's shadow property is enabled.
 
 ---
 
 # AtlasUI.Button :: SetEnableShadow
 
 ```lua
-<AtlasUI.Button>:SetEnableShadow(arg1: TYPE)
+<AtlasUI.Button>:SetEnableShadow(enabled: boolean)
 ```
 
-desc
+Sets weather the button's shadow property should be enabled.
 
 ## Arguments
 
-1. arg1 - DESC
+1. enabled - Weather the shadow should be enabled or not. `true` will enable shadows, `false` will diable them.
 
 ---
 
@@ -348,21 +348,21 @@ desc
 <AtlasUI.Button>:GetShadowAlpha()
 ```
 
-desc
+Gets the shadow alpha of the button's shadow.
 
 ---
 
 # AtlasUI.Button :: SetShadowAlpha
 
 ```lua
-<AtlasUI.Button>:SetShadowAlpha(arg1: TYPE)
+<AtlasUI.Button>:SetShadowAlpha(shadowAlpha: number)
 ```
 
-desc
+Sets the shadow alpha of the button's shadow. By default this is set to `150`.
 
 ## Arguments
 
-1. arg1 - DESC
+1. alpha - The shadow alpha of the button's shadow
 
 ---
 
@@ -372,21 +372,21 @@ desc
 <AtlasUI.Button>:GetShadowAlphaOn()
 ```
 
-desc
+Gets the shadow alpha for when the button is hovered.
 
 ---
 
 # AtlasUI.Button :: SetShadowAlphaOn
 
 ```lua
-<AtlasUI.Button>:SetShadowAlphaOn(arg1: TYPE)
+<AtlasUI.Button>:SetShadowAlphaOn(shadowAlpha: number)
 ```
 
-desc
+Gets the shadow alpha for when the button is hovered. By default this is set to `150`.
 
 ## Arguments
 
-1. arg1 - DESC
+1. shadowAlpha - The alpha that you want it to be set to when hovered.
 
 ---
 
@@ -396,18 +396,36 @@ desc
 <AtlasUI.Button>:GetShadowAlphaOff()
 ```
 
-desc
+Gets the shadow alpha for when the button isn't hovered.
 
 ---
 
 # AtlasUI.Button :: SetShadowAlphaOff
 
 ```lua
-<AtlasUI.Button>:SetShadowAlphaOff(arg1: TYPE)
+<AtlasUI.Button>:SetShadowAlphaOff(shadowAlpha: number)
 ```
 
-desc
+Gets the shadow alpha for when the button isn't hovered. By default this is set to `0`.
 
 ## Arguments
 
-1. arg1 - DESC
+1. shadowAlpha - The alpha that you want it to be set to when not hovered.
+
+# AtlasUI.Button :: PostInit
+
+```lua
+<AtlasUI.Button>:PostInit()
+```
+
+Should be called when you've set all of the other values. If not, it will refuse to paint.
+
+# AtlasUI.Button :: RefreshColors
+
+```lua
+<AtlasUI.Button>:RefreshColors(anim: boolean)
+```
+
+Upon calling will recalculate all of the colors making sure they're correct.
+
+1. anim - Should it perform a Lerp animation to the next color?
