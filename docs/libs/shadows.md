@@ -3,13 +3,16 @@
 Also known as Blues Shadows.
 Made by [CODE-BLUE](https://www.youtube.com/channel/UCFpuE-Qjn4EWqX-VJ_l7pbw).
 
-Call this to begin drawing a shadow.
+# BSHADOWS.BeginShadow
 
 ```lua
 BSHADOWS.BeginShadow()
 ```
+Call this to begin drawing a shadow.
 
 ---
+
+# BSHADOWS.EndShadow
 
 ```lua
 BSHADOWS.EndShadow(intensity: number, spread: number, blur: number, opacity: number, direction: number, distance: number, _shadowOnly: boolean = false)

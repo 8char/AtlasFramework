@@ -4,8 +4,6 @@ The `AtlasUI.Frame` is the parent of basically all VGUI elements in AtlasUI.
 ## Parent
 Derives from [EditablePanel](https://wiki.facepunch.com/gmod/EditablePanel).
 
-## Methods
-
 # AtlasUI.Frame :: SetTitle
 
 ```lua

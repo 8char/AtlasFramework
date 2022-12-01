@@ -2,7 +2,7 @@
 
 How works `AtlasUI.Permissions` object.
 
-# Methods
+# AtlasUI.Permissions :: canAccessLibrary
 
 ```lua
 AtlasUI.Permissions:canAccessLibrary(ply: Player)
@@ -14,6 +14,8 @@ AtlasUI.Permissions:canAccessLibrary(ply: Player)
 
 ---
 
+# AtlasUI.Permissions :: isAdmin
+
 ```lua
 AtlasUI.Permissions:isAdmin(ply: Player, level = 1)
 ```
@@ -23,6 +25,8 @@ AtlasUI.Permissions:isAdmin(ply: Player, level = 1)
 2. **Optional** Level
 
 ---
+
+# AtlasUI.Permissions :: isSuperAdmin
 
 ```lua
 AtlasUI.Permissions:isSuperAdmin(ply: Player)
@@ -34,6 +38,8 @@ AtlasUI.Permissions:isSuperAdmin(ply: Player)
 
 ---
 
+# AtlasUI.Permissions :: isAtlasDeveloper
+
 ```lua
 AtlasUI.Permissions:isAtlasDeveloper(ply: Player)
 ```
@@ -41,9 +47,7 @@ AtlasUI.Permissions:isAtlasDeveloper(ply: Player)
 
 1. ply - Player to check if he is a Atlas Developer.
 
-# ConVars
-
-## atlas_easy_permissions
+# atlas_easy_permissions <convar>CONVAR</convar>
 
 ```lua
 -- Default

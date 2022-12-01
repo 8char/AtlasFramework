@@ -6,9 +6,6 @@ The `AtlasUI.Breadcrumbs` is used to draw an animated texture on a panel.
 
 This panel doesn't derrive from anything.
 
-# Methods
-All write operations to build the object is available here.
-
 ## AtlasUI.Breadcrumbs :: SetBreadcrumbs
 
 ```lua

@@ -6,9 +6,6 @@ The `AtlasUI.AnimatedTexture` is used to draw an animated texture on a panel.
 
 Derives from [Panel](https://wiki.facepunch.com/gmod/Panel).
 
-# Methods
-All write operations to build the object is available here.
-
 # AtlasUI.AnimatedTexture :: SetDirectory
 
 ```lua

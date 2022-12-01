@@ -2,8 +2,6 @@
 
 Asynchronous icon downloader.
 
-## Methods
-
 # AtlasUI :: DownloadIcon
 
 ```lua

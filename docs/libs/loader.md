@@ -10,14 +10,15 @@ AtlasUI.Loader()
 :done()
 ```
 
-## Enumerations
+# Enumerations
 
-* **ATLASUI_SERVER** = 1
-* **ATLASUI_CLIENT** = 2
-* **ATLASUI_SHARED** = 3
+| ENUM IDENTIFIER | VALUE |
+| --- | --- |
+| **ATLASUI_SERVER** | 1 |
+| **ATLASUI_CLIENT** | 2 |
+| **ATLASUI_SHARED** | 3 |
 
-# Methods
-All write operations to build the object is available here.
+# AtlasUI.Loader :: setName
 
 ```lua
 <AtlasUI.Loader>:setName(name: string)
@@ -31,6 +32,8 @@ All write operations to build the object is available here.
 
 ---
 
+# AtlasUI.Loader :: setAcronym
+
 ```lua
 <AtlasUI.Loader>:setAcronym(acronym: string)
 ```
@@ -42,6 +45,8 @@ All write operations to build the object is available here.
 1. acronym - What acronym the addon should have.
 
 ---
+
+# AtlasUI.Loader :: setDirectory
 
 ```lua
 <AtlasUI.Loader>:setDirectory(directory: string)
@@ -55,6 +60,8 @@ All write operations to build the object is available here.
 
 ---
 
+# AtlasUI.Loader :: setColor
+
 ```lua
 <AtlasUI.Loader>:setColor(color: Color)
 ```
@@ -66,16 +73,20 @@ All write operations to build the object is available here.
 
 ---
 
+# AtlasUI.Loader :: loadMessage<internal>INTERNAL</internal>
+
 ```lua
 <AtlasUI.Loader>:loadMessage(path: string, realm: string, col = self:getColor())
 ```
 Used internally to print debug messages
-## Arguments <internal>INTERNAL</internal>
+## Arguments
 1. path - File path
 2. realm - Prefix's realm
 3. col - **Optional** Prefix's color
 
 ---
+
+# Atlas.Loader :: loadFile <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Loader>:loadFile(path: string, realm: number, func: function)
@@ -83,7 +94,7 @@ Used internally to print debug messages
 
 Also used internally to load a single file
 
-## Arguments <internal>INTERNAL</internal>
+## Arguments
 
 1. path - File path
 2. realm - Realm (You can use [enumerations](/libs/loader?id=enumerations))  
@@ -91,11 +102,15 @@ Also used internally to load a single file
 
 ---
 
+# Atlas.Loader :: load
+
 ```lua
 <AtlasUI.Loader>:load(dir: string, realm: number|table, recursive: boolean = false, options: table = {})
 ```
 Used to load a folder (can be loaded recursively)
-**Arguments**
+
+## Arguments
+
 1. dir - Directory that will be loaded
 2. realm - Realm (You can use [enumerations](/libs/loader?id=enumerations))
 3. recursive - **Optional** Should load folder recursively

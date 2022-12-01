@@ -6,9 +6,6 @@ The `AtlasUI.Avatar` is used to show a player's Steam avatar, but rounded.
 
 Derives from [Panel](https://wiki.facepunch.com/gmod/Panel).
 
-# Methods
-All write operations to build the object is available here.
-
 # AtlasUI.Avatar :: SetPlayer
 
 ```lua

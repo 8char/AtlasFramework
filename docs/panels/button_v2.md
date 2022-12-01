@@ -6,9 +6,6 @@ The `AtlasUI.ButtonV2` panel is used to represent a button that can be clicked, 
 
 Derives from [DButton](https://wiki.facepunch.com/gmod/DButton).
 
-# Methods
-All write operations to build the object is available here.
-
 # AtlasUI.ButtonV2 :: SetStartColor
 
 ```lua
