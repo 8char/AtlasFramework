@@ -4,6 +4,8 @@ Asynchronous icon downloader.
 
 ## Methods
 
+# AtlasUI :: DownloadIcon
+
 ```lua
 AtlasUI:DownloadIcon(pnl: Panel, tbl: table, pnlVar: string)
 ```
@@ -15,6 +17,8 @@ AtlasUI:DownloadIcon(pnl: Panel, tbl: table, pnlVar: string)
 3. pnlVar - The panel of which it will be stored on
 
 ---
+
+# AtlasUI :: DrawIcon
 
 ```lua
 AtlasUI:DrawIcon(x: number, y: number, w: number, h: number, pnl: Panel, col: Color, loadCol: Color, var: string)
@@ -33,11 +37,13 @@ AtlasUI:DrawIcon(x: number, y: number, w: number, h: number, pnl: Panel, col: Co
 
 ---
 
+# AtlasUI :: GetIcon <small><deprecated>Deprecated</deprecated></small>
+
 ```lua
-AtlasUI:GetIcon(id: string|IMaterial)
+AtlasUI:GetIcon(id: string | IMaterial)
 ```
 
-## Arguments <small><deprecated>Deprecated</deprecated></small>
+## Arguments
 
 1. id - Icon identifier
 

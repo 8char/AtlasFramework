@@ -1,6 +1,7 @@
 # Essentials <client>Client</client>
+A nice set of client utility methods and such.
 
-## Methods
+# AtlasUI :: DrawBlur
 
 ```lua
 AtlasUI:DrawBlur(panel: Panel, amount: number)
@@ -12,6 +13,8 @@ AtlasUI:DrawBlur(panel: Panel, amount: number)
 2. amount - The factor to which the rest of the screen should be blurred.
 
 ---
+
+# AtlasUI :: DrawBlurHUD
 
 ```lua
 AtlasUI:DrawBlurHUD(x: number, y: number, w: number, h: number, amt: number)
@@ -26,6 +29,8 @@ AtlasUI:DrawBlurHUD(x: number, y: number, w: number, h: number, amt: number)
 5. amount - The factor to which the rest of the screen should be blurred.
 
 ---
+
+# AtlasUI :: FormatTime
 
 ```lua
 AtlasUI:FormatTime(seconds: number, format: string)
