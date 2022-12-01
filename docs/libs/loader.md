@@ -25,7 +25,7 @@ All write operations to build the object is available here.
 
 **Required.** Used to set the name of the addon.
 
-## Arguements
+## Arguments
 
 1. name - What name the addon should have.
 
@@ -37,7 +37,7 @@ All write operations to build the object is available here.
 
 **Required.** Used to set the acronym of the addon.
 
-## Arguements
+## Arguments
 
 1. acronym - What acronym the addon should have.
 
@@ -49,7 +49,7 @@ All write operations to build the object is available here.
 
 **Required.** Used to set the root directory of the addon.
 
-## Arguements
+## Arguments
 
 1. directory - What's the addon's root directory.
 
@@ -60,7 +60,7 @@ All write operations to build the object is available here.
 ```
 **Required.** Used to set the color of the addon, that will be used into console logging.
 
-## Arguements
+## Arguments
 
 1. color - What color the addon should have.
 
@@ -70,7 +70,7 @@ All write operations to build the object is available here.
 <AtlasUI.Loader>:loadMessage(path: string, realm: string, col = self:getColor())
 ```
 Used internally to print debug messages
-## Arguements <internal>INTERNAL</internal>
+## Arguments <internal>INTERNAL</internal>
 1. path - File path
 2. realm - Prefix's realm
 3. col - **Optional** Prefix's color
@@ -83,7 +83,7 @@ Used internally to print debug messages
 
 Also used internally to load a single file
 
-## Arguements <internal>INTERNAL</internal>
+## Arguments <internal>INTERNAL</internal>
 
 1. path - File path
 2. realm - Realm (You can use [enumerations](/libs/loader?id=enumerations))  
@@ -95,7 +95,7 @@ Also used internally to load a single file
 <AtlasUI.Loader>:load(dir: string, realm: number|table, recursive: boolean = false, options: table = {})
 ```
 Used to load a folder (can be loaded recursively)
-**Arguements**
+**Arguments**
 1. dir - Directory that will be loaded
 2. realm - Realm (You can use [enumerations](/libs/loader?id=enumerations))
 3. recursive - **Optional** Should load folder recursively

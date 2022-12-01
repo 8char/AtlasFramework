@@ -15,7 +15,7 @@ All write operations to build the object is available here.
 
 Will create individual breadcrumbs using the `<AtlasUI.AnimatedTexture>:CreateBreadcrumb(data: table, index: number)` internally.
 
-## Arguements
+## Arguments
 
 1. tbl - The breadcrumbs, should each include a name and a onClick (optional) field.
 
@@ -28,7 +28,7 @@ Will create individual breadcrumbs using the `<AtlasUI.AnimatedTexture>:CreateBr
 <internal>INTERNAL</internal>
 Will create a singular breadcrumb.
 
-## Arguements
+## Arguments
 
 1. tbl - The breadcrumbs, should include a name and a onClick (optional) field.
 1. index - The index of the breadcrumb.
@@ -50,6 +50,6 @@ Will re-calculate the colors so that everything looks correct.
 
 Will remove all of the breadcrumbs up until that point. Keep in mind that it invalidates the layout, aswell as calls the `<AtlasUI.Breadcrums>:CorrectColors()` method.
 
-## Arguements
+## Arguments
 
 1. removeToName - the name of the breadcrumb that all breadcrumbs will be removed up to.

@@ -15,7 +15,7 @@ All write operations to build the object is available here.
 
 Sets the directory of where the texture pngs are located. It will then make sure to add the path aswell as the Materials to `self.images`. Keep in mind that this only loads pngs!
 
-## Arguements
+## Arguments
 
 1. dir - The path inside of the materials folder that holds the texture pngs. I. e. anim_textures => materials/anim_textures
 

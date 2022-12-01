@@ -15,7 +15,7 @@ All write operations to build the object is available here.
 
 Sets the start color of the gradient. Note that this will only be used if `<AtlasUI.ButtonV2>SetGradient(true)`
 
-## Arguements
+## Arguments
 
 1. color - The color that the start color should be set to.
 
@@ -35,7 +35,7 @@ Gets the start color of the gradient.
 
 Sets the end color of the gradient. Note that this will only be used if `<AtlasUI.ButtonV2>SetGradient(true)`
 
-## Arguements
+## Arguments
 
 1. color - The color that the end color should be set to.
 
@@ -55,7 +55,7 @@ Gets the end color of the gradient.
 
 Will set the radius of the corners, if this is set to 0, then it will disable masking.
 
-## Arguements
+## Arguments
 
 1. roundness - The radius of the button that you want it set to.
 
@@ -75,7 +75,7 @@ Gets the end color of the gradient.
 
 Will set the x offset of the button text.
 
-## Arguements
+## Arguments
 
 1. offset - The x offset of the text that you want
 
@@ -95,7 +95,7 @@ Gets the x offset of the buttons text.
 
 Will set the y offset of the button text.
 
-## Arguements
+## Arguments
 
 1. offset - The x offset of the text that you want
 
@@ -115,7 +115,7 @@ Gets the x offset of the buttons text.
 
 Will set the icon of the button to be that if the icon id. If you're unsure about how to use this, have a look at our [Icon Downloader](libs/icon_dl.md) library usage.
 
-## Arguements
+## Arguments
 
 1. iconId - The numerical id of the icon that you want the button to display
 
@@ -135,7 +135,7 @@ Gets the icon id of the icon that is stored on the button.
 
 Used to change hover for non buttons on hover
 
-## Arguements
+## Arguments
 
 1. color - The hover color for non buttons
 
@@ -155,7 +155,7 @@ Gets the color value for the non buttons on hover.
 
 Used to change the solid color of the button
 
-## Arguements
+## Arguments
 
 1. color - The color for the solid button
 
@@ -175,7 +175,7 @@ Gets the color value of the button
 
 Used to change the text color of the button
 
-## Arguements
+## Arguments
 
 1. color - The text color of the button
 
@@ -195,7 +195,7 @@ Gets the color value of the button's text
 
 Used to change the text color of the button
 
-## Arguements
+## Arguments
 
 1. size - The icon size
 

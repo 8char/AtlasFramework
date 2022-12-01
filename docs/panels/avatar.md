@@ -15,7 +15,7 @@ All write operations to build the object is available here.
 
 Used to load an avatar for given player.
 
-## Arguements
+## Arguments
 
 1. The player to use avatar of.
 2. The size of the avatar to use. Acceptable sizes are 32, 64, 184.
