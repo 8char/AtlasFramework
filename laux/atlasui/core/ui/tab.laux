@@ -1,6 +1,6 @@
-AtlasUI:CreateFont("Atlas.Framework.Config.Container.Name", 24)
-AtlasUI:CreateFont("Atlas.Framework.Config.Container.Desc", 18)
-AtlasUI:CreateFont("Atlas.Framework.Config.Tabs", 26)
+AtlasUI:CreateFont("Atlas.Library.Config.Container.Name", 24)
+AtlasUI:CreateFont("Atlas.Library.Config.Container.Desc", 18)
+AtlasUI:CreateFont("Atlas.Library.Config.Tabs", 26)
 
 local PANEL = {}
 
@@ -11,10 +11,10 @@ function PANEL:Init()
 
   self.Text = self:Add("DPanel")
   self.Text:Dock(TOP)
-  self.Text.Offset = draw.GetFontHeight("Atlas.Framework.Config.Container.Name") + 4
+  self.Text.Offset = draw.GetFontHeight("Atlas.Library.Config.Container.Name") + 4
   self.Text.Paint = (pnl, w, h) =>
-    AtlasUI:DrawShadowText(self.Name, "Atlas.Framework.Config.Container.Name", 0, 0, Color(231, 232, 235), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, 150)
-    AtlasUI:DrawShadowText(self.Desc, "Atlas.Framework.Config.Container.Desc", 0, pnl.Offset, Color(156, 156, 156), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, 150)
+    AtlasUI:DrawShadowText(self.Name, "Atlas.Library.Config.Container.Name", 0, 0, Color(231, 232, 235), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, 150)
+    AtlasUI:DrawShadowText(self.Desc, "Atlas.Library.Config.Container.Desc", 0, pnl.Offset, Color(156, 156, 156), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, 150)
   end
   self.Text:SetTall(50)
 end
@@ -35,11 +35,11 @@ function PANEL:PerformLayout(w, h)
  
 end
 
-vgui.Register("Atlas.Framework.Config.Container", PANEL, "AtlasUI.Panel")
+vgui.Register("Atlas.Library.Config.Container", PANEL, "AtlasUI.Panel")
 
 local PANEL = {}
 
-AtlasUI:CreateFont("Atlas.Framework.Category", 22)
+AtlasUI:CreateFont("Atlas.Library.Category", 22)
 
 function PANEL:SetData(data, scriptId)
   self.Data = data
@@ -116,7 +116,7 @@ PANEL.Types = {
     panel:DockMargin(0, 0, 8, 0)
     panel:SetTall(32)
     panel.Paint = (pnl, w, h) =>
-      AtlasUI:DrawShadowText(tbl.name, "Atlas.Framework.Category", 0, h / 2 - 1, Color(242, 242, 242), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, 150)
+      AtlasUI:DrawShadowText(tbl.name, "Atlas.Library.Category", 0, h / 2 - 1, Color(242, 242, 242), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, 150)
 
       local x, y = gui.MousePos()
       local bX, bY = pnl:LocalToScreen()
@@ -152,7 +152,7 @@ PANEL.Types = {
     return panel
   end,
   textentry = (tbl, parent) ->
-    local panel = parent:Add("Atlas.Framework.Config.Container")
+    local panel = parent:Add("Atlas.Library.Config.Container")
     panel:Dock(TOP)
     panel:DockMargin(0, 0, 8, 8)
     panel:SetName(tbl.name)
@@ -179,7 +179,7 @@ PANEL.Types = {
     return panel
   end,
   checkbox = (tbl, parent) ->
-    local panel = parent:Add("Atlas.Framework.Config.Container")
+    local panel = parent:Add("Atlas.Library.Config.Container")
     panel:Dock(TOP)
     panel:DockMargin(0, 0, 8, 8)
     panel:SetName(tbl.name)
@@ -236,12 +236,12 @@ function PANEL:PerformLayout(w, h)
   end
 end
 
-vgui.Register("Atlas.Framework.Config", PANEL, "AtlasUI.Panel")
+vgui.Register("Atlas.Library.Config", PANEL, "AtlasUI.Panel")
 
 local PANEL = {}
 
-AtlasUI:CreateFont("Atlas.Framework.Title", 26)
-AtlasUI:CreateFont("Atlas.Framework.Subtitle", 18)
+AtlasUI:CreateFont("Atlas.Library.Title", 26)
+AtlasUI:CreateFont("Atlas.Library.Subtitle", 18)
 
 function PANEL:OnSwitchedTo()
   if (self.HaveSwitchedTo) then return end
@@ -254,28 +254,28 @@ function PANEL:PostInit()
   self:DockPadding(16, 16, 16, 16)
 
   local { version, author, config, id, licensee, licenseeProof } = self.Data
-  local titleHeight = draw.GetFontHeight("Atlas.Framework.Title")
+  local titleHeight = draw.GetFontHeight("Atlas.Library.Title")
   local versionStr = version == "{{ script_version_name }}" and "DEV BUILD" or version
   self.Info = self:Add("DPanel")
   self.Info:Dock(TOP)
   self.Info:SetTall(48)
   self.Info.Paint = (pnl, w, h) =>
-    AtlasUI:DrawShadowText(`Version ${versionStr}`, "Atlas.Framework.Title", 0, 0, color_white, nil, nil, 1, 150)
-    AtlasUI:DrawShadowText(`Author: ${author}`, "Atlas.Framework.Subtitle", 0, titleHeight, Color(183, 183, 183), nil, nil, 1, 150)
+    AtlasUI:DrawShadowText(`Version ${versionStr}`, "Atlas.Library.Title", 0, 0, color_white, nil, nil, 1, 150)
+    AtlasUI:DrawShadowText(`Author: ${author}`, "Atlas.Library.Subtitle", 0, titleHeight, Color(183, 183, 183), nil, nil, 1, 150)
   end
 
   self.Tabs = self:Add("AtlasUI.NavbarBody")
   self.Tabs:Dock(TOP)
   self.Tabs:DockMargin(-12, 8, -12, 0)
   self.Tabs:SetTall(40)
-  self.Tabs.Font = "Atlas.Framework.Config.Tabs"
+  self.Tabs.Font = "Atlas.Library.Config.Tabs"
   self.Tabs:SetBody(self)
   if (AtlasUI.Debug) then
     self.Tabs:AddTab("Updates")
-    self.Tabs:AddTab("Config", "Atlas.Framework.Config", config, id)
+    self.Tabs:AddTab("Config", "Atlas.Library.Config", config, id)
     self.Tabs:SetActive(2)
   else
-    self.Tabs:AddTab("License", "Atlas.Framework.Dev", { 
+    self.Tabs:AddTab("License", "Atlas.Library.Dev", { 
       licensee = licensee,
       proof = licenseeProof
     })
@@ -283,21 +283,21 @@ function PANEL:PostInit()
   end
 end
 
-vgui.Register("Atlas.Framework.Tab", PANEL)
+vgui.Register("Atlas.Library.Tab", PANEL)
 
 local PANEL = {}
 
-AtlasUI:CreateFont("Atlas.Framework.Dev.Licensee", 48)
-AtlasUI:CreateFont("Atlas.Framework.Dev", 20)
+AtlasUI:CreateFont("Atlas.Library.Dev.Licensee", 48)
+AtlasUI:CreateFont("Atlas.Library.Dev", 20)
 
 function PANEL:Paint(w, h)
-  AtlasUI:DrawShadowText(`Licensed to ${self.licensee}`, "Atlas.Framework.Dev.Licensee",
+  AtlasUI:DrawShadowText(`Licensed to ${self.licensee}`, "Atlas.Library.Dev.Licensee",
     w / 2, 16, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, 150)
-  AtlasUI:DrawShadowText(`Proof: ${self.proof}`, "Atlas.Framework.Dev",
-    w / 2, 16 + draw.GetFontHeight("Atlas.Framework.Dev.Licensee") + 4, 
+  AtlasUI:DrawShadowText(`Proof: ${self.proof}`, "Atlas.Library.Dev",
+    w / 2, 16 + draw.GetFontHeight("Atlas.Library.Dev.Licensee") + 4, 
     Color(242, 242, 242), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, 150)
   AtlasUI:DrawShadowText("This menu is currently in development, check back later", 
-    "Atlas.Framework.Dev", w / 2, h / 2, Color(183, 183, 183), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, 150)
+    "Atlas.Library.Dev", w / 2, h / 2, Color(183, 183, 183), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, 150)
 end
 
 function PANEL:SetData(data)
@@ -305,7 +305,7 @@ function PANEL:SetData(data)
   self.proof = data.proof
 end
 
-vgui.Register("Atlas.Framework.Dev", PANEL)
+vgui.Register("Atlas.Library.Dev", PANEL)
 
 local PANEL = {}
 AtlasUI:CreateFont("AtlasUI.NavbarBody", 18)

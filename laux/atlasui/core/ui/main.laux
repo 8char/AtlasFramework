@@ -1,7 +1,7 @@
 local PANEL = {}
 
-AtlasUI:CreateFont("Atlas.Framework.Load", 48)
-AtlasUI:CreateFont("Atlas.Framework.Tab", 20)
+AtlasUI:CreateFont("Atlas.Library.Load", 48)
+AtlasUI:CreateFont("Atlas.Library.Tab", 20)
 
 function PANEL:Init()
   self:SetSize(AtlasUI.Frame.Width, AtlasUI.Frame.Height)
@@ -9,7 +9,7 @@ function PANEL:Init()
   self:SetTitle("Atlas Framework - Admin")
   self:MakePopup()
 
-  self:AddHook("Atlas.Framework.ReceivedScripts", "Atlas.Framework", (scripts) ->
+  self:AddHook("Atlas.Library.ReceivedScripts", "Atlas.Library", (scripts) ->
     self:CreateSidebar()
   end)
 
@@ -19,9 +19,9 @@ end
 function PANEL:CreateCategory(name, col = Color(64, 64, 64))
   local panel = self.Sidebar.Scroll:Add("DPanel")
   panel:Dock(TOP)
-  panel:SetTall(draw.GetFontHeight("Atlas.Framework.Tab") + 16)
+  panel:SetTall(draw.GetFontHeight("Atlas.Library.Tab") + 16)
   panel.Paint = function(pnl, w, h)
-    draw.SimpleText(name, "Atlas.Framework.Tab", w / 2, h / 2, Color(212, 212, 212), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    draw.SimpleText(name, "Atlas.Library.Tab", w / 2, h / 2, Color(212, 212, 212), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
     surface.SetDrawColor(col)
     if (name != "1st party") then
@@ -40,13 +40,13 @@ function PANEL:CreateSidebar(tbl)
   
   --self:CreateCategory("1st party")
   for i, v of scripts do
-    self.Sidebar:CreatePanel(v.name, v.desc, "Atlas.Framework.Tab", v.icon, v)
+    self.Sidebar:CreatePanel(v.name, v.desc, "Atlas.Library.Tab", v.icon, v)
   end
   --self:CreateCategory("3rd party")
 
   --[[
   self:CreateCategory("1st party")
-  self.Sidebar:CreatePanel("Framework", "Atlas.Framework.Tab", "Atlas.Framework.Tab", nil, {})
+  self.Sidebar:CreatePanel("Framework", "Atlas.Library.Tab", "Atlas.Library.Tab", nil, {})
   self.Sidebar:CreatePanel("Battle Pass", nil, "Panel")
   self.Sidebar:CreatePanel("Death Cards", nil, "Panel")
   self:CreateCategory("3rd party")
@@ -85,10 +85,10 @@ function PANEL:Paint(w, h)
   if (self.Sidebar) then return end
 
   AtlasUI:DrawLoadingCircle(w / 2, h / 2 + 18, h / 4)
-  AtlasUI:DrawShadowText("Loading all addons", "Atlas.Framework.Load", w / 2, h / 2 - h / 8, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, 150)
+  AtlasUI:DrawShadowText("Loading all addons", "Atlas.Library.Load", w / 2, h / 2 - h / 8, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, 150)
 end
 
-vgui.Register("Atlas.Framework", PANEL, "AtlasUI.Frame")
+vgui.Register("Atlas.Library", PANEL, "AtlasUI.Frame")
 
 concommand.Add("atlas_admin", () =>
   if (!AtlasUI.Permissions:canAccessFramework(LocalPlayer())) then
@@ -97,5 +97,5 @@ concommand.Add("atlas_admin", () =>
     return
   end
 
-  vgui.Create("Atlas.Framework")
+  vgui.Create("Atlas.Library")
 end)

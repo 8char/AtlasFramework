@@ -3,11 +3,11 @@ class ScriptsNetwork extends AtlasUI.Network
     super()
 
     self:prepare({
-      "Atlas.Framework.Scripts",
-      "Atlas.Framework.UpdateScriptsMessage"
+      "Atlas.Library.Scripts",
+      "Atlas.Library.UpdateScriptsMessage"
     })
   
-    self:receiver("Atlas.Framework.Scripts", self.receiveScriptsRequest)
+    self:receiver("Atlas.Library.Scripts", self.receiveScriptsRequest)
   end
 
   receiveScriptsRequest(ply)
@@ -17,13 +17,13 @@ class ScriptsNetwork extends AtlasUI.Network
   end
 
   sendUpdateMessage(ply, tbl)
-    self:send("Atlas.Framework.UpdateScriptsMessage", ply, () ->
+    self:send("Atlas.Library.UpdateScriptsMessage", ply, () ->
       self:compress(tbl)
     end)
   end
 
   sendScripts(ply, scripts)
-    self:send("Atlas.Framework.Scripts", ply, () ->
+    self:send("Atlas.Library.Scripts", ply, () ->
       self:compress(scripts)
     end)
   end
