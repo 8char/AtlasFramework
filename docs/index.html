@@ -25,10 +25,21 @@
                 plugins: [
                     function(hook, vm) {
                         hook.beforeEach(function (html) {
-                            var docURL = 'https://github.com/8char/AtlasLibrary/blob/main/docs' + vm.router.getFile().replace("/AtlasLibrary", "");
+                            // Configuration for the repository
+                            var repositoryName = "AtlasLibrary"
+                            var repositoryOwner = "8char"
+                            var repositoryHost = "github.com"
+                            var repositoryAPIHost = "api.github.com"
+
+                            // Dynamically generated file specific variables
+                            var pathToFile = vm.router.getFile().replace(`/${repositoryName}`, "")
+                            var repositoryURL = `https://${repositoryHost}/${repositoryOwner}/${repositoryName}`
+
+                            var docURL = `${repositoryURL}/blob/main/docs${pathToFile}`;
+
                             var editHtml = '[📝 Edit Documentation](' + docURL + ')\n'
 
-                            date_url = 'https://api.github.com/repos/8char/AtlasLibrary/commits?per_page=1&path=docs/' + vm.config.basePath + vm.route.file;
+                            var date_url = `https://${repositoryAPIHost}/repos/${repositoryOwner}/${repositoryName}/commits?per_page=1&path=docs/${vm.config.basePath}${vm.route.file}`;
                             fetch(date_url)
                                 .then((response) => {
                                     return response.json();
