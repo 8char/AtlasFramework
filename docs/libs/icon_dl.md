@@ -8,7 +8,7 @@ Asynchronous icon downloader.
 AtlasUI:DownloadIcon(pnl: Panel, tbl: table, pnlVar: string)
 ```
 
-## Arguments
+**Arguments**
 
 1. pnl - Panel to store the icon.
 2. tbl - Parameters
@@ -22,7 +22,7 @@ AtlasUI:DownloadIcon(pnl: Panel, tbl: table, pnlVar: string)
 AtlasUI:DrawIcon(x: number, y: number, w: number, h: number, pnl: Panel, col: Color, loadCol: Color, var: string)
 ```
 
-## Arguments
+**Arguments**
 
 1. x - The X coordinate.
 2. y -The Y coordinate.
@@ -41,11 +41,11 @@ AtlasUI:DrawIcon(x: number, y: number, w: number, h: number, pnl: Panel, col: Co
 AtlasUI:GetIcon(id: string | IMaterial)
 ```
 
-## Arguments
+**Arguments**
 
 1. id - Icon identifier
 
-## Example
+# Example
 
 This example come from the Atlas Framework (`laux/atlasui/libs/icon_dl.laux`).
 

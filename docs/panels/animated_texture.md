@@ -2,11 +2,11 @@
 
 The `AtlasUI.AnimatedTexture` is used to draw an animated texture on a panel.
 
-## Parent
+# Parent
 
 Derives from [Panel](https://wiki.facepunch.com/gmod/Panel).
 
-# AtlasUI.AnimatedTexture :: SetDirectory
+## AtlasUI.AnimatedTexture :: SetDirectory
 
 ```lua
 <AtlasUI.AnimatedTexture>:SetDirectory(dir: string)
@@ -14,13 +14,13 @@ Derives from [Panel](https://wiki.facepunch.com/gmod/Panel).
 
 Sets the directory of where the texture pngs are located. It will then make sure to add the path aswell as the Materials to `self.images`. Keep in mind that this only loads pngs!
 
-## Arguments
+**Arguments**
 
 1. dir - The path inside of the materials folder that holds the texture pngs. I. e. anim_textures => materials/anim_textures
 
 ---
 
-# AtlasUI.AnimatedTexture :: SetImages
+## AtlasUI.AnimatedTexture :: SetImages
 
 ```lua
 <AtlasUI.AnimatedTexture>:SetImages(tbl: table)
@@ -28,13 +28,13 @@ Sets the directory of where the texture pngs are located. It will then make sure
 
 Used to manually set the table which contains all of the instanced image textures by using `Material()`. Keep in mind that this will overwrite the existing `self.images` variable.
 
-## Arguments
+**Arguments**
 
 1. tbl - The table of which will be set to the `self.images`, which contains a table of instanced textures through `Material()`
 
 ---
 
-# AtlasUI.AnimatedTexture :: SetTimes
+## AtlasUI.AnimatedTexture :: SetTimes
 
 ```lua
 <AtlasUI.AnimatedTexture>:SetTimes(normal: number = .02, idle: number = 1)
@@ -42,14 +42,14 @@ Used to manually set the table which contains all of the instanced image texture
 
 Used to set the `self.times` which is used for when the next change should be and the delay inbetween the cycles change.
 
-## Arguments
+**Arguments**
 
 1. normal - The delay between the images.
 2. idle - The time that it will wait inbetween cycles, i. e when it's reached it's last image.
 
 ---
 
-# AtlasUI.AnimatedTexture :: GetPaused
+## AtlasUI.AnimatedTexture :: GetPaused
 
 ```lua
 <AtlasUI.AnimatedTexture>:GetPaused(pauseState: boolean)
@@ -57,13 +57,13 @@ Used to set the `self.times` which is used for when the next change should be an
 
 Used to get the pause animation state of the AnimatedTexture.
 
-## Returns
+**Returns**
 
 1. isPaused - The boolean which informs if the AnimatedTexture is paused or not.
 
 ---
 
-# AtlasUI.AnimatedTexture :: SetPaused
+## AtlasUI.AnimatedTexture :: SetPaused
 
 ```lua
 <AtlasUI.AnimatedTexture>:SetPaused(pauseState: boolean)
@@ -71,13 +71,13 @@ Used to get the pause animation state of the AnimatedTexture.
 
 Used to pause the animation of the texture.
 
-## Arguments
+**Arguments**
 
 1. pauseState - The argument for if the panel should pause its animation, `true` will pause it & `false` will un-pause it.
 
 ---
 
-# AtlasUI.AnimatedTexture :: PostInit
+## AtlasUI.AnimatedTexture :: PostInit
 
 ```lua
 <AtlasUI.AnimatedTexture>:PostInit()

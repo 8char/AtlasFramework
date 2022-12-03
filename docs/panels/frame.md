@@ -1,10 +1,10 @@
 # AtlasUI.Frame <client>Client</client>
 The `AtlasUI.Frame` is the parent of basically all VGUI elements in AtlasUI.
 
-## Parent
+# Parent
 Derives from [EditablePanel](https://wiki.facepunch.com/gmod/EditablePanel).
 
-# AtlasUI.Frame :: SetTitle
+## AtlasUI.Frame :: SetTitle
 
 ```lua
 <AtlasUI.Frame>:SetTitle(title: string)
@@ -12,13 +12,13 @@ Derives from [EditablePanel](https://wiki.facepunch.com/gmod/EditablePanel).
 
 Sets the title of the frame.
 
-## Arguments
+**Arguments**
 
 1. title - New title of the frame.
 
 ---
 
-# AtlasUI.Frame :: ShowCloseButton
+## AtlasUI.Frame :: ShowCloseButton
 
 ```lua
 <AtlasUI.Frame>:ShowCloseButton(show: boolean)
@@ -27,13 +27,13 @@ Sets the title of the frame.
 Determines whether the Frame's close button is displayed.
 
 
-## Arguments
+**Arguments**
 
 1. show - `false` hides the close button, this is `true` by default.
 
 ---
 
-## Example
+# Example
 
 Creates an empty `AtlasUI.Frame`
 

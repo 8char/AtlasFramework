@@ -18,7 +18,7 @@ AtlasUI.Loader()
 | **ATLASUI_CLIENT** | 2 |
 | **ATLASUI_SHARED** | 3 |
 
-# AtlasUI.Loader :: setName
+## AtlasUI.Loader :: setName
 
 ```lua
 <AtlasUI.Loader>:setName(name: string)
@@ -26,13 +26,13 @@ AtlasUI.Loader()
 
 **Required.** Used to set the name of the addon.
 
-## Arguments
+**Arguments**
 
 1. name - What name the addon should have.
 
 ---
 
-# AtlasUI.Loader :: setAcronym
+## AtlasUI.Loader :: setAcronym
 
 ```lua
 <AtlasUI.Loader>:setAcronym(acronym: string)
@@ -40,13 +40,13 @@ AtlasUI.Loader()
 
 **Required.** Used to set the acronym of the addon.
 
-## Arguments
+**Arguments**
 
 1. acronym - What acronym the addon should have.
 
 ---
 
-# AtlasUI.Loader :: setDirectory
+## AtlasUI.Loader :: setDirectory
 
 ```lua
 <AtlasUI.Loader>:setDirectory(directory: string)
@@ -54,39 +54,39 @@ AtlasUI.Loader()
 
 **Required.** Used to set the root directory of the addon.
 
-## Arguments
+**Arguments**
 
 1. directory - What's the addon's root directory.
 
 ---
 
-# AtlasUI.Loader :: setColor
+## AtlasUI.Loader :: setColor
 
 ```lua
 <AtlasUI.Loader>:setColor(color: Color)
 ```
 **Required.** Used to set the color of the addon, that will be used into console logging.
 
-## Arguments
+**Arguments**
 
 1. color - What color the addon should have.
 
 ---
 
-# AtlasUI.Loader :: loadMessage<internal>INTERNAL</internal>
+## AtlasUI.Loader :: loadMessage<internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Loader>:loadMessage(path: string, realm: string, col = self:getColor())
 ```
 Used internally to print debug messages
-## Arguments
+**Arguments**
 1. path - File path
 2. realm - Prefix's realm
 3. col - **Optional** Prefix's color
 
 ---
 
-# Atlas.Loader :: loadFile <internal>INTERNAL</internal>
+## Atlas.Loader :: loadFile <internal>INTERNAL</internal>
 
 ```lua
 <AtlasUI.Loader>:loadFile(path: string, realm: number, func: function)
@@ -94,7 +94,7 @@ Used internally to print debug messages
 
 Also used internally to load a single file
 
-## Arguments
+**Arguments**
 
 1. path - File path
 2. realm - Realm (You can use [enumerations](/libs/loader?id=enumerations))  
@@ -102,14 +102,14 @@ Also used internally to load a single file
 
 ---
 
-# Atlas.Loader :: load
+## Atlas.Loader :: load
 
 ```lua
 <AtlasUI.Loader>:load(dir: string, realm: number|table, recursive: boolean = false, options: table = {})
 ```
 Used to load a folder (can be loaded recursively)
 
-## Arguments
+**Arguments**
 
 1. dir - Directory that will be loaded
 2. realm - Realm (You can use [enumerations](/libs/loader?id=enumerations))
@@ -123,7 +123,7 @@ Used to load a folder (can be loaded recursively)
 ```
 Finishes the action currently in the works.
 
-## Example
+# Example
 This example come from the Atlas Framework (`laux/autorun/atlasui_load.laux`).
 ```lua
 AtlasUI.Loader()

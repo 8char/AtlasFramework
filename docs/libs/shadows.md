@@ -30,7 +30,7 @@ This will draw the shadow, and mirror any other draw calls the happened during d
 6. distance - **Optional** Distance
 7. _shadowOnly - **Optional** Shadow Only
 
-## Example
+# Example
 
 ```lua
 -- Put this code into a Paint function:
