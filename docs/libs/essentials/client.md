@@ -550,14 +550,14 @@ Draws an overhead name and icon for an NPC.
 
 1. npc - The NPC to draw an overhead for.
 2. tbl - A table of options for the overhead:
-        * alpha - The alpha value of the overhead. Optional, defaults to 255.
-        * text - The text to display in the overhead. Optional, defaults to the NPC's PrintName or "NO NAME" if not set.
-        * icon - The material to use for the overhead's icon. Optional, defaults to no icon.
-        * hover - A boolean value indicating whether the overhead should hover with a sinusoidal movement. Optional, defaults to false.
-        * xOffset - The amount to offset the overhead horizontally. Optional, defaults to 0.
-        * textOffset - The amount to offset the text in the overhead. Optional, defaults to 0.
-        * color - The color of the overhead. Optional, defaults to AtlasUI's accent color.
-        * icon_margin - The margin around the overhead icon. Optional, defaults to 30.
+    * alpha - The alpha value of the overhead. Optional, defaults to 255.
+    * text - The text to display in the overhead. Optional, defaults to the NPC's PrintName or "NO NAME" if not set.
+    * icon - The material to use for the overhead's icon. Optional, defaults to no icon.
+    * hover - A boolean value indicating whether the overhead should hover with a sinusoidal movement. Optional, defaults to false.
+    * xOffset - The amount to offset the overhead horizontally. Optional, defaults to 0.
+    * textOffset - The amount to offset the text in the overhead. Optional, defaults to 0.
+    * color - The color of the overhead. Optional, defaults to AtlasUI's accent color.
+    * icon_margin - The margin around the overhead icon. Optional, defaults to 30.
 
 **Example**
 
