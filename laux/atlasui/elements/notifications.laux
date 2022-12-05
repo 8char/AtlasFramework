@@ -178,7 +178,7 @@ function AtlasUI:Notify(text, icon, duration, progressColor, textColor)
   panel.id = id
   self.Notifications[id].id = id
   panel:StartNotification()
-  surface.PlaySound("buttons/lightswitch2.wav")
+  --surface.PlaySound("buttons/lightswitch2.wav")
 end
 
 hook.Add("Initialize", "NotificationOverride", function()
