@@ -12,8 +12,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Download and install LAUX
         run: |
-          git clone https://gitlab.com/sleeppyy/laux.git
-          cd laux
+          git clone https://gitlab.com/sleeppyy/laux.git laux-compiler
+          cd laux-compiler
           npm install
           npm run build
           npm link
