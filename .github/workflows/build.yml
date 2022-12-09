@@ -17,6 +17,7 @@ jobs:
           npm install
           npm run build
           npm link
+          cd ..
       - name: Compile repository
         run: laux workspace
       - name: Delete files and folders
