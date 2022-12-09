@@ -20,8 +20,6 @@ jobs:
           cd ..
       - name: Compile repository
         run: lauxc workspace
-        timeout-minutes: 0.25
-        continue-on-error: true
       - name: Delete files and folders
         run: |
           rm -rf $(find . -type f ! -name 'lua' ! -name 'materials')
@@ -37,3 +35,5 @@ jobs:
           asset_path: artifact.zip
           asset_name: release.zip
           asset_content_type: application/zip
+      timeout-minutes: 0.25
+      continue-on-error: true
