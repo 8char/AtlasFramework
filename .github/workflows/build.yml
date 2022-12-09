@@ -12,14 +12,16 @@ jobs:
       - uses: actions/checkout@v2
       - name: Download and install LAUX
         run: |
-          git clone https://gitlab.com/sleeppyy/laux.git laux-compiler
+          git clone https://github.com/8char/laux-compiler.git
           cd laux-compiler
           npm install
           npm run build
           npm link
           cd ..
       - name: Compile repository
-        run: timeout 60 lauxc workspace
+        run: lauxc workspace
+        timeout-minutes: 0.25
+        continue-on-error: true
       - name: Delete files and folders
         run: |
           rm -rf $(find . -type f ! -name 'lua' ! -name 'materials')
