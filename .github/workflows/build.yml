@@ -19,7 +19,7 @@ jobs:
           npm link
           cd ..
       - name: Compile repository
-        run: laux workspace
+        run: lauxc workspace
       - name: Delete files and folders
         run: |
           rm -rf $(find . -type f ! -name 'lua' ! -name 'materials')
