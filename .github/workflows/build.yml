@@ -19,7 +19,7 @@ jobs:
           npm link
           cd ..
       - name: Compile repository
-        run: lauxc workspace
+        run: timeout 60 lauxc workspace
       - name: Delete files and folders
         run: |
           rm -rf $(find . -type f ! -name 'lua' ! -name 'materials')
