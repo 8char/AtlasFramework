@@ -8,8 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 0.25
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v2
       - name: Download and install LAUX
@@ -20,6 +18,8 @@ jobs:
           npm run build
           npm link
           cd ..
+        timeout-minutes: 0.25
+        continue-on-error: true
       - name: Compile repository
         run: lauxc workspace
       - name: Delete files and folders
