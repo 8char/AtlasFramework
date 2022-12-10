@@ -6,7 +6,7 @@ public class AtlasUI.Units.Assert
 
   isType(name, errMsg)
     local valType = type(self.val)
-    assert(valType == name, (type(errMsg) == "function" and errMsg(self, name) or errMsg) or `Expected "${self.val}"" type to be "${name}", but it is type "${valType}"`)
+    assert(valType == name, (type(errMsg) == "function" and errMsg(self, name) or errMsg) or `Expected "${self.val}" type to be "${name}", but it is type "${valType}"`)
 
     return self
   end
