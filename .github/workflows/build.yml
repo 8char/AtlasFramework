@@ -19,7 +19,6 @@ jobs:
           npm link
           cd ..
         timeout-minutes: 0.25
-        continue-on-error: true
       - name: Compile repository
         run: lauxc workspace
       - name: Delete files and folders
