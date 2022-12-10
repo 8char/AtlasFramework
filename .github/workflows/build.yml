@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      include:
+        - "!docs/**"
+        - "!.github/**"
+        - "**"
 
 jobs:
   build:
