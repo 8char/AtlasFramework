@@ -49,6 +49,13 @@ public class AtlasUI.Units.Assert
     return self
   end
 
+  isTableEmpty(errMsg)
+    self:isType("table")
+    assert(not table.IsEmpty(self.val), (type(errMsg) == "function" and errMsg(self) or errMsg) or `Expected the table to be empty, but got a non-empty table"`)
+
+    return self
+  end
+
   isPlayer()
     assert(IsValid(self.val), "Player entity is not valid")
     assert(self.val:IsPlayer(), "This entity is not a player")

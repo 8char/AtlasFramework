@@ -218,3 +218,15 @@ function AtlasUI:HexToRGB(hex)
   )
 end
 
+function AtlasUI:GetOrdinalString(number)
+    if number == 1 then
+      return "1st"
+    elseif number == 2 then
+      return "2nd"
+    elseif number == 3 then
+      return "3rd"
+    else
+      return number .. "th"
+    end
+  end
+  

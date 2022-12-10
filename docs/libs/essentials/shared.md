@@ -266,3 +266,24 @@ Converts an RGB color to a hexadecimal color string.
 
 **Returns**
 1. The hexadecimal color string.
+
+---
+# AtlasUI:GetOrdinalString(number: number)
+
+Returns the ordinal string for the given number.
+
+**Arguments**
+
+1. `number` - The number for which to get the ordinal string.
+
+**Returns**
+
+1. A string containing the ordinal representation of the given number.
+
+**Examples**
+
+```lua
+AtlasUI:GetOrdinalString(1)   -- Output: "1st"
+AtlasUI:GetOrdinalString(23)   -- Output: "23rd"
+AtlasUI:GetOrdinalString(400)   -- Output: "400th"
+```
