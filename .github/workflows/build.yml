@@ -24,7 +24,7 @@ jobs:
         run: bash transpile.sh
       - name: Delete files and folders
         run: |
-          find . -not -name 'lua' -not -name 'resource' -not -name 'materials' -delete
+          find . -not -name 'lua' -not -name 'resource' -not -name 'materials' -delete -depth
       - name: Create release artifact
         run: zip -r artifact.zip .
         env:
