@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Run the transpiler in the background
 lauxc workspace &
 
