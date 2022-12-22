@@ -1,38 +1,37 @@
-# name: Build and Deploy
+name: Build and Deploy
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v2
-#       - name: Download and install LAUX
-#         run: |
-#           git clone https://github.com/8char/laux-compiler.git
-#           cd laux-compiler
-#           npm install
-#           npm run build
-#           npm link
-#           cd ..
-#         timeout-minutes: 0.25
-#       - name: Compile repository
-#         run: lauxc workspace
-#       - name: Delete files and folders
-#         run: |
-#           rm -rf $(find . -type f ! -name 'lua' ! -name 'materials')
-#           rm -rf $(find . -type d ! -name 'lua' ! -name 'materials')
-#       - name: Create release artifact
-#         run: zip -r artifact.zip .
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#       - name: Upload release artifact
-#         uses: actions/upload-release-asset@v1
-#         with:
-#           upload_url: ${{ github.event.release.upload_url }}
-#           asset_path: artifact.zip
-#           asset_name: release.zip
-#           asset_content_type: application/zip
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download and install LAUX
+        run: |
+          git clone https://github.com/8char/laux-compiler.git
+          cd laux-compiler
+          npm install
+          npm run build
+          npm link
+          cd ..
+      - name: Compile repository
+        run:  ./transpile.sh
+      - name: Delete files and folders
+        run: |
+          rm -rf $(find . -type f ! -name 'lua' ! -name 'materials')
+          rm -rf $(find . -type d ! -name 'lua' ! -name 'materials')
+      - name: Create release artifact
+        run: zip -r artifact.zip .
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release artifact
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifact.zip
+          asset_name: release.zip
+          asset_content_type: application/zip
