@@ -18,8 +18,10 @@ jobs:
           npm run build
           npm link
           cd ..
+      - name: Make transpile.sh executable
+        run: chmod +x transpile.sh
       - name: Compile repository
-        run: ./transpile.sh
+        run: bash transpile.sh
       - name: Delete files and folders
         run: |
           rm -rf $(find . -type f ! -name 'lua' ! -name 'materials')
