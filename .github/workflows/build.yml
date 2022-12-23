@@ -37,4 +37,4 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
-            "AtlasLibrary-$(echo $GITHUB_REF | sed 's|refs/tags/||').zip"
+            *.zip
