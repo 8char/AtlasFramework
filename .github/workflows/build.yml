@@ -1,12 +1,12 @@
-name: Build and Deploy
+name: Build and Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
 
 jobs:
-  build:
+  build-tagged-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -27,25 +27,13 @@ jobs:
           find . -mindepth 1 -not -name 'lua' -not -name 'resource' -not -name 'materials' -type f -exec rm -f {} +
           find . -mindepth 1 -not -name 'lua' -not -name 'resource' -not -name 'materials' -type d -exec rm -rf {} +
           find . -mindepth 1 -not -name 'lua' -not -name 'resource' -not -name 'materials' -type d -prune -exec rm -rf {} +
-      - name: Create release artifact
-        run: zip -r artifact.zip .
+      - name: Create release AtlasLibrary
+        run: zip -r AtlasLibrary.zip .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: "marvinpinto/action-automatic-releases@latest"
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
-      - name: Upload release artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifact.zip
-          asset_name: release.zip
-          asset_content_type: application/zip
+          files: |
+            AtlasLibrary.zip
