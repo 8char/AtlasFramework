@@ -28,6 +28,10 @@ jobs:
           zip -r AtlasLibrary-$tag.zip lua materials resource
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Debug
+        run: |
+          ls -la
+          echo "GITHUB_REF: $GITHUB_REF"
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
