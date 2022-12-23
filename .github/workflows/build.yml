@@ -26,7 +26,7 @@ jobs:
         run: |
           find . -mindepth 1 -not -name 'lua' -not -name 'resource' -not -name 'materials' -type f -exec rm -f {} +
           find . -mindepth 1 -not -name 'lua' -not -name 'resource' -not -name 'materials' -type d -exec rm -rf {} +
-          find . -mindepth 1 -not -name 'lua' -not -name 'resource' -not -name 'materials' -type d -prune -exec rm -rf {} +
+          find . -mindepth 1 -not -name 'lua' -not -name 'resource' -not -name 'materials' -type d -prune -depth -exec rm -rf {} +
       - name: Create release AtlasLibrary
         run: zip -r AtlasLibrary.zip .
         env:
