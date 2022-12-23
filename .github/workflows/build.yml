@@ -23,7 +23,9 @@ jobs:
       - name: Compile repository
         run: bash transpile.sh
       - name: Create release AtlasLibrary
-        run: zip -r AtlasLibrary-$GITHUB_REF.zip lua materials resource
+        run: |
+          tag=$(echo $GITHUB_REF | sed 's|refs/tags/||')
+          zip -r AtlasLibrary-$tag.zip lua materials resource
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: "marvinpinto/action-automatic-releases@latest"
@@ -31,4 +33,4 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           files: |
-            AtlasLibrary-$GITHUB_REF.zip
+            AtlasLibrary-$(echo $GITHUB_REF | sed 's|refs/tags/||').zip
