@@ -89,11 +89,3 @@ function PANEL:ShowCloseButton(show)
 end
 
 vgui.Register("AtlasUI.Frame", PANEL, "EditablePanel")
-
-concommand.Add("atlasui", function()
-	local frame = vgui.Create("AtlasUI.Frame")
-	frame:SetSize(960, 720)
-	frame:Center()
-	frame:MakePopup()
-	frame:SetTitle("Party")
-end)
