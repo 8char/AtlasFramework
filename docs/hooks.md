@@ -1,5 +1,5 @@
 # Hooks
-A list of hooks which you can utalise to be able to properly run your addons in accordance with Atlas Library.<br>
+A list of hooks which you can utalise to be able to properly run your addons in accordance with Atlas Framework.<br>
 *🚧 This page is largely incomplete, you can contribute on the repo! 🚧*
 
 ## AtlasUI.NotificationRemoved <client>CLIENT</client>
@@ -27,7 +27,7 @@ Ran when the client is fully
 ## AtlasUI.Configurator.GetEntities
 ## Atlas.PlayerInitialSpawn
 ## AtlasUI.Player.GotNotifications
-## Atlas.Library.ReceivedScripts
+## Atlas.Framework.ReceivedScripts
 ## AtlasDB.Connected
 ## AtlasUI.PostLoadSettings
 ## AtlasUI.PreLoadAddons

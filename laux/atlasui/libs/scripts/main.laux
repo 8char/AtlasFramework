@@ -4,8 +4,8 @@ class Scripts
   constructor()
     stopif CLIENT
 
-    timer.Create("Atlas.Library.Version", 600, 0, () =>
-      http.Fetch("https://gitlab.com/sleeppyy/atlas-version-tracker/-/raw/master/versions.json", function(body, size, headers, code)
+    timer.Create("Atlas.Framework.Version", 600, 0, () =>
+      http.Fetch("https://raw.githubusercontent.com/8char/atlas-version-tracker/main/versions.json", function(body, size, headers, code)
         stopif code >= 400
         stopif size == 0
         local tbl = util.JSONToTable(body)

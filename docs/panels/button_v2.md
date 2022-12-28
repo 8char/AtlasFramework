@@ -132,7 +132,7 @@ Gets the x offset of the buttons text.
 <AtlasUI.ButtonV2>:SetIcon(iconId: number)
 ```
 
-Will set the icon of the button to be that if the icon id. If you're unsure about how to use this, have a look at our [Icon Downloader](libs/icon_dl.md) library usage.
+Will set the icon of the button to be that if the icon id. If you're unsure about how to use this, have a look at our [Icon Downloader](libs/icon_dl.md) framework usage.
 
 **Arguments**
 

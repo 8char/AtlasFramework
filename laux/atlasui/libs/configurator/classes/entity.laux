@@ -207,8 +207,8 @@ end
 --[[
 Card("my_card", "My Card", 500, "imgur_url", "Custom", { "vip", "superadmin" })
   :setName("Pepega as fuck")
-  :setSource("https://gitlab.com/sleeppyy")
-  :setSteamids({"76561198202328247"})
+  :setSource("https://github.com/8char")
+  :setSteamids({"76561198172194291"})
 --]]
 
 

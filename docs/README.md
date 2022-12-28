@@ -1,8 +1,8 @@
-# Atlas Library
+# Atlas Framework
 
-A library developed for Garry's Mod, intended to make mundane tasks just a bit easier and more interconnected.
+A framework developed for Garry's Mod, intended to make mundane tasks just a bit easier and more interconnected.
 
 --
 
-* **GitHub:** https://github.com/8char/AtlasLibrary/
+* **GitHub:** https://github.com/8char/AtlasFramework/
 * **Steam Workshop:** N/A *(Soon TM)*

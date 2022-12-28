@@ -2,15 +2,15 @@
 
 How works `AtlasUI.Permissions` object.
 
-## AtlasUI.Permissions :: canAccessLibrary
+## AtlasUI.Permissions :: canAccessFramework
 
 ```lua
-AtlasUI.Permissions:canAccessLibrary(ply: Player)
+AtlasUI.Permissions:canAccessFramework(ply: Player)
 ```
 
 **Arguments**
 
-1. ply - Player to check if he can access the library.
+1. ply - Player to check if he can access the framework.
 
 ---
 
@@ -54,4 +54,4 @@ AtlasUI.Permissions:isAtlasDeveloper(ply: Player)
 "atlas_easy_permissions": 1
 ```
 
-If enabled, developers can access the library.
+If enabled, developers can access the framework.

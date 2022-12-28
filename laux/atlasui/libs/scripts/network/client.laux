@@ -2,15 +2,15 @@ class ScriptsNetwork extends AtlasUI.Network
   constructor()
     super()
 
-    self:receiver("Atlas.Library.Scripts", self.receiveScripts)
-    self:receiver("Atlas.Library.UpdateScriptsMessage", self.receiveUpdateScripts)
+    self:receiver("Atlas.Framework.Scripts", self.receiveScripts)
+    self:receiver("Atlas.Framework.UpdateScriptsMessage", self.receiveUpdateScripts)
   end
 
   receiveScripts(ply)
     local scripts = self:decompress()
     AtlasUI.Scripts:setAll(scripts)
 
-    hook.Run("Atlas.Library.ReceivedScripts", scripts)
+    hook.Run("Atlas.Framework.ReceivedScripts", scripts)
   end
 
   receiveUpdateScripts(ply)
@@ -22,7 +22,7 @@ class ScriptsNetwork extends AtlasUI.Network
 
   requestScripts()
     if (self.SentScriptsRequest) then
-      hook.Run("Atlas.Library.ReceivedScripts", AtlasUI.Scripts:getAll())
+      hook.Run("Atlas.Framework.ReceivedScripts", AtlasUI.Scripts:getAll())
 
       return
     end
@@ -33,7 +33,7 @@ class ScriptsNetwork extends AtlasUI.Network
   end
 
   sendRequestScripts()
-    self:send("Atlas.Library.Scripts", () -> end)
+    self:send("Atlas.Framework.Scripts", () -> end)
   end
 
   __type() return "AtlasUI.ScriptsNetwork" end

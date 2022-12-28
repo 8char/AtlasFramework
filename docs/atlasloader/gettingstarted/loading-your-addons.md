@@ -4,7 +4,7 @@ First off you will be constructing your addon in the normal structure that you u
 
 ## Creating the info.lua <shared>SHARED</shared>
 
-In order for your addon to load the module folder at all you will need a `addonname/lua/amod_*/info.lua`. `info.lua` is a shared files which resides in the base of all your `amod_*` directories. In this file you will be returning a table, this table will contain fields such as the name, dependencies, the tracelevel and so on. This file will then convey that information to the loader so that the proper dependencies can be required and loaded in to the `AModules` table *(You can read further about the table later in the article)*. We'll start by making a `info.lua` file with the addon name "AtlasPrinter" which will require the UI Library.
+In order for your addon to load the module folder at all you will need a `addonname/lua/amod_*/info.lua`. `info.lua` is a shared files which resides in the base of all your `amod_*` directories. In this file you will be returning a table, this table will contain fields such as the name, dependencies, the tracelevel and so on. This file will then convey that information to the loader so that the proper dependencies can be required and loaded in to the `AModules` table *(You can read further about the table later in the article)*. We'll start by making a `info.lua` file with the addon name "AtlasPrinter" which will require the UI Framework.
 
 ```lua
 -- garrysmod/addons/atlasprinter/amod_printersystem/info.lua

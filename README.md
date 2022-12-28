@@ -1,10 +1,10 @@
-# Atlas Library
+# Atlas Framework
 
-Atlas Library is a framework developed specifically for Garry's Mod, with the goal of making mundane tasks easier and more interconnected. This means that you can use the library to quickly and easily perform common tasks in your Garry's Mod projects, without having to write everything from scratch.
+Atlas Framework is a framework developed specifically for Garry's Mod, with the goal of making mundane tasks easier and more interconnected. This means that you can use the framework to quickly and easily perform common tasks in your Garry's Mod projects, without having to write everything from scratch.
 
-But that's not all - the library is open-source, so if you want to improve it or add new features, you can simply fork the repository and make a pull request. This way, the entire community can benefit from your contributions, and the library will continue to grow and evolve.
+But that's not all - the framework is open-source, so if you want to improve it or add new features, you can simply fork the repository and make a pull request. This way, the entire community can benefit from your contributions, and the framework will continue to grow and evolve.
 
-So whether you're looking to make your own Garry's Mod projects more efficient, or you want to contribute to the library itself, Atlas Library is the perfect tool for you.
+So whether you're looking to make your own Garry's Mod projects more efficient, or you want to contribute to the framework itself, Atlas Framework is the perfect tool for you.
 
 ## Features
 
@@ -16,13 +16,13 @@ So whether you're looking to make your own Garry's Mod projects more efficient, 
 - 🙋 Lots of helper functions
 - 👑 Permissions interface
 
-## How to use Atlas Library in your projects
+## How to use Atlas Framework in your projects
 
-To start using Atlas Library, you'll need to compile it first. This process will ensure that all of the library's code is properly formatted and ready to be used in your projects.
+To start using Atlas Framework, you'll need to compile it first. This process will ensure that all of the framework's code is properly formatted and ready to be used in your projects.
 
-Once the library has been compiled, you can explore the documentation and learn how to use the various features and functions it offers. With this knowledge, you'll be able to create whatever you want using the Atlas Library, whether it's a custom UI panel, a complex SQL query, or a helpful helper function.
+Once the framework has been compiled, you can explore the documentation and learn how to use the various features and functions it offers. With this knowledge, you'll be able to create whatever you want using the Atlas Framework, whether it's a custom UI panel, a complex SQL query, or a helpful helper function.
 
-So go ahead and compile the library, and start exploring the docs to see what you can create!
+So go ahead and compile the framework, and start exploring the docs to see what you can create!
 
 ## Customize
 
@@ -30,10 +30,10 @@ So go ahead and compile the library, and start exploring the docs to see what yo
 
 ## Getting Started
 
-1. Install [LAUX](https://gitlab.com/sleeppyy/laux#how-to-use)
+1. Install [LAUX](https://github.com/8char/laux-compiler#how-to-use)
     - LAUX is a superset of Lua, it will transpile your files down to lua. Basically all LAUX does is adds syntactic sugar.
 2. Navigate to your addons folder, and open a terminal/command prompt inside of the file.
-3. Clone the library by running `git clone https://github.com/8char/AtlasLibrary.git && cd AtlasLibrary`
+3. Clone the framework by running `git clone https://github.com/8char/AtlasFramework.git && cd AtlasFramework`
 4. Run the `transpile.bat` file!
     - When the console stops printing lines, it should be fully compiled.
 

@@ -1,6 +1,6 @@
 # Introduction
 
-This module provides an implementation of A+ promises for the AtlasUI library. Promises are a pattern for managing asynchronous code that makes it easier to write and reason about complex, asynchronous code.
+This module provides an implementation of A+ promises for the AtlasUI framework. Promises are a pattern for managing asynchronous code that makes it easier to write and reason about complex, asynchronous code.
 
 ## What is an A+ promise?
 
@@ -8,7 +8,7 @@ An A+ promise is a promise that conforms to the A+ specification, which is a set
 
 # Usage
 
-To use the AtlasUI.Promises global variable, you will first need to install the AtlasUI library
+To use the AtlasUI.Promises global variable, you will first need to install the AtlasUI framework
 
 ## Creating a promise
 

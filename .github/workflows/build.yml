@@ -22,10 +22,10 @@ jobs:
         run: chmod +x transpile.sh
       - name: Compile repository
         run: bash transpile.sh
-      - name: Create release AtlasLibrary
+      - name: Create release AtlasFramework
         run: |
           tag=$(echo $GITHUB_REF | sed 's|refs/tags/||')
-          zip -r AtlasLibrary-$tag.zip lua materials resource
+          zip -r AtlasFramework-$tag.zip lua materials resource
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: "marvinpinto/action-automatic-releases@latest"

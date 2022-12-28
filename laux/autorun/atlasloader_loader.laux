@@ -1,4 +1,4 @@
-hook.Add("AtlasUI.Loaded", "AtlasLibrary.LoaderLoad", function()
+hook.Add("AtlasUI.Loaded", "AtlasFramework.LoaderLoad", function()
     if SERVER then
         include ("AtlasLoader/core/shared.lua")
         AddCSLuaFile("AtlasLoader/core/shared.lua")

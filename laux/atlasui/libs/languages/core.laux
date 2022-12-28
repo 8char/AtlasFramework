@@ -2,7 +2,7 @@
 	Example use:
 
 	local lang =  AtlasUI:Language("atlas_f4menu")
-	lang:SetURL("https://gitlab.com/sleeppyy/atlas-languages")
+	lang:SetURL("https://github.com/8char/atlas-languages")
 	lang:SetFolder("f4menu")
 	lang:SetActiveLanguage("english")
 	lang:Download("english", true):next(function(result)
@@ -142,9 +142,9 @@ function LANG:Download(lang, overwrite, p = AtlasUI.Promises.new())
       return tryDownloadFromServer()
     end
     if (size == 0) then
-      return tryDownloadFromServer("GitLab is down??")
+      return tryDownloadFromServer("GitHub is down??")
     end
-		-- If GitLab returns this, it's definitely not something we can use
+		-- If GitHub returns this, it's definitely not something we can use
 		-- Just assume it doesn't exist or smth
     if (body:sub(1, 15) == "<!DOCTYPE html>") then
       return tryDownloadFromServer(lang .. " language not found")
