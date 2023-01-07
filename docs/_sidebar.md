@@ -5,6 +5,7 @@
     * [Documentation](/atlasloader/gettingstarted.md)
         * [Functions](/atlasloader/documentation/functions.md)
         * [Structs & Enums](/atlasloader/documentation/structs-and-enums.md)
+* [Networking](networking.md)
 * [Hooks](hooks.md)
 * [Settings](settings.md)
 * [Configurator](configurator.md)

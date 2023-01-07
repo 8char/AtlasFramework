@@ -71,7 +71,18 @@ convar {
     font-size: var(--font-size-s);
     transform: translateY(-5px);
     background-color: #8400ff !important;
-  }
+}
+
+class {
+    display: inline-block;
+    text-transform: uppercase;
+    border-radius: var(--border-radius-m);
+    padding: 0 0.4rem 0 0.4rem;
+    color: #ffffff;
+    font-size: var(--font-size-s);
+    transform: translateY(-5px);
+    background-color: #5900ff !important;
+}
 
 shared {
   display: inline-block;
