@@ -23,5 +23,3 @@ net.Receive("Atlas.RequestConfig", (len, ply) =>
     net.WriteData(data, len)
   net.Send(ply)
 end)
-
-print("hi")
