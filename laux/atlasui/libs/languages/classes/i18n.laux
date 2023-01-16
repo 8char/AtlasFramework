@@ -1,7 +1,12 @@
 public class AtlasUI.i18n
-    constructor(langId, langFolder)
+    _get _set gitHubAuthor
+    _get _set gitHubRepo
+
+    constructor(gitHubAuthor, gitHubRepo, langId, langFolder)
+        self:setGitHubAuthor(gitHubAuthor)
+        self:setGitHubRepo(gitHubRepo)
         self.lang = AtlasUI:Language(langId)
-        self.lang:SetURL("https://raw.githubusercontent.com/8char/Atlas-Languages")
+        self.lang:SetURL(`https://raw.githubusercontent.com/${self:getGitHubAuthor()}/${self:getGitHubRepo()}`)
         self.lang:SetFolder(langFolder)
         self.lang.ComputeURL = (lang) ->
         local branch = self:GetBranch() or "master"
@@ -76,7 +81,7 @@ public class AtlasUI.i18n
             return p:resolve(self.langCache)
         end
         
-        http.Fetch(`https://api.github.com/repos/8char/Atlas-Languages/contents/${folder}`, 
+        http.Fetch(`https://api.github.com/repos/${self:getGitHubAuthor()}/${self:getGitHubRepo()}/contents/${folder}`, 
             (body, size, headers, code) =>
                 if (code != 200) then
                     return p:reject("Unknown error. GitHub is probably in maintenance mode")
