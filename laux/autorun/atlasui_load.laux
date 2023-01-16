@@ -110,6 +110,7 @@ AtlasUI.Loader()
 		client = ATLASUI_CLIENT,
 		server = ATLASUI_SERVER
 	})
+	:load("libs/i18n/classes", XENINUI_SHARED, true)
 	:load("elements", ATLASUI_CLIENT)
 	:load("core/ui", ATLASUI_CLIENT)
 	:load("libs/units", ATLASUI_SHARED, true)
