@@ -23,7 +23,7 @@ public class AtlasUI.i18n
     end
 
     parsePhrase(str)
-        -- Don't wanna deal with anything but strings
+        -- Don't wanna deal with anything, but strings
         if (!isstring(str)) then
             return str
         end
@@ -73,48 +73,48 @@ public class AtlasUI.i18n
         local folder = self.lang:GetFolder()
 
         if (istable(self.langCache)) then
-        return p:resolve(self.langCache)
+            return p:resolve(self.langCache)
         end
         
         http.Fetch(`https://api.github.com/repos/8char/Atlas-Languages/contents/${folder}`, 
-        (body, size, headers, code) =>
-            if (code != 200) then
-                return p:reject("Unknown error. GitHub is probably in maintenance mode")
-            end
-
-            local json = util.JSONToTable(body)
-            if (!json or !istable(json)) then
-                return p:reject("Unable to decode the JSON response from GitHub")
-            end
-
-            local tbl = {}
-            for i, v in ipairs(json) do
-                local name = v.name:sub(1, #v.name -5)
-                name = name:sub(1, 1):upper() .. name:sub(2)
-                local nameSplit = string.Explode("-", name)
-                for k, split of nameSplit do
-                    if (k == 1) then
-                        name = split
-
-                        continue
-                    end
-
-                    name ..= " " .. split:upper()
+            (body, size, headers, code) =>
+                if (code != 200) then
+                    return p:reject("Unknown error. GitHub is probably in maintenance mode")
                 end
 
-                table.insert(tbl, {
-                    name = name,
-                    data = v.name
-                })
+                local json = util.JSONToTable(body)
+                if (!json or !istable(json)) then
+                    return p:reject("Unable to decode the JSON response from GitHub")
+                end
+
+                local tbl = {}
+                for i, v in ipairs(json) do
+                    local name = v.name:sub(1, #v.name -5)
+                    name = name:sub(1, 1):upper() .. name:sub(2)
+                    local nameSplit = string.Explode("-", name)
+                    for k, split of nameSplit do
+                        if (k == 1) then
+                            name = split
+
+                            continue
+                        end
+
+                        name ..= " " .. split:upper()
+                    end
+
+                    table.insert(tbl, {
+                        name = name,
+                        data = v.name
+                    })
+                end
+
+                self.langCache = tbl
+
+                p:resolve(tbl)
+            end,
+            (err) =>
+                p:reject("Error: " .. err)
             end
-
-            self.langCache = tbl
-
-            p:resolve(tbl)
-        end,
-        (err) =>
-            p:reject("Error: " .. err)
-        end
         )
 
         return p
