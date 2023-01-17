@@ -73,7 +73,7 @@ AtlasUI.Loader()
 	:load("libs/network", ATLASUI_SHARED)
 	:loadFile("server/orm/table_constraint", ATLASUI_SERVER)
 	:load("server", ATLASUI_SERVER, true)
-	:load("libs/languages", ATLASUI_SHARED)
+	:load("libs/languages", ATLASUI_SHARED, true)
 	:load("libs/languages/network", {
 		client = ATLASUI_CLIENT,
 		server = ATLASUI_SERVER
