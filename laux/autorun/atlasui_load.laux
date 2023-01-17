@@ -115,7 +115,7 @@ AtlasUI.Loader()
 	:load("libs/units", ATLASUI_SHARED, true)
 :done()
 
-AtlasUI.Version = "2.1.0"
+AtlasUI.Version = "1.2.0"
 
 hook.Run("AtlasUI.PreLoadAddons")
 hook.Run("AtlasUI.Loaded")
