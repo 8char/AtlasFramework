@@ -147,7 +147,7 @@ function PANEL:OnMouseReleased()
 end
 
 function PANEL:OnCursorMoved(x, y)
-    if not self.Enabled or not self.Dragging then return end
+    stopif not self.Enabled or not self.Dragging
 
     local x = 0
     local y = gui.MouseY()
@@ -162,7 +162,7 @@ function PANEL:OnCursorMoved(x, y)
 end
 
 function PANEL:Grip()
-    if not self.Enabled or self.BarSize == 0 then return end
+    stopif not self.Enabled or self.BarSize == 0
 
     self:MouseCapture(true)
     self.Dragging = true

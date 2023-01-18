@@ -54,9 +54,9 @@ function PANEL:PostInit()
 end
 
 function PANEL:Paint(w, h)
-    if !self.can_draw then return end
+    stopif !self.can_draw
 
-	if !self.images[self.cur_image] then return end
+	stopif !self.images[self.cur_image]
 
     surface.SetMaterial( self.images[self.cur_image] )
     surface.SetDrawColor( 255, 255, 255 )

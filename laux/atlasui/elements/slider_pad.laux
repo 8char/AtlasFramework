@@ -18,7 +18,7 @@ function PANEL:Init()
   self.Textentry:SetUpdateOnType(true)
   self.Textentry.OnValueChange = function(pnl, text)
     local num = tonumber(text)
-    if (!isnumber(num)) then return end
+    stopif !isnumber(num)
     num = math.Clamp(num, self:GetMin(), self:GetMax())
     num = math.Round(num, self.Rounding)
 

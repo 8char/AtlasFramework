@@ -59,7 +59,7 @@ end
 function PANEL:PerformLayout(w, h)
   self.BaseClass.PerformLayout(self, w, h)
 
-  if (!IsValid(self.Sidebar)) then return end
+  stopif !IsValid(self.Sidebar)
 
   local sw = 0
   for i, v in ipairs(self.Sidebar.Sidebar) do
@@ -82,7 +82,7 @@ end
 function PANEL:Paint(w, h)
   self.BaseClass.Paint(self, w, h)
 
-  if (self.Sidebar) then return end
+  stopif self.Sidebar
 
   AtlasUI:DrawLoadingCircle(w / 2, h / 2 + 18, h / 4)
   AtlasUI:DrawShadowText("Loading all addons", "Atlas.Framework.Load", w / 2, h / 2 - h / 8, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, 150)

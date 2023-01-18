@@ -35,12 +35,12 @@ function PANEL:Notification(title, backgroundCol, textCol)
   table.insert(self.notifications, pnl)
 
   timer.Simple(3, function()
-    if (!IsValid(pnl)) then return end
+    stopif !IsValid(pnl)
 
     pnl:AlphaTo(0, 0.2)
 
     timer.Simple(0.2, function()
-      if (!IsValid(pnl)) then return end
+      stopif !IsValid(pnl)
 
       for i, v in pairs(self.notifications) do
         if (v.uniqueID != pnl.uniqueID) then continue end

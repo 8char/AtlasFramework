@@ -53,7 +53,7 @@ function PANEL:Start()
   else
     self.background.display = self.background:Add("DPanel")
     self.background.display.Paint = function(pnl, w, h)
-      if (!self:GetIcon()) then return end
+      stopif !self:GetIcon()
 
       surface.SetMaterial(self:GetIcon())
       surface.SetDrawColor(color_white)

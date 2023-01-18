@@ -244,7 +244,7 @@ AtlasUI:CreateFont("Atlas.Framework.Title", 26)
 AtlasUI:CreateFont("Atlas.Framework.Subtitle", 18)
 
 function PANEL:OnSwitchedTo()
-  if (self.HaveSwitchedTo) then return end
+  stopif self.HaveSwitchedTo
 
   self.HaveSwitchedTo = true 
   self:PostInit()

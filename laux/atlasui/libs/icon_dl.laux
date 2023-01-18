@@ -71,7 +71,7 @@ local function DownloadImage(tbl)
 end
 
 function AtlasUI:DownloadIcon(pnl, tbl, pnlVar)
-	if (!tbl) then return end
+	stopif !tbl
 	
 	local p = AtlasUI.Promises.new()
 

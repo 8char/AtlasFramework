@@ -156,9 +156,9 @@ function PANEL:PerformLayout(w, h)
 end
 
 function PANEL:OnFocusChanged(gained)
-  if (!IsValid(self)) then return end
-  if (gained) then return end
-  if (self.ignore) then return end
+  stopif !IsValid(self)
+  stopif gained
+  stopif self.ignore
 
   self:Remove()
 end
@@ -260,9 +260,9 @@ function PANEL:Paint(w, h)
 end
 
 function PANEL:OnFocusChanged(gained)
-  if (!IsValid(self)) then return end
-  if (gained) then return end
-  if (self.ignore) then return end
+  stopif !IsValid(self)
+  stopif gained
+  stopif self.ignore
 
   self:Remove()
 end

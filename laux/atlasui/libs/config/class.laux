@@ -75,7 +75,7 @@ class Config
 
     for i, v in ipairs(split) do
       if (v == "") then continue end
-      if (!tbl[v]) then return end
+      stopif !tbl[v]
 
       tbl = tbl[v]
     end
@@ -95,7 +95,7 @@ class Config
       net.SendToServer()
     else
       local tbl = AtlasUI.Config:get("scripts")[scriptId]
-      if (!tbl) then return end
+      stopif !tbl
 
       local id = self.serverId or 1
 

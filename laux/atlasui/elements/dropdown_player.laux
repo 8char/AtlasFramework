@@ -63,7 +63,7 @@ function PANEL:SetData(tbl)
   self.Choices = {}
 
   for i, v in ipairs(tbl) do
-    if (!IsValid(v)) then return end
+    stopif !IsValid(v)
 
     local panel = self.Layout:Add("DButton")
     panel:Dock(TOP)
@@ -126,9 +126,9 @@ end
 
 -- TODO improve this lmao
 function PANEL:Think()
-  if (!IsValid(self)) then return end
-  if (!self.HasGained) then return end
-  if (self:HasHierarchicalFocus()) then return end
+  stopif !IsValid(self)
+  stopif !self.HasGained
+  stopif self:HasHierarchicalFocus()
 
   self:Remove()
 end

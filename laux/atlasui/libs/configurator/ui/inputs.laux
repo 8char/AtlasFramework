@@ -330,7 +330,7 @@ AtlasUI.Configurator.InputPanels = {
       end
       panel.OnRemove = panel.RemovePopup
       panel.DoClick = (pnl) =>
-        if (IsValid(pnl.Popup)) then return end
+        stopif IsValid(pnl.Popup)
 
         local popup = vgui.Create("EditablePanel")
         pnl.Popup = popup

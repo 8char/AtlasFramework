@@ -89,7 +89,7 @@ end
 
 function PanelMeta:SetCooltipString(str)
   self.TooltipStr = str
-  if (!IsValid(self.Tooltip)) then return end
+  stopif !IsValid(self.Tooltip)
   self.Tooltip.Str = str
 
   local x, y = self:LocalToScreen(0, 0)

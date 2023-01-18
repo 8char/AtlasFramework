@@ -70,14 +70,14 @@ function PANEL:Init()
   AtlasUI:DownloadIcon(self.Top, "2QGKAd6")
   self.Top.rotation = 0
   self.Top.OnCursorEntered = function(pnl)
-    if (self:GetExpanded()) then return end
+    stopif self:GetExpanded()
 
     pnl:Lerp("rotation", 180)
     pnl:LerpColor("textColor", self:GetTopTextColorHover())
     pnl:LerpColor("background", self:GetTopColorHover())
   end
   self.Top.OnCursorExited = function(pnl)
-    if (self:GetExpanded()) then return end
+    stopif self:GetExpanded()
 
     pnl:Lerp("rotation", 0)
     pnl:LerpColor("textColor", self:GetTopTextColor())

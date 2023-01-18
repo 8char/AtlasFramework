@@ -42,7 +42,7 @@ function AtlasUI:DebugPrint(prefix, ...)
   local printEnabled = AtlasUI:HasDebugConsolePrintEnabled()
   local fileEnabled = AtlasUI:HasDebugFilePrintEnabled()
 
-  if (!printEnabled and !fileEnabled) then return end
+  stopif !printEnabled and !fileEnabled
   local path = ply.debug
   if (!path) then print("ERROR AT DEBUG PRINT") end
   local time = os.time()

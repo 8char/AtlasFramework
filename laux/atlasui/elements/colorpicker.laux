@@ -51,7 +51,7 @@ function PANEL:Think()
   local radius = self:GetRadius()
   local triangleRadius = self:GetTriangleRadius()
 
-  if (!self.Pressed) then return end
+  stopif !self.Pressed
 
   local diffX = cursorX - cX
   local diffY = cursorY - cY

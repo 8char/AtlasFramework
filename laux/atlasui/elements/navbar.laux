@@ -59,7 +59,7 @@ function PANEL:AddTab(name, panel, tbl)
 		pnl:LerpColor("textColor", self.textActive)
 	end
 	self.buttons[name].OnCursorExited = function(pnl)
-		if (self.active == name) then return end
+		stopif self.active == name
 		
 		pnl:LerpColor("textColor", Color(120, 120, 120))
 	end
@@ -95,7 +95,7 @@ function PANEL:FindIndex(name)
 end
 
 function PANEL:SetActive(name)
-	if (self.active == name) then return end
+	stopif self.active == name
 
 	local instant = !IsValid(self.buttons[self.active])
 	if (self.buttons[self.active]) then
@@ -188,7 +188,7 @@ function PANEL:SetActive(name)
 		else
 			if (self.animation == "alpha") then
 				timer.Simple(0.15, function()
-					if (!IsValid(self)) then return end
+					stopif !IsValid(self)
 
 					local pnl = self.panels[name]
 					pnl.DrawAlpha = pnl.DrawAlpha or 255

@@ -37,7 +37,7 @@ function PANEL:AddTab(name, icon, panelClass)
 	button.OnCursorExited = function(pnl)
 		self:OnCursorExited()
 
-		if (pnl.Id == self.Active) then return end
+		stopif pnl.Id == self.Active
 
 		pnl:LerpColor("Color", color_white)
 	end
@@ -77,7 +77,7 @@ function PANEL:Think()
 end
 
 function PANEL:SetActive(id)
-	if (self.Active == id) then return end
+	stopif self.Active == id
 
 	if (self.Active) then
 		local btn = self.Buttons[self.Active]
@@ -106,7 +106,7 @@ function PANEL:SetActive(id)
 		local pnl = self.Panels[id]
 
 		timer.Simple(0.15, function()
-			if (!IsValid(self)) then return end
+			stopif !IsValid(self)
 			
 			btn:LerpColor("Color", AtlasUI.Theme.Accent)
 			pnl.DrawAlpha = pnl.DrawAlpha or 255

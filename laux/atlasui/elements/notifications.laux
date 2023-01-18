@@ -26,7 +26,7 @@ function PANEL:Init()
 
   self.icon = vgui.Create("Panel", self)
   self.icon.Paint = function(pnl, w, h)
-    if (!self.img or type(self.img) != "IMaterial") then return end
+    stopif !self.img or type(self.img) != "IMaterial"
 
     surface.SetDrawColor(self:GetIconColor())
     surface.SetMaterial(self.img)
@@ -93,7 +93,7 @@ function PANEL:Close()
   hook.Run("AtlasUI.NotificationRemoved")
 
   self:LerpMove(ScrW() + self:GetWide(), self.y, self:GetAnimTime(), function()
-    if (!IsValid(self)) then return end
+    stopif !IsValid(self)
 
     self:Remove()
   end)
@@ -104,7 +104,7 @@ function PANEL:SetDuration(time)
   self.startTime = SysTime()
 
   timer.Simple(time, function()
-    if (!IsValid(self)) then return end
+    stopif !IsValid(self)
 
     self:Close()
   end)

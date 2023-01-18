@@ -262,7 +262,7 @@ function AtlasUI:AddRippleClickEffect(pnl, color, duration)
     pnl.rippleDuration = duration
 
     function pnl:OnMousePressedRipple(code)
-        if self.GetDisabled and self:GetDisabled() then return end
+        stopif self.GetDisabled and self:GetDisabled()
 
         if code == MOUSE_LEFT then
             local cx, cy = self:CursorPos()
