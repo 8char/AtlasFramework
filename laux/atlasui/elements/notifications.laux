@@ -197,8 +197,8 @@ hook.Add("AtlasUI.NotificationRemoved", "Core", function()
     if (v == NULL) then
       AtlasUI.Notifications[i] = nil
     end
-    if (!IsValid(v)) then continue end
-    if (v.removing) then continue end
+    continueif !IsValid(v)
+    continueif v.removing
 
     v.id = i
 

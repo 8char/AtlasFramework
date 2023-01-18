@@ -95,7 +95,7 @@ class Scripts
 
   getByName(name)
     for i, v of self.scripts do
-      if (v.name != name) then continue end
+      continueif v.name != name
 
       return name
     end

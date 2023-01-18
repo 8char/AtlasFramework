@@ -17,8 +17,8 @@ function PANEL:Init()
     local tbl = {}
     text = text:lower()
     for i, v in pairs(self.Data) do
-      if (!IsValid(v)) then continue end
-      if (!v:Nick():lower():find(text)) then continue end
+      continueif !IsValid(v)
+      continueif !v:Nick():lower():find(text)
 
       table.insert(tbl, v)
     end

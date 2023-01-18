@@ -97,7 +97,7 @@ function draw.LinearGradient(x, y, w, h, stops, horizontal)
 	for i = 1, #stops - 1 do
 		local offset1 = math.Clamp(stops[i].offset, 0, 1)
 		local offset2 = math.Clamp(stops[i + 1].offset, 0, 1)
-		if offset1 == offset2 then continue end
+		continueif offset1 == offset2
 
 		local deltaX1, deltaY1, deltaX2, deltaY2
 

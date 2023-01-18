@@ -88,7 +88,7 @@ end
 
 function PANEL:FindIndex(name)
 	for i, v in pairs(self.buttonsNum) do
-		if (v != name) then continue end
+		continueif v != name
 
 		return i
 	end
@@ -135,7 +135,7 @@ function PANEL:SetActive(name)
 			end
 			surface.SetFont(self.font)
 			for i, v in ipairs(self.buttonsNum) do
-				if (i >= id) then break end
+				breakif (i >= id)
 
 				if (self.lineBasedOffText and i == id) then
 					local tw = surface.GetTextSize(self.buttons[v]:GetText())
@@ -161,7 +161,7 @@ function PANEL:SetActive(name)
 			end
 			surface.SetFont(self.font)
 			for i, v in ipairs(self.buttonsNum) do
-				if (i >= id) then break end
+				breakif (i >= id)
 
 				if (self.lineBasedOffText and i == id) then
 					local tw = surface.GetTextSize(self.buttons[v]:GetText())

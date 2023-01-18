@@ -74,7 +74,7 @@ class Config
     local split = string.Explode(".", selector)
 
     for i, v in ipairs(split) do
-      if (v == "") then continue end
+      continueif v == ""
       stopif !tbl[v]
 
       tbl = tbl[v]

@@ -43,7 +43,7 @@ function PANEL:Notification(title, backgroundCol, textCol)
       stopif !IsValid(pnl)
 
       for i, v in pairs(self.notifications) do
-        if (v.uniqueID != pnl.uniqueID) then continue end
+        continueif v.uniqueID != pnl.uniqueID
 
         table.remove(self.notifications, i)
 

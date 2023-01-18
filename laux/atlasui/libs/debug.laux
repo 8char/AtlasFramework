@@ -57,7 +57,7 @@ function AtlasUI:DebugPrint(prefix, ...)
       local exploded = string.Explode("\n", json)
 
       for i, v in ipairs(exploded) do
-        if (i == 1) then continue end
+        continueif i == 1
 
         exploded[i] = "	-	" .. v
       end
