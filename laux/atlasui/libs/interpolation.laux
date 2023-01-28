@@ -1,0 +1,43 @@
+--[[
+    This code defines a SecondOrderDynamics class that can be used to create smooth, physically-based animations.
+    The class takes four arguments in its constructor: frequency, dampening, undershot, and startPos.
+
+    * The frequency argument controls how quickly the object oscillates. A high frequency means the object oscillates quickly,while a low frequency means it oscillates slowly.
+    * The dampening argument controls how quickly the oscillations die out. A high dampening value means the oscillations die out quickly, while a low value means they die out slowly.
+    * The undershot argument controls how much the object overshoots its target position. A high undershot value means the object will overshoot a lot, while a low value means it will not overshoot much.
+    * The update() method is used to update the object's position over time. It takes two arguments: dTime and newPos. The dTime argument is the amount of time that has passed since the last update, and newPos is the object's target position. The method calculates the object's new interpolated position and velocity and returns the interpolated position.
+
+    This class can be used to create a wide variety of animation effects. For example, it
+    can be used to create realistic bouncing or swinging animations, or to simulate the
+    motion of a spring or pendulum. By adjusting the frequency, dampening, and undershot
+    values, you can fine-tune the motion of the object to achieve the desired effect.
+
+    For a more indepth video explaination of this, reffer to this video: https://youtu.be/KPoeNZZ6H4s
+]]--
+
+public class SecondOrderDynamics
+    constructor(frequency, dampening, undershot, startPos)
+        self.prevPosition = startPos
+        self.interpolatedPosition = startPos
+        self.interpolatedVelocity = Vector(0, 0, 0)
+    end
+
+    updateConstants(frequency, dampening, undershot)
+        self.k1 = dampening / (math.pi * frequency)
+        self.k2 = 1 / ((2 * math.pi * frequency) * (2 * math.pi * frequency))
+        self.k3 = (undershot * dampening) / (2 * math.pi * frequency)
+    end
+
+    update(dTime, newPos)
+        if not self.currentVelocity then
+            self.currentVelocity = (newPos - self.prevPosition) / dTime
+            self.prevPosition = newPos
+        end
+
+        local stableK2 = math.max(self.k2, 1.1 * ((dTime * dTime / 4) + (dTime * self.k1 / 2)))
+        self.interpolatedPosition = self.interpolatedPosition + dTime * self.interpolatedVelocity
+        self.interpolatedVelocity = self.interpolatedVelocity + dTime * (newPos + (self.k3 * self.currentVelocity) - self.interpolatedPosition - (self.k1 * self.interpolatedVelocity)) / stableK2
+
+        return self.interpolatedPosition
+    end
+end
