@@ -2,4 +2,4 @@ blank_issues_enabled: false
 contact_links:
   - name: Discord Chat
     url: https://discord.gg/glua
-    about: Ask questions and discuss with other SvelteKit users in real time.
+    about: Ask questions and discuss with other AtlasFramework users in real time.
