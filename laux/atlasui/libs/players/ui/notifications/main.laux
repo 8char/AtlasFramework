@@ -1,6 +1,6 @@
 local PANEL = {}
 
-XeninUI:CreateFont("AtlasUI.Players.Loading", 32)
+AtlasUI:CreateFont("AtlasUI.Players.Loading", 32)
 AtlasUI:CreateFont("AtlasUI.Players.Notifications", 20)
 
 function PANEL:Init()

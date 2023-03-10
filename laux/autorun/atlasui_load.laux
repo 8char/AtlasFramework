@@ -78,11 +78,12 @@ AtlasUI.Loader()
 		server = ATLASUI_SERVER
 	})
 	:load("libs/languages", ATLASUI_SHARED)
+    :load("libs/scripts", ATLASUI_SHARED)
 	:load("libs/scripts/network", {
 		client = ATLASUI_CLIENT,
 		server = ATLASUI_SERVER
 	})
-	:load("libs/scripts", ATLASUI_SHARED)
+    :load("libs/configurator", ATLASUI_SHARED)
 	:load("libs/configurator/classes", ATLASUI_SHARED, false, {
 		overwriteRealm = {
 			database = ATLASUI_SERVER
@@ -92,24 +93,23 @@ AtlasUI.Loader()
 		client = ATLASUI_CLIENT,
 		server = ATLASUI_SERVER
 	})
-	:load("libs/configurator", ATLASUI_SHARED)
 	:load("libs/configurator/ui", ATLASUI_CLIENT, true)
+    :load("libs/config", ATLASUI_SHARED)
 	:load("libs/config/network", {
 		client = ATLASUI_CLIENT,
 		server = ATLASUI_SERVER
 	})
-	:load("libs/config", ATLASUI_SHARED)
+	:load("libs/players", ATLASUI_SHARED, false, {
+		overwriteRealm = {
+			database = ATLASUI_SERVER
+		}	
+	})
     :load("libs/players/ui", ATLASUI_CLIENT, true)
     :load("libs/players/network", {
         shared = ATLASUI_SHARED,
         client = ATLASUI_CLIENT,
         server = ATLASUI_SERVER
     })
-	:load("libs/players", ATLASUI_SHARED, false, {
-		overwriteRealm = {
-			database = ATLASUI_SERVER
-		}	
-	})
 	:load("elements", ATLASUI_CLIENT)
 	:load("core/ui", ATLASUI_CLIENT)
 	:load("libs/units", ATLASUI_SHARED, true)
