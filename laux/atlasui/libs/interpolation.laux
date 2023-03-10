@@ -15,7 +15,7 @@
     For a more indepth video explaination of this, reffer to this video: https://youtu.be/KPoeNZZ6H4s
 ]]--
 
-public class SecondOrderDynamics
+class SecondOrderDynamics
     constructor(frequency, dampening, undershot, startPos)
         self.prevPosition = startPos
         self.interpolatedPosition = startPos
@@ -41,3 +41,5 @@ public class SecondOrderDynamics
         return self.interpolatedPosition
     end
 end
+
+AtlasUI.SecondOrderDynamics = SecondOrderDynamics
