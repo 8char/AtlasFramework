@@ -70,14 +70,14 @@ function PANEL:Init()
   AtlasUI:DownloadIcon(self.Top, "2QGKAd6")
   self.Top.rotation = 0
   self.Top.OnCursorEntered = function(pnl)
-    if (self:GetExpanded()) then return end
+    stopif self:GetExpanded()
 
     pnl:Lerp("rotation", 180)
     pnl:LerpColor("textColor", self:GetTopTextColorHover())
     pnl:LerpColor("background", self:GetTopColorHover())
   end
   self.Top.OnCursorExited = function(pnl)
-    if (self:GetExpanded()) then return end
+    stopif self:GetExpanded()
 
     pnl:Lerp("rotation", 0)
     pnl:LerpColor("textColor", self:GetTopTextColor())
@@ -179,7 +179,7 @@ function PANEL:SetLayoutType(type)
       local innerWidth = w - border * 2 - spacingX * (count - 1)
 
       for i, child in ipairs(children) do
-        if (!IsValid(child)) then continue end
+        continueif !IsValid(child)
       
         child:SetPos(border + x * innerWidth / count + spacingX * x, border + y * child:GetTall() + spacingY * y)
         child:SetSize(innerWidth / count, self:GetGridColumnHeight() or innerWidth / count)

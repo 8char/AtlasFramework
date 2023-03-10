@@ -42,10 +42,10 @@ This will cause the promise to be rejected with the given reason. If the promise
 
 ## Chaining promises
 
-To create a chain of promises, use the `then` method on a promise:
+To create a chain of promises, use the `next` method on a promise:
 
 ```lua
-promise:then(onFulfilled, onRejected)
+promise:next(onFulfilled, onRejected)
 ```
 
 
@@ -53,7 +53,7 @@ This returns a new promise that will be fulfilled or rejected based on the resul
 
 # Methods
 
-These methods are the interface that developers use to create and manipulate promises. Some common methods that are included in promise libraries include `then`, `catch`, `finally`, `all`, and `race`. The Method heading typically includes a brief description of each method, as well as information about the arguments that the method accepts and the value that it returns. The documentation may also include examples of how to use the methods in code.
+These methods are the interface that developers use to create and manipulate promises. Some common methods that are included in promise libraries include `next`, `catch`, `finally`, `all`, and `race`. The Method heading typically includes a brief description of each method, as well as information about the arguments that the method accepts and the value that it returns. The documentation may also include examples of how to use the methods in code.
 
 ## AtlasUI.Promises.new()
 
@@ -160,7 +160,7 @@ AtlasUI.Promises.all(
     asyncTask1(),
     asyncTask2(),
     asyncTask3()
-):then(function(results)
+):next(function(results)
     print('All tasks completed:')
     for i, result in ipairs(results) do
         print(result)
@@ -168,4 +168,4 @@ AtlasUI.Promises.all(
 end)
 ```
 
-This is an example of how to use promises in Lua. It defines three asynchronous functions, `asyncTask1`, `asyncTask2`, and `asyncTask3`, which each return a `Promise` object. These promises are then passed to the `AtlasUI.Promises.all` function, which returns a new promise that is resolved when all of the promises passed to it have been resolved. The promise returned by `AtlasUI.Promises.all` is then chained using the `:then` method, which allows the results of the three asynchronous tasks to be processed once they have all completed.
+This is an example of how to use promises in Lua. It defines three asynchronous functions, `asyncTask1`, `asyncTask2`, and `asyncTask3`, which each return a `Promise` object. These promises are then passed to the `AtlasUI.Promises.all` function, which returns a new promise that is resolved when all of the promises passed to it have been resolved. The promise returned by `AtlasUI.Promises.all` is then chained using the `:next` method, which allows the results of the three asynchronous tasks to be processed once they have all completed.

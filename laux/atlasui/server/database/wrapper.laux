@@ -120,7 +120,7 @@ local MySQLite_config = MySQLite_config
 local moduleLoaded
 
 local function loadMySQLModule()
-    if moduleLoaded or not MySQLite_config or not MySQLite_config.EnableMySQL then return end
+    stopif moduleLoaded or not MySQLite_config or not MySQLite_config.EnableMySQL
 
     local moo, tmsql = file.Exists("bin/gmsv_mysqloo_*.dll", "LUA"), file.Exists("bin/gmsv_tmysql4_*.dll", "LUA")
 

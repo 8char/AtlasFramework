@@ -50,7 +50,7 @@ function PANEL:AddTab(name, icon, panelClass, panelFunc)
 end
 
 function PANEL:SetActive(id, instant)
-  if (self.active == id) then return end
+  stopif self.active == id
   if (self.active and self.buttons[self.active]) then
     self.buttons[self.active].active = false
     self.buttons[self.active]:OnCursorExited()
@@ -133,14 +133,14 @@ function PANEL:Init()
 end
 
 function PANEL:OnCursorEntered()
-  if (self.active) then return end
+  stopif self.active
   
   self:Lerp("Alpha", 255)
   self:LerpColor("Color", Color(200, 200, 200))
 end
 
 function PANEL:OnCursorExited()
-  if (self.active) then return end
+  stopif self.active
 
   self:Lerp("Alpha", 0)
   self:LerpColor("Color", Color(140, 140, 140))

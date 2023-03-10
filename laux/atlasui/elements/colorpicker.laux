@@ -51,7 +51,7 @@ function PANEL:Think()
   local radius = self:GetRadius()
   local triangleRadius = self:GetTriangleRadius()
 
-  if (!self.Pressed) then return end
+  stopif !self.Pressed
 
   local diffX = cursorX - cX
   local diffY = cursorY - cY
@@ -79,7 +79,7 @@ function PANEL:Think()
     local dx = math.tan(rad1) * r
     local rad2 = math.Clamp(math.atan(dx / maxR), -math.pi / 3, math.pi / 3)
     rad = rad + (rad2 - rad1)
-    rad0 = (rad + 2 * math.pi - self.hue) % (2 * math.pi)
+    rad0 = (rad + 2 * math.pi - self.Hue) % (2 * math.pi)
     rad1 = rad0 % ((2 / 3) * math.pi) - (math.pi / 3)
     b = math.tan(rad1) * a
     maxR = math.sqrt(a * a + b * b)

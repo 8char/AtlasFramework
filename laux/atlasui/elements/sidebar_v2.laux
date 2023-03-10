@@ -64,12 +64,12 @@ function PANEL:CreatePanel(name, desc, panelClass, icon, tbl)
     end
   end
   btn.OnCursorEntered = function(pnl)
-    if (self.Active == btn.Id) then return end
+    stopif self.Active == btn.Id
 
     pnl:Lerp("GradientAlpha", 127.5)
   end
   btn.OnCursorExited = function(pnl)
-    if (self.Active == btn.Id) then return end
+    stopif self.Active == btn.Id
 
     pnl:Lerp("GradientAlpha", 0)
   end

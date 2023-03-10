@@ -31,7 +31,7 @@ function PANEL:Init()
     AtlasUI:DrawShadowText(text, "AtlasUI.Query.Option", w / 2, h / 2, Color(184, 184, 184), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, 150)
   end
   self.background.option.DoClick = function(pnl)
-    if (IsValid(pnl.Dropdown)) then return end
+    stopif IsValid(pnl.Dropdown)
 
     pnl.Dropdown = vgui.Create("AtlasUI.PlayerDropdown")
     pnl.Dropdown:SetParentPanel(pnl)
@@ -42,7 +42,7 @@ function PANEL:Init()
     pnl.Dropdown:MakePopup()
     pnl.Dropdown.OnSelected = function(dropdown, sid64)
       -- This is a bot
-      if (!sid64) then return end
+      stopif !sid64
       local ply = player.GetBySteamID64(sid64)
       pnl.Text = ply:Nick()
 

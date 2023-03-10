@@ -44,7 +44,7 @@ function PANEL:SetAwaitingResponse( b )
 end
 
 function PANEL:Paint( w, h )
-	if !self.DidPostInit then return end
+	stopif !self.DidPostInit
 
 	self:SetTextColor(self:GetTextColorCur())
 
@@ -98,7 +98,7 @@ function PANEL:RefreshColors( anim )
 end
 
 function PANEL:OnCursorEntered()
-	if !self.DidPostInit then return end
+	stopif !self.DidPostInit
 
 	if self:GetDisabled() then
 		self:SetCursor( "no" )
@@ -113,7 +113,7 @@ function PANEL:OnCursorEntered()
 end
 
 function PANEL:OnCursorExited()
-	if self:GetDisabled() or !self.DidPostInit then return end
+	stopif self:GetDisabled() or !self.DidPostInit
 
 	self:Lerp( "shadow_alpha", self:GetShadowAlphaOff() )
 	self:LerpColor( "clr_text_cur", self:GetTextColorOff() )

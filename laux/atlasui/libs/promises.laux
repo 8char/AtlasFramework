@@ -42,12 +42,12 @@ local function promise(deferred, next, success, failure, nonpromisecb)
 	if type(deferred) == 'table' and type(deferred.value) == 'table' and isfunction(next) then
 		local called = false
 		local ok, err = pcall(next, deferred.value, function(v)
-			if called then return end
+			stopif called
 			called = true
 			deferred.value = v
 			success()
 		end, function(v)
-			if called then return end
+			stopif called
 			called = true
 			deferred.value = v
 			failure()

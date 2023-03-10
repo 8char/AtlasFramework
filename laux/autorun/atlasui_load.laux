@@ -6,7 +6,7 @@ AtlasUI.Players ||= {}
 
 if SERVER then
     resource.AddSingleFile( "materials/atlas/closebutton.png" )
-    resource.AddSingleFile( "materials/atlas/gradient_lt.png" )
+    resource.AddSingleFile( "materials/atlas/gradient_ltr.png" )
     resource.AddSingleFile( "materials/atlas/loading.png" )
     resource.AddSingleFile( "materials/atlas/next.png" )
     resource.AddSingleFile( "materials/atlas/search.png" )
@@ -115,7 +115,7 @@ AtlasUI.Loader()
 	:load("libs/units", ATLASUI_SHARED, true)
 :done()
 
-AtlasUI.Version = "2.1.0"
+AtlasUI.Version = "1.2.0"
 
 hook.Run("AtlasUI.PreLoadAddons")
 hook.Run("AtlasUI.Loaded")

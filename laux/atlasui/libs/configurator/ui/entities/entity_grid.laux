@@ -91,7 +91,7 @@ function PANEL:SetData(tbl)
     local innerWidth = w - border * 2 - spacingX * (count - 1)
 
     for i, child in ipairs(children) do
-      if (!IsValid(child)) then continue end
+      continueif !IsValid(child)
       continueif !child:IsVisible()
 
       child:SetPos(border + x * innerWidth / count + spacingX * x, border + y * child:GetTall() + spacingY * y)

@@ -2,7 +2,7 @@ util.AddNetworkString("Atlas.Config")
 util.AddNetworkString("Atlas.RequestConfig")
 
 net.Receive("Atlas.Config", (len, ply) =>
-  if (!AtlasUI.Permissions:isDeveloper(ply)) then return end
+  stopif !AtlasUI.Permissions:isDeveloper(ply)
 
   local scriptId = net.ReadString()
   local len = net.ReadUInt(32)

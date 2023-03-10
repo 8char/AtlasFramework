@@ -12,6 +12,7 @@
 * [Libs](libs.md)
     * [Animations](libs/animations.md)
     * [Debug](libs/debug.md)
+    * [i18n](libs/i18n.md)
     * [Essentials](libs/essentials.md)
         * [Shared](libs/essentials/shared.md)
         * [Client](libs/essentials/client.md)

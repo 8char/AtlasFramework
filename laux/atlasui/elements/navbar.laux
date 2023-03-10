@@ -59,7 +59,7 @@ function PANEL:AddTab(name, panel, tbl)
 		pnl:LerpColor("textColor", self.textActive)
 	end
 	self.buttons[name].OnCursorExited = function(pnl)
-		if (self.active == name) then return end
+		stopif self.active == name
 		
 		pnl:LerpColor("textColor", Color(120, 120, 120))
 	end
@@ -88,14 +88,14 @@ end
 
 function PANEL:FindIndex(name)
 	for i, v in pairs(self.buttonsNum) do
-		if (v != name) then continue end
+		continueif v != name
 
 		return i
 	end
 end
 
 function PANEL:SetActive(name)
-	if (self.active == name) then return end
+	stopif self.active == name
 
 	local instant = !IsValid(self.buttons[self.active])
 	if (self.buttons[self.active]) then
@@ -135,7 +135,7 @@ function PANEL:SetActive(name)
 			end
 			surface.SetFont(self.font)
 			for i, v in ipairs(self.buttonsNum) do
-				if (i >= id) then break end
+				breakif (i >= id)
 
 				if (self.lineBasedOffText and i == id) then
 					local tw = surface.GetTextSize(self.buttons[v]:GetText())
@@ -161,7 +161,7 @@ function PANEL:SetActive(name)
 			end
 			surface.SetFont(self.font)
 			for i, v in ipairs(self.buttonsNum) do
-				if (i >= id) then break end
+				breakif (i >= id)
 
 				if (self.lineBasedOffText and i == id) then
 					local tw = surface.GetTextSize(self.buttons[v]:GetText())
@@ -188,7 +188,7 @@ function PANEL:SetActive(name)
 		else
 			if (self.animation == "alpha") then
 				timer.Simple(0.15, function()
-					if (!IsValid(self)) then return end
+					stopif !IsValid(self)
 
 					local pnl = self.panels[name]
 					pnl.DrawAlpha = pnl.DrawAlpha or 255

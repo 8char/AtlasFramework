@@ -50,7 +50,7 @@ function PANEL:Init()
     pnl:MouseCapture(false)
   end
   self.grip.OnCursorMoved = function(pnl, x, y)
-    if (!pnl.Depressed) then return end
+    stopif !pnl.Depressed
 
     local x, y = pnl:LocalToScreen(x, y)
     x, y = self:ScreenToLocal(x, y)

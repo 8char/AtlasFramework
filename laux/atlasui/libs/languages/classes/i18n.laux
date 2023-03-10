@@ -1,0 +1,129 @@
+public class AtlasUI.i18n
+    _get _set gitHubAuthor
+    _get _set gitHubRepo
+
+    constructor(gitHubAuthor, gitHubRepo, langId, langFolder)
+        self:setGitHubAuthor(gitHubAuthor)
+        self:setGitHubRepo(gitHubRepo)
+        self.lang = AtlasUI:Language(langId)
+        self.lang:SetURL(`https://raw.githubusercontent.com/${self:getGitHubAuthor()}/${self:getGitHubRepo()}`)
+        self.lang:SetFolder(langFolder)
+        self.lang.ComputeURL = (lang) ->
+        local branch = self:GetBranch() or "master"
+        local url = self:GetURL()
+        local folder = self:GetFolder()
+
+        return `${url}/${branch}/${folder}/${lang}.json`
+        end
+    end
+
+    setLanguage(lang, tbl)
+        self.lang:Download("English", true)
+        self.lang:SetActiveLanguage(lang)
+        if (lang != "English" and !tbl) then
+            self.lang:Download(lang, true)
+        elseif (tbl) then
+            self.lang:SetLocalLanguage(lang, tbl)
+        end
+    end
+
+    parsePhrase(str)
+        -- Don't wanna deal with anything, but strings
+        if (!isstring(str)) then
+            return str
+        end
+
+        -- It's cheaper to see if it's empty than scan every string
+        local lang = self.lang:GetLanguage(self.lang:GetActiveLanguage())
+        if (lang.functions) then
+            str = str:gsub("{{%s*(.-)%s*}}", (word) =>
+                local pureWord = word
+                word = word:Trim()
+                local funcName = word:match("(.*)%(")
+                local argumentStr = word:sub(#funcName + 2, #word - 1)
+                local split = argumentStr:Split(",")
+                local params = {}
+                for i, v in ipairs(split) do
+                    params[#params + 1] = v:Trim()
+                end
+
+                if (lang.functions[funcName]) then
+                    return lang.functions[funcName](unpack(params))
+                end
+
+                return pureWord
+            end)
+        end
+
+        return str
+    end
+
+    get(phrase, default, replacement = {})
+        local cache = self.lang:GetPhrase(phrase, replacement)
+        if (cache and cache != "" and phrase != cache) then
+            return self:parsePhrase(cache)
+        end
+
+        if (isstring(default)) then
+            for i, v in pairs(replacement) do
+                default = default:Replace(`:${i}:`, v)
+            end
+        end
+
+        return self:parsePhrase(default or phrase)
+    end
+
+    getAll()
+        local p = AtlasUI.Promises.new()
+        local folder = self.lang:GetFolder()
+
+        if (istable(self.langCache)) then
+            return p:resolve(self.langCache)
+        end
+        
+        http.Fetch(`https://api.github.com/repos/${self:getGitHubAuthor()}/${self:getGitHubRepo()}/contents/${folder}`, 
+            (body, size, headers, code) =>
+                if (code != 200) then
+                    return p:reject("Unknown error. GitHub is probably in maintenance mode")
+                end
+
+                local json = util.JSONToTable(body)
+                if (!json or !istable(json)) then
+                    return p:reject("Unable to decode the JSON response from GitHub")
+                end
+
+                local tbl = {}
+                for i, v in ipairs(json) do
+                    local name = v.name:sub(1, #v.name -5)
+                    name = name:sub(1, 1):upper() .. name:sub(2)
+                    local nameSplit = string.Explode("-", name)
+                    for k, split of nameSplit do
+                        if (k == 1) then
+                            name = split
+
+                            continue
+                        end
+
+                        name ..= " " .. split:upper()
+                    end
+
+                    table.insert(tbl, {
+                        name = name,
+                        data = v.name
+                    })
+                end
+
+                self.langCache = tbl
+
+                p:resolve(tbl)
+            end,
+            (err) =>
+                p:reject("Error: " .. err)
+            end
+        )
+
+        return p
+    end
+  
+    __type() return "AtlasUI.i18n" end
+end

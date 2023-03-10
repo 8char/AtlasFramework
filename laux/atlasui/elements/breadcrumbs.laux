@@ -71,7 +71,7 @@ function PANEL:CorrectColors()
   for i, v in ipairs(self.Buttons) do
     local isHovered = v:IsHovered()
     local isActive = i == size
-    if (isHovered and isActive) then continue end
+    continueif isHovered and isActive
 
     v.IsActive = i == size
     v.TextColor = i == size and AtlasUI.Theme.Accent or Color(185, 185, 185)
@@ -116,7 +116,7 @@ function PANEL:Paint(w, h)
   local x = 0
   local size = #self.Buttons
   for i, v in ipairs(self.Buttons) do
-    if (i == size) then continue end
+    continueif i == size
 
     surface.SetFont(v:GetFont())
     local tw = surface.GetTextSize(v:GetText())

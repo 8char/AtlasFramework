@@ -141,7 +141,7 @@ public class AtlasUI.ORM.Helpers
   end
 
   static sid64(ply)
-    if (!IsValid(ply)) then return end -- rip
+    stopif !IsValid(ply) -- rip
 
     return AtlasUI.ORM.Helpers.raw(ply:SteamID64())
   end
