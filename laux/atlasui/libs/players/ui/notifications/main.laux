@@ -1,5 +1,6 @@
 local PANEL = {}
 
+XeninUI:CreateFont("AtlasUI.Players.Loading", 32)
 AtlasUI:CreateFont("AtlasUI.Players.Notifications", 20)
 
 function PANEL:Init()
@@ -82,7 +83,7 @@ end
 
 function PANEL:Paint(w, h)
   if (self.Loading) then
-    draw.SimpleText("Loading", "AtlasJC.Admin.Queue.Loading", w / 2, h / 2 - h / 8, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+    draw.SimpleText("Loading", "AtlasUI.Players.Loading", w / 2, h / 2 - h / 8, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
     AtlasUI:DrawLoadingCircle(w / 2, h / 2 + 16, h / 4, AtlasUI.Theme.Accent)
   end
 end
