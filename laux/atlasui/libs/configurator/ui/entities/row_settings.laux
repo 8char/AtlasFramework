@@ -89,7 +89,7 @@ function PANEL:AddSettings(entity)
       labelColor = transform[3]
     end
 
-    self:AddSetting(v.id, name, type, { 
+    self:AddSetting(v.id, name, v.panelOverride or type, { 
       value = value,
       readOnly = v.readOnly,
       onChange = v.onChange,
