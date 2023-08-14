@@ -1,6 +1,10 @@
 local PANEL = {}
 
 function PANEL:Init()
+  self.Scroll = self:Add("AtlasUI.Scrollpanel.Wyvern")
+  self.Scroll:Dock(FILL)
+
+  self.Body = self.Scroll:Add("Panel")
 end
 
 function PANEL:GetEntities()
