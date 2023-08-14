@@ -218,15 +218,24 @@ function AtlasUI:HexToRGB(hex)
   )
 end
 
-function AtlasUI:GetOrdinalString(number)
-    if number == 1 then
-      return "1st"
-    elseif number == 2 then
-      return "2nd"
-    elseif number == 3 then
-      return "3rd"
-    else
-      return number .. "th"
-    end
-  end
+local ordinalStringLookup = {
+  [1] = "1st",
+  [2] = "2nd",
+  [3] = "3rd"
+}
+
+function AtlasUI:GetOrdinalString(number: number)
+  return ordinalStringLookup[number] or `${number}th`
+end
+
+function AtlasUI:ToPlural(singular: string)
+  local lastChar = string.sub(singular, -1)
   
+  if lastChar == "y" then
+      return string.sub(singular, 1, -2) .. "ies"
+  elseif lastChar == "s" then
+      return singular .. "es"
+  else
+      return singular .. "s"
+  end
+end
