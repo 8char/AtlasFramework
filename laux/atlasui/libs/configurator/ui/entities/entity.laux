@@ -105,13 +105,11 @@ end
 
 function PANEL:UpdateTitle(size)
   size = size or #self.Rows
-  stopif !IsValid(self.Title)
+  stopif not IsValid(self.Subtitle)
   
-  local name = self.Title:GetText()
-  name = name:sub(1, 1):lower() .. name:sub(2, #name - 1)
-  if (size != 1) then
-    name ..= "s"
-  end
+  local name = "entity" -- TODO: Reimplement the title
+  name = name:sub(1, 1):lower() .. name:sub(2, #name)
+  name = size > 1 and AtlasUI:ToPlural(name) or name
 
   self.Subtitle:SetText(`${size} ${name}`)
 end
